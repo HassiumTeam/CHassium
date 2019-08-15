@@ -59,10 +59,10 @@ int set_tokenizer_pos (struct tokenizer_state * state, int pos) {
     return 0;
 }
 
-static void whitespace  (struct tokenizer_state * state);
 static void next_id     (struct tokenizer_state * state, struct token * token);
 static void next_number (struct tokenizer_state * state, struct token * token);
 static void next_string (struct tokenizer_state * state, struct token * token);
+static void whitespace  (struct tokenizer_state * state);
 static int  nextc       (struct tokenizer_state * state);
 static int  readc       (struct tokenizer_state * state);
 static int  peekc       (struct tokenizer_state * state);
@@ -148,6 +148,39 @@ void tokenizer_next (struct tokenizer_state * state, struct token * token) {
                     token->val [1] = 0;
                 }
                 break;
+            case '!':
+                if (next == '=') {
+                    token->type = comp;
+                    token->val = (char *)malloc (3);
+                    token->val [0] = cur;
+                    token->val [1] = (char)readc (state);
+                    token->val [2] = 0;
+                } else {
+                    token->type = op;
+                    token->val = (char *)malloc (2);
+                    token->val [0] = cur;
+                    token->val [1] = 0;
+                }
+                break;
+            case '&':
+            case '|':
+                if (next == cur) {
+                    token->type = op;
+                    token->val = (char *)malloc (3);
+                    token->val [0] = cur;
+                    token->val [1] = (char)readc (state);
+                } else if (next == '=') {
+                    token->type = assign;
+                    token->val = (char *)malloc (3);
+                    token->val [0] = cur;
+                    token->val [1] = (char)readc (state);
+                } else {
+                    token->type = op;
+                    token->val = (char *)malloc (2);
+                    token->val [0] = cur;
+                    token->val [1] = 0;
+                }
+                break;
             case '(':
                 token->type = oparen;
                 break;
@@ -168,6 +201,12 @@ void tokenizer_next (struct tokenizer_state * state, struct token * token) {
                 break;
             case ';':
                 token->type = semicol;
+                break;
+            case '.':
+                token->type = dot;
+                break;
+            case ',':
+                token->type = comma;
                 break;
         }
     }
