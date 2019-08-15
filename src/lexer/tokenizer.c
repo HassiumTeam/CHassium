@@ -63,33 +63,169 @@ static void whitespace  (struct tokenizer_state * state);
 static void next_id     (struct tokenizer_state * state, struct token * token);
 static void next_number (struct tokenizer_state * state, struct token * token);
 static void next_string (struct tokenizer_state * state, struct token * token);
+static int  nextc       (struct tokenizer_state * state);
 static int  readc       (struct tokenizer_state * state);
 static int  peekc       (struct tokenizer_state * state);
 
 void tokenizer_next (struct tokenizer_state * state, struct token * token) {
-    next_string (state, token);
+    char cur, next;
+
+    token->type = unknown;
+    token->val = 0;
+
+    whitespace (state);
+
+    if (peekc (state) == -1) {
+        token->type = eof;
+        return;
+    }
+
+    cur = (char)peekc (state);
+    next = (char)nextc (state);
+
+
+    if (isdigit (cur)) {
+        next_number (state, token);
+    } else if (isalpha (cur)) {
+        next_id (state, token);
+    } else {
+        readc (state); // read over cur
+
+        switch (cur) {
+            case '"':
+                next_string (state, token);
+                break;
+            case '+':
+            case '-':
+            case '*':
+            case '/':
+            case '%':
+                if (next == '=') {
+                    token->type = assign;
+                    token->val = (char *)malloc (3);
+                    token->val [0] = cur;
+                    token->val [1] = (char)readc (state);
+                    token->val [2] = 0;
+                } else {
+                    token->type = op;
+                    token->val = (char *)malloc (2);
+                    token->val [0] = cur;
+                    token->val [1] = 0;
+                }
+                break;
+            case '=':
+                if (next == '=') {
+                    token->type = comp;
+                    token->val = (char *)malloc (3);
+                    token->val [0] = cur;
+                    token->val [1] = (char)readc (state);
+                    token->val [2] = 0;
+                } else {
+                    token->type = assign;
+                    token->val = (char *)malloc (2);
+                    token->val [0] = cur;
+                    token->val [1] = 0;
+                }
+                break;
+            case '<':
+            case '>':
+                if (cur == next) {
+                    token->type = op;
+                    token->val = (char *)malloc (3);
+                    token->val [0] = cur;
+                    token->val [1] = (char)readc (state);
+                    token->val [2] = 0;
+                } else if (next == '=') {
+                    token->type = comp;
+                    token->val = (char *)malloc (3);
+                    token->val [0] = cur;
+                    token->val [1] = (char)readc (state);
+                    token->val [2] = 0;
+                } else {
+                    token->type = comp;
+                    token->val = (char *)malloc (2);
+                    token->val [0] = cur;
+                    token->val [1] = 0;
+                }
+                break;
+            case '(':
+                token->type = oparen;
+                break;
+            case ')':
+                token->type = cparen;
+                break;
+            case '{':
+                token->type = obrace;
+                break;
+            case '}':
+                token->type = cbrace;
+                break;
+            case '[':
+                token->type = osquare;
+                break;
+            case ']':
+                token->type = csquare;
+                break;
+            case ';':
+                token->type = semicol;
+                break;
+        }
+    }
+}
+
+static void next_id (struct tokenizer_state * state, struct token * token) {
+    int size, old_pos, i;
+
+    old_pos = state->pos;
+    while (isalnum ((char)peekc (state))) { readc (state); }
+    size = state->pos - old_pos;
+    tokenizer_rewind (state, size);
+
+    token->val = (char *)malloc (size + 1);
+    for (i = 0; i < size; i++) {
+        token->val [i] = (char)readc (state);
+    }
+    token->val [i] = 0;
+
+    token->type = id;
+}
+
+static void next_number (struct tokenizer_state * state, struct token * token) {
+    int size, old_pos, i;
+
+    old_pos = state->pos;
+    while (isdigit ((char)peekc (state))) { readc (state); }
+    size = state->pos - old_pos;
+    tokenizer_rewind (state, size);
+
+    token->val = (char *)malloc (size + 1);
+    for (i = 0; i < size; i++) {
+        token->val [i] = (char)readc (state);
+    }
+    token->val [i] = 0;
+
+    token->type = numberc;
 }
 
 static void next_string (struct tokenizer_state * state, struct token * token) {
     int size, old_pos, i;
-    char * str;
 
     readc (state); // "
 
     old_pos = state->pos;
-    while ((char)readc (state) != '"');
+    while ((char)readc (state) != '"') ;
     size = state->pos - old_pos;
+    tokenizer_rewind (state, size + 1);
 
-    tokenizer_rewind (state, size);
-    str = (char *)malloc (size);
-    for (i = 0; i < size - 1; i++) {
-        str [i] = (char)readc (state);
+    token->val = (char *)malloc (size);
+    for (i = 0; i < size; i ++) {
+        token->val [i] = (char)readc (state);
     }
-    str [i] = 0;
+    token->val [i] = 0;
 
     readc (state); // "
+
     token->type = stringc;
-    token->val = str;
 }
 
 static void whitespace (struct tokenizer_state * state) {
@@ -97,6 +233,14 @@ static void whitespace (struct tokenizer_state * state) {
         if (isspace ((char)peekc (state)) == 0) break;
         readc (state);
     }
+}
+
+static int nextc (struct tokenizer_state * state) {
+    if (state->pos + 1 < state->len) {
+        return state->code [state->pos + 1];
+    }
+
+    return -1;
 }
 
 static int peekc (struct tokenizer_state * state) {
@@ -119,6 +263,6 @@ static int readc (struct tokenizer_state * state) {
 
         return c;
     }
-
+    state->pos++;
     return -1;
 }
