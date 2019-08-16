@@ -4,8 +4,8 @@
 #include <lexer/tok_type.h>
 
 struct token {
-    char * val;
-    tok_type_t type;
+    char       * val;
+    tok_type_t   type;
 };
 
 #endif
