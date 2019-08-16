@@ -33,6 +33,7 @@ INCLUDES += inc/parser/parser.h
 INCLUDES += inc/bin_op_type.h
 INCLUDES += inc/compiler.h
 INCLUDES += inc/src_loc.h
+INCLUDES += inc/unary_op_type.h
 INCLUDES += inc/vector.h
 
 rm       = rm -f
