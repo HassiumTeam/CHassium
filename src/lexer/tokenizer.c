@@ -248,9 +248,7 @@ static void next_number (struct tokenizer_state * state, struct token * token) {
 
 static void next_string (struct tokenizer_state * state, struct token * token) {
     int size, old_pos, i;
-
-    readc (state); // "
-
+    
     old_pos = state->pos;
     while ((char)readc (state) != '"') ;
     size = state->pos - old_pos;

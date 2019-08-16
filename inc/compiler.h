@@ -4,6 +4,7 @@
 #include <inc/lexer/tok_type.h>
 #include <inc/lexer/token.h>
 #include <inc/lexer/tokenizer.h>
+#include <inc/vector.h>
 #include <stdio.h>
 #include <stdlib.h>
 
