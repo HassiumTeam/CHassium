@@ -2,7 +2,7 @@ TARGET   = bin/hassium
 
 CC       = gcc
 # compiling flags here
-CFLAGS   = -c -std=c99 -Wswitch -I.
+CFLAGS   = -c -std=c99 -Wswitch -I inc
 
 LINKER   = gcc
 # linking flags here

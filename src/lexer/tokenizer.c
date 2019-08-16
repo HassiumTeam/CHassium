@@ -1,4 +1,4 @@
-#include <inc/lexer/tokenizer.h>
+#include <lexer/tokenizer.h>
 
 struct tokenizer_state * tokenizer_init (FILE * f) {
     struct tokenizer_state * state = (struct tokenizer_state *)malloc(sizeof (struct tokenizer_state));
@@ -248,7 +248,7 @@ static void next_number (struct tokenizer_state * state, struct token * token) {
 
 static void next_string (struct tokenizer_state * state, struct token * token) {
     int size, old_pos, i;
-    
+
     old_pos = state->pos;
     while ((char)readc (state) != '"') ;
     size = state->pos - old_pos;

@@ -1,8 +1,8 @@
 #ifndef _AST_H_
 #define _AST_H_
 
-#include <inc/bin_op_type.h>
-#include <inc/parser/node_type.h>
+#include <bin_op_type.h>
+#include <parser/node_type.h>
 
 struct ast_node {
     void * state;

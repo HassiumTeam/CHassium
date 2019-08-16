@@ -1,4 +1,4 @@
-#include <inc/compiler.h>
+#include <compiler.h>
 
 void compile () {
     struct tokenizer_state * lexer = tokenizer_init(fopen ("bin/test.has", "r"));
