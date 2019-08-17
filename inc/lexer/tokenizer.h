@@ -2,7 +2,6 @@
 #define _TOKENIZER_H_
 
 #include <ctype.h>
-#include <lexer/tok_type.h>
 #include <lexer/token.h>
 #include <src_loc.h>
 #include <stdint.h>

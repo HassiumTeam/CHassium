@@ -1,7 +1,7 @@
 #ifndef _PARSER_H_
 #define _PARSER_H_
 
-#include <lexer/tok_type.h>
+#include <func_param.h>
 #include <lexer/token.h>
 #include <lexer/tokenizer.h>
 #include <parser/ast.h>

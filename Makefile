@@ -28,7 +28,6 @@ OBJECTS += src/vector.o
 
 INCLUDES += inc/emit/emit.h
 
-INCLUDES += inc/lexer/tok_type.h
 INCLUDES += inc/lexer/token.h
 INCLUDES += inc/lexer/tokenizer.h
 
@@ -38,6 +37,7 @@ INCLUDES += inc/parser/parser.h
 
 INCLUDES += inc/bin_op_type.h
 INCLUDES += inc/compiler.h
+INCLUDES += inc/func_param.h
 INCLUDES += inc/src_loc.h
 INCLUDES += inc/unary_op_type.h
 INCLUDES += inc/vector.h

@@ -67,7 +67,7 @@ struct func_call_state {
 };
 
 struct func_decl_state {
-    char                * id;
+    char                * name;
     struct vector_state * params;
     struct vector_state * return_type;
     struct ast_node     * body;
@@ -115,6 +115,10 @@ struct string_state {
 struct subscript_state {
     struct ast_node * target;
     struct ast_node * index;
+};
+
+struct super_state {
+    struct vector_state * args;
 };
 
 struct try_catch_state {
@@ -179,7 +183,7 @@ void foreach_node_free (struct ast_node * node);
 struct ast_node * func_call_node_init (struct ast_node     * target,
                                        struct vector_state * args);
 void func_call_node_free (struct ast_node * node);
-struct ast_node * func_decl_node_init (char                * id,
+struct ast_node * func_decl_node_init (char                * name,
                                        struct vector_state * params,
                                        struct vector_state * return_type,
                                        struct ast_node     * body);
@@ -208,6 +212,8 @@ void string_node_free (struct ast_node * node);
 struct ast_node * subscript_node_init (struct ast_node * target,
                                        struct ast_node * index);
 void subscript_node_free (struct ast_node * node);
+struct ast_node * super_node_init (struct vector_state * args);
+void super_node_free (struct ast_node * node);
 struct ast_node * try_catch_node_init (struct ast_node * try_body,
                                        struct ast_node * catch_body);
 void try_catch_node_free (struct ast_node * node);

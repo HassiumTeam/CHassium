@@ -169,12 +169,12 @@ struct ast_node * func_call_node_init (struct ast_node * target, struct vector_s
     return node;
 }
 
-struct ast_node * func_decl_node_init (char * id, struct vector_state * params, struct vector_state * return_type, struct ast_node * body) {
+struct ast_node * func_decl_node_init (char * name, struct vector_state * params, struct vector_state * return_type, struct ast_node * body) {
     struct func_decl_state * state;
     struct ast_node        * node;
 
     state = (struct func_decl_state *)calloc (1, sizeof (struct func_decl_state));
-    state->id          = id;
+    state->name        = name;
     state->params      = params;
     state->return_type = return_type;
     state->body        = body;
@@ -213,7 +213,7 @@ struct ast_node * if_node_init (struct ast_node * expr, struct ast_node * if_bod
     return node;
 }
 
-struct ast_node * import_init (char * mod) {
+struct ast_node * import_node_init (char * mod) {
     struct import_state * state;
     struct ast_node     * node;
 
@@ -314,6 +314,19 @@ struct ast_node * subscript_node_init (struct ast_node * target, struct ast_node
     state->index  = index;
 
     node = ast_node_init (subscript_node);
+    node->state = state;
+
+    return node;
+}
+
+struct ast_node * super_node_init (struct vector_state * args) {
+    struct super_state * state;
+    struct ast_node    * node;
+
+    state = (struct super_state *)malloc (sizeof (struct super_state));
+    state->args = args;
+
+    node = ast_node_init (super_node);
     node->state = state;
 
     return node;
