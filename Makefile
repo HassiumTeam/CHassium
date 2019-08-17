@@ -14,6 +14,8 @@ OBJDIR   = obj
 LIBDIR   = lib
 BINDIR   = bin
 
+OBJECTS += src/emit/emit.o
+
 OBJECTS += src/lexer/token.o
 OBJECTS += src/lexer/tokenizer.o
 
@@ -23,6 +25,8 @@ OBJECTS += src/parser/parser.o
 OBJECTS += src/main.o
 OBJECTS += src/compiler.o
 OBJECTS += src/vector.o
+
+INCLUDES += inc/emit/emit.h
 
 INCLUDES += inc/lexer/tok_type.h
 INCLUDES += inc/lexer/token.h

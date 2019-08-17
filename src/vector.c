@@ -17,12 +17,20 @@ void vector_free (struct vector_state * state) {
     free (state);
 }
 
-void vector_add (struct vector_state * state, void * ptr) {
+void vector_push (struct vector_state * state, void * ptr) {
     state->data [state->length++] = ptr;
 
     if (state->length >= state->size) {
         reallocate (state);
     }
+}
+
+void * vector_pop (struct vector_state * state) {
+    return state->data [--state->length];
+}
+
+void * vector_peek (struct vector_state * state) {
+    return state->data [state->length - 1];
 }
 
 void * vector_get (struct vector_state * state, int index) {

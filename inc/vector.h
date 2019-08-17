@@ -14,8 +14,10 @@ struct vector_state {
 struct vector_state * vector_init ();
 void                  vector_free (struct vector_state * state);
 
-void    vector_add (struct vector_state * state, void * ptr);
-void *  vector_get (struct vector_state * state, int index);
-void    vector_set (struct vector_state * state, int index, void * val);
+void    vector_push (struct vector_state * state, void * ptr);
+void *  vector_pop  (struct vector_state * state);
+void *  vector_peek (struct vector_state * state);
+void *  vector_get  (struct vector_state * state, int index);
+void    vector_set  (struct vector_state * state, int index, void * val);
 
 #endif

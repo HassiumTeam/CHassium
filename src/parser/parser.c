@@ -81,7 +81,7 @@ struct ast_node * parse (struct parser_state * state) {
 
     stmts = vector_init ();
     while (!at_eof (state)) {
-        vector_add (stmts, parse_stmt (state));
+        vector_push (stmts, parse_stmt (state));
     }
 
     return block_node_init (stmts);
@@ -98,7 +98,7 @@ static struct ast_node * parse_block (struct parser_state * state) {
 
     expect (state, obrace);
     while (!match (state, cbrace)) {
-        vector_add (stmts, parse_stmt (state));
+        vector_push (stmts, parse_stmt (state));
     }
     expect (state, obrace);
 
