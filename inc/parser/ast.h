@@ -4,6 +4,7 @@
 #include <bin_op_type.h>
 #include <parser/node_type.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <unary_op_type.h>
 #include <vector.h>
 

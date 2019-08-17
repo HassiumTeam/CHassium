@@ -133,8 +133,7 @@ static struct ast_node * parse_block (struct parser_state * state) {
         vector_push (stmts, parse_stmt (state));
     }
 
-    expect (state, obrace);
-
+    expect (state, cbrace);
     return block_node_init (stmts);
 }
 
@@ -293,7 +292,6 @@ static struct ast_node * parse_try_catch (struct parser_state * state) {
 
     free (expectv (state, id, "try"));
     try_body   = parse_stmt (state);
-
     free (expectv (state, id, "catch"));
     catch_body = parse_stmt (state);
 
@@ -435,9 +433,14 @@ static int acceptv (struct parser_state * state, tok_type_t type, const char * v
 }
 
 static char * expect (struct parser_state * state, tok_type_t type) {
+    char * ret;
+
     if (match (state, type)) {
-        char * ret = (char *)malloc (strlen (state->token->val));
-        strcpy (ret, state->token->val);
+        ret = 0;
+        if (state->token->val) {
+            ret = (char *)malloc (strlen (state->token->val));
+            strcpy (ret, state->token->val);
+        }
 
         token_free (state->token);
         state->token = token_init ();
@@ -458,6 +461,7 @@ static char * expect (struct parser_state * state, tok_type_t type) {
 }
 
 static char * expectv (struct parser_state * state, tok_type_t type, const char * val) {
+    char * ret;
     if (matchv (state, type, val)) {
         char * ret = (char *)malloc (strlen (state->token->val));
         strcpy (ret, state->token->val);
