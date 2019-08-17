@@ -14,6 +14,7 @@ OBJDIR   = obj
 LIBDIR   = lib
 BINDIR   = bin
 
+OBJECTS += src/lexer/token.o
 OBJECTS += src/lexer/tokenizer.o
 
 OBJECTS += src/parser/ast.o

@@ -6,7 +6,9 @@
 #include <lexer/tokenizer.h>
 #include <parser/ast.h>
 #include <parser/node_type.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <vector.h>
 
 struct parser_state {
