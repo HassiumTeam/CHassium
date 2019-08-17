@@ -208,6 +208,9 @@ void tokenizer_next (struct tokenizer_state * state, struct token * token) {
             case ',':
                 token->type = comma;
                 break;
+            case ':':
+                token->type = colon;
+                break;
         }
     }
 }

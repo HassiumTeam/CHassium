@@ -365,12 +365,13 @@ static struct vector_state * parse_func_args (struct parser_state * state) {
             param->type = object_param;
             param->vals = parse_object_params (state);
         } else {
-            param->id = expect (state, stringc);
+            param->id = expect (state, id);
             if (accept (state, colon)) {
                 param->enforced_type = parse_access_chain (state);
             }
         }
         vector_push (args, param);
+        accept (state, comma);
     }
 
     return args;
@@ -383,6 +384,7 @@ static struct vector_state * parse_object_params (struct parser_state * state) {
     ids = vector_init ();
     while (!accept (state, cbrace)) {
         vector_push (ids, expect (state, id));
+        accept (state, comma);
     }
 
     return ids;
