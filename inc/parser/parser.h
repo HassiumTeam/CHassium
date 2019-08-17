@@ -19,6 +19,6 @@ struct parser_state {
 struct parser_state * parser_init (struct tokenizer_state * lexer);
 void                  parser_free (struct parser_state    * state);
 
-struct ast_node * parse (struct parser_state * state);
+struct ast_node * parser_parse (struct parser_state * state);
 
 #endif

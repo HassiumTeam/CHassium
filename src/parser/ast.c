@@ -63,6 +63,15 @@ struct ast_node * block_node_init (struct vector_state * stmts) {
     return node;
 }
 
+struct ast_node * break_node_init () {
+    struct ast_node * node;
+
+    node = ast_node_init (break_node);
+    node->state = 0;
+
+    return node;
+}
+
 struct ast_node * class_node_init (char * name, struct vector_state * extends, struct ast_node * body) {
     struct class_state * state;
     struct ast_node    * node;
@@ -89,6 +98,15 @@ struct ast_node * closure_node_init (struct vector_state * params, struct vector
 
     node = ast_node_init (closure_node);
     node->state = state;
+
+    return node;
+}
+
+struct ast_node * continue_node_init () {
+    struct ast_node * node;
+
+    node = ast_node_init (continue_node);
+    node->state = 0;
 
     return node;
 }

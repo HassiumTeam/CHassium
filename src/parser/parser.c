@@ -74,7 +74,7 @@ static       char * expect     (struct parser_state * state, tok_type_t type);
 static       char * expectv    (struct parser_state * state, tok_type_t type, const char * val);
 
 
-struct ast_node * parse (struct parser_state * state) {
+struct ast_node * parser_parse (struct parser_state * state) {
     struct vector_state * stmts;
 
     tokenizer_next (state->lexer, state->token);
@@ -90,6 +90,14 @@ struct ast_node * parse (struct parser_state * state) {
 static struct ast_node * parse_stmt (struct parser_state * state) {
     if (match (state, obrace)) {
         return parse_block (state);
+    } else if (matchv (state, id, "break")) {
+        return parse_break (state);
+    } else if (matchv (state, id, "class")) {
+        return parse_class (state);
+    } else if (matchv (state, id, "continue")) {
+        return parse_continue (state);
+    } else if (matchv (state, id, "for")) {
+        return parse_for (state);
     }
 }
 
@@ -103,6 +111,51 @@ static struct ast_node * parse_block (struct parser_state * state) {
     expect (state, obrace);
 
     return block_node_init (stmts);
+}
+
+static struct ast_node * parse_break (struct parser_state * state) {
+    free (expectv (state, id, "break"));
+
+    return break_node_init ();
+}
+
+static struct ast_node * parse_class (struct parser_state * state) {
+    char                * name;
+    struct vector_state * extends = 0;
+    struct ast_node     * body;
+
+    free (expectv (state, id, "class"));
+    name = expect (state, id);
+
+    if (acceptv (state, id, "extends")) {
+        extends = parse_access_chain (state);
+    }
+
+    body = parse_stmt (state);
+
+    return class_node_init (name, extends, body);
+}
+
+static struct ast_node * parse_continue (struct parser_state * state) {
+    free (expectv (state, id, "continue"));
+
+    return continue_node_init ();
+}
+
+static struct ast_node * parse_for (struct parser_state * state) {
+    struct ast_node * pre_stmt;
+    struct ast_node * expr;
+    struct ast_node * rep_stmt;
+    struct ast_node * body;
+
+    free (expectv (state, id, "for"));
+
+    pre_stmt = parse_stmt (state);
+    expr     = parse_expr (state);
+    rep_stmt = parse_stmt (state);
+    body     = parse_stmt (state);
+
+    return for_node_init (pre_stmt, expr, rep_stmt, body);
 }
 
 static int at_eof (struct parser_state * state) {

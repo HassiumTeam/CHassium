@@ -157,10 +157,14 @@ struct ast_node * class_node_init (char                * name,
                                    struct vector_state * extends,
                                    struct ast_node     * body);
 void class_node_free (struct ast_node * node);
+struct ast_node * break_node_init ();
+void break_node_free (struct ast_node * node);
 struct ast_node * closure_node_init (struct vector_state * params,
                                      struct vector_state * return_type,
                                      struct ast_node     * body);
 void closure_node_free (struct ast_node * node);
+struct ast_node * continue_node_init ();
+void continue_node_free (struct ast_node * node);
 struct ast_node * expr_stmt_node_init (struct ast_node * expr);
 void expr_stmt_node_free (struct ast_node * node);
 struct ast_node * for_node_init (struct ast_node * pre_stmt,
