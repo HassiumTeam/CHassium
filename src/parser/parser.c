@@ -88,39 +88,45 @@ struct ast_node * parser_parse (struct parser_state * state) {
 }
 
 static struct ast_node * parse_stmt (struct parser_state * state) {
+    struct ast_node * ret;
+
     if (match (state, obrace)) {
-        return parse_block (state);
+        ret = parse_block (state);
     } else if (matchv (state, id, "break")) {
-        return parse_break (state);
+        ret = parse_break (state);
     } else if (matchv (state, id, "class")) {
-        return parse_class (state);
+        ret = parse_class (state);
     } else if (matchv (state, id, "continue")) {
-        return parse_continue (state);
+        ret = parse_continue (state);
     } else if (matchv (state, id, "for")) {
-        return parse_for (state);
+        ret = parse_for (state);
     } else if (matchv (state, id, "foreach")) {
-        return parse_foreach (state);
+        ret = parse_foreach (state);
     } else if (matchv (state, id, "func")) {
-        return parse_func (state);
+        ret = parse_func (state);
     } else if (matchv (state, id, "if")) {
-        return parse_if (state);
+        ret = parse_if (state);
     } else if (matchv (state, id, "import")) {
-        return parse_import (state);
+        ret = parse_import (state);
     } else if (matchv (state, id, "raise")) {
-        return parse_raise (state);
+        ret = parse_raise (state);
     } else if (matchv (state, id, "return")) {
-        return parse_return (state);
+        ret = parse_return (state);
     } else if (matchv (state, id, "super")) {
-        return parse_super (state);
+        ret = parse_super (state);
     } else if (matchv (state, id, "try")) {
-        return parse_try_catch (state);
+        ret = parse_try_catch (state);
     } else if (matchv (state, id, "use")) {
-        return parse_use (state);
+        ret = parse_use (state);
     } else if (matchv (state, id, "while")) {
-        return parse_while (state);
+        ret = parse_while (state);
     } else {
-        return parse_expr_stmt (state);
+        ret = parse_expr_stmt (state);
     }
+
+    accept (state, semicol);
+
+    return ret;
 }
 
 static struct ast_node * parse_block (struct parser_state * state) {
@@ -333,6 +339,8 @@ static struct ast_node * parse_while (struct parser_state * state) {
 static struct ast_node * parse_expr_stmt (struct parser_state * state) {
     struct ast_node * expr;
     expr = parse_expr (state);
+
+    accept (state, semicol);
 
     return expr_stmt_node_init (expr);
 }
@@ -610,7 +618,7 @@ static struct ast_node * parse_access (struct parser_state * state, struct ast_n
                 parse_arg_list (state)
             )
         );
-    } else if (match (state, osquare)) {
+    } else if (accept (state, osquare)) {
         key = parse_expr (state);
         expect (state, csquare);
         return subscript_node_init (
@@ -655,6 +663,7 @@ static struct ast_node * parse_term (struct parser_state * state) {
         elements = vector_init ();
         while (!accept (state, csquare)) {
             vector_push (elements, parse_expr (state));
+            accept (state, comma);
         }
 
         return list_decl_node_init (elements);
@@ -666,6 +675,8 @@ static struct ast_node * parse_term (struct parser_state * state) {
             state->token->type,
             state->token->val
         );
+
+        exit (EXIT_FAILURE);
     }
 }
 

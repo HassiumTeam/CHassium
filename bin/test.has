@@ -1,3 +1,297 @@
-class Clazz extends b.g {
 
+use TestsStats from "tests_stats.has";
+
+stats = TestsStats ();
+
+func main () {
+    assign_tests ();
+
+    println (stats);
 }
+
+func assign_tests () {
+    a = true;
+    b = false;
+
+    c = 16;
+    d = 2;
+
+    e = "Hello";
+    f = " world!";
+
+    g = [ 1, 2, "three", ];
+    h = [ 4, 5, "six", ];
+
+    i = { one: 1, two: "two", };
+    j = { three: 3, four: "four", };
+
+    assert (a, "a is true");
+    assert (b == false, "b is false");
+
+    assert (c == 16, "c is 16");
+    assert (d == 2, "d is 2");
+
+    assert (e == "Hello", "e is 'Hello'");
+    assert (f == " world!", "f is ' world!'");
+
+    assert (g == [ 1, 2, "three", ], "g is [ 1, 2, 'three', ]");
+    assert (h == [ 4, 5, "six", ], "h is [ 4, 5, 'six', ]");
+
+    assert (i == { one: 1, two: "two", }, "i is { one: 1, two: `two`}");
+    assert (j == { three: 3, four: "four", }, "j is { three: 3, four: `four` }");
+
+    equality_tests (a, b, c, d, e, f);
+    comparison_tests (c, d);
+    logic_tests (a, b);
+    arithmatic_tests (c, d);
+    string_tests (e, f);
+    array_tests (g, h);
+    object_tests (i, j);
+    return_tests ();
+    loop_tests ();
+    oop_tests ();
+    extends_tests ();
+    closure_tests ();
+    try_catch_tests ();
+}
+
+func equality_tests (a, b, c, d, e, f) {
+    assert (a == a, "a == a");
+    assert (a != b, "a != b");
+
+    assert (c == c, "c == c");
+    assert (c != d, "c != d");
+
+    assert (e == e, "e == e");
+    assert (e != f, "e != f");
+}
+
+func comparison_tests (c, d) {
+    assert ((c > d), "c > d");
+    assert ((c > c) == false, "c > c == false");
+    assert ((c >= d), "c >= d");
+    assert ((c >= c), "c >= c");
+    assert ((d < c), "d < c");
+    assert ((d < d) == false, "d < d == false");
+    assert ((d <= c), "d <= c");
+    assert ((d <= d), "d <= d");
+}
+
+func logic_tests (a, b) {
+    assert (a && a, "a && a");
+    assert (a && b == false, "a && b == false");
+    assert (a || b, "a || b");
+    assert (b || b == false, "b || b == false");
+}
+
+func arithmatic_tests (c, d) {
+    assert ((c + d) == 18, "c + d == 18");
+    assert ((c / d) == 8, "c / d == 8");
+    assert ((c % (d + 1)) == 1, "c % (d + 1) == 1");
+    assert ((c * d) == 32, "c * d == 32");
+    assert ((c - d) == 14, "d - c == 14");
+}
+
+func string_tests(e, f) {
+    assert ((e + f) == "Hello world!", "e + f == 'Hello world!'");
+    assert (e [1] == "e", "e [1] == 'e'");
+    assert (f.length == 7, "f.length == 7");
+}
+
+func array_tests(g, h) {
+    assert ((g [0] + g [1]) == 3, "g [0] + g [1] == 3");
+    assert ((g [0] = 2) == 2, "g [0] = 2");
+    assert (g == [ 2, 2, "three", ], "g == [ 2, 2, 'three', ]");
+    assert (g + h == [ 2, 2, "three", 4, 5, "six", ],
+                "g + h == [ 2, 2, 'three', 4, 5, 'six', ]");
+    assert (g.length == 3, "g.length == 3");
+
+    [ a, b, c, ] = g;
+    assert (a == 2 && b == 2 && c == "three", "a == b == 2 && c == 'three'");
+
+    g.push(4);
+    assert (g [3] == 4, "g [3] == 4");
+    assert (g.length == 4, "g.length == 4");
+    assert (g.peek () == 4, "g.peek () == 4");
+    assert (g.pop () == 4, "g.pop () == 4");
+}
+
+func object_tests(i, j) {
+    assert ((i.one + j.three) == 4, "i.one + j.three == 4");
+    assert ((i.one = 2) == 2, "i.one = 2 == 2");
+    assert (i == { one: 2, two: "two", },
+                "i == { one: 2, two: 'two', }");
+    assert (j ["three"] == 3, "j ['three'] == 3");
+    assert ((j ["three"] = 4) == 4, "j ['three'] = 4 == 4");
+    assert (j == { three: 4, four: "four", },
+                "j == { three: 4, four: `four`, }");
+
+    [ three, four, ] = j;
+    assert (three == 4, "three == 4");
+    assert (four == "four", "four == 'four'");
+
+    test_func_0 (1, { b: "attrib 1", j, }, 3);
+}
+
+func test_func_0 (a, { b, j, }, d) {
+    assert (b == "attrib 1", "b == 'attrib 1'");
+    assert (j == { three: 4, four: "four", },
+        "j == { three: 4, four: 'four', }");
+}
+
+func return_tests () {
+    assert (test_func_1 (2, 3, 4) == 9,
+                "test_func_1 (2, 3, 4) == 9");
+    assert (test_func_2 () == null,
+                "test_func_2 () == null");
+}
+
+func test_func_1 (a: number, b: number, c: number) : number {
+    return a + b + c;
+}
+
+func test_func_2 (a) : null {
+    assert (a == null, "a == null");
+}
+
+func loop_tests() {
+    arr = [ 1, 1, 2, 3, 5, ];
+
+    total = 0;
+    foreach (a in arr) {
+        if (a == 1) {
+            continue;
+        }
+        if (a == 5) {
+            break;
+        }
+        total += a;
+    }
+    assert (total == 5, "foreach loop totaled 12");
+
+    total = 0;
+    i = 0;
+    while (i < arr.length) {
+        if (arr [i] == 1) {
+            i += 1;
+            continue;
+        }
+        if (arr [i] == 5) {
+            break;
+        }
+        total += arr[i];
+        i += 1;
+    }
+    assert (total == 5, "while loop totaled 12");
+
+    total = 0;
+    for (i = 0; i < arr.length; i += 1) {
+        if (arr [i] == 1) {
+            continue;
+        }
+        if (arr [i] == 5) {
+            break;
+        }
+        total += arr [i];
+    }
+    assert (total == 5, "for loop totaled 12");
+}
+
+func oop_tests () {
+    fido = Dog ("Fido", 4);
+    cyrus = Dog ("Cyrus", 6);
+
+    assert (fido.age == 4, "fido.age == 4");
+    assert (cyrus.age == 6, "cyrus.age == 6");
+    assert (fido.human_years () == 30, "fido.human_years () == 30");
+    assert (cyrus.human_years () == 40, "cyrus.human_years () == 40");
+    assert (fido.get_name () == "Fido", "fido.get_name () == 'Fido'");
+    assert (cyrus.get_name () == "Cyrus", "cyrus.get_name () == 'Cyrus'");
+
+    assert (typeof (fido) == typeof (cyrus), "typeof (fido) == typeof (cyrus)");
+    assert (typeof (fido) == Dog, "typeof (fido) == Dog");
+    assert (typeof (fido.name) == string, "typeof (fido.name) == string");
+
+    assert (fido instanceof Dog, "fido instanceof Dog");
+    assert ((fido instanceof string) == false, "fido instanceof string == false");
+}
+
+func extends_tests () {
+    cyrus = Terrier ("Cyrus", 6, "Boston");
+
+    assert (cyrus.age == 6, "cyrus.age == 6");
+    assert (cyrus.get_type () == "Boston", "cyrus.get_type () == 'Boston'");
+    assert (cyrus.human_years () == 30, "cyrus.human_years () == 30");
+}
+
+func closure_tests () {
+    c = 5;
+    f = func (a, b) : number {
+        return a + b + c;
+    };
+
+    assert (f (1, 2) == 8, "f (1, 2) == 8");
+    c = 6;
+    assert (f (1, 2) == 9, "f (1, 2) == 9");
+}
+
+func try_catch_tests () {
+    try {
+        test_func_3 ();
+        assert (false, "try catch from try_catch_tests");
+    } catch (e) {
+        assert (e == 4, "Caught e == 4");
+    }
+}
+
+func test_func_3 () {
+    test_func_4 ();
+    assert (false, "try catch from test_func_3");
+}
+
+func test_func_4 () {
+    raise 4;
+    assert (false, "try catch from test_func_4");
+}
+
+class Dog {
+    func new (name, age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    func human_years () {
+        return (this.age - 1) * 5 + 15;
+    }
+
+    func get_name () {
+        return this.name;
+    }
+}
+
+class Terrier extends Dog {
+    func new (name, age, type) {
+        super (name, age);
+        this.type = type;
+    }
+
+    func human_years () {
+        return this._super.human_years () - 10;
+    }
+
+    func get_type () {
+        return this.type;
+    }
+}
+
+func assert (c, test) {
+    if (c) {
+        println ("Passed test: " + test);
+        stats.pass ();
+    } else {
+        println ("Failed test: " + test);
+        stats.fail (test);
+    }
+}
+
+main ();

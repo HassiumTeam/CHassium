@@ -86,7 +86,7 @@ void tokenizer_next (struct tokenizer_state * state, struct token * token) {
 
     if (isdigit (cur)) {
         next_number (state, token);
-    } else if (isalpha (cur)) {
+    } else if (isalpha (cur) || cur == '_') {
         next_id (state, token);
     } else {
         readc (state); // read over cur
@@ -169,11 +169,13 @@ void tokenizer_next (struct tokenizer_state * state, struct token * token) {
                     token->val = (char *)malloc (3);
                     token->val [0] = cur;
                     token->val [1] = (char)readc (state);
+                    token->val [2] = 0;
                 } else if (next == '=') {
                     token->type = assign;
                     token->val = (char *)malloc (3);
                     token->val [0] = cur;
                     token->val [1] = (char)readc (state);
+                    token->val [2] = 0;
                 } else {
                     token->type = op;
                     token->val = (char *)malloc (2);
@@ -211,6 +213,10 @@ void tokenizer_next (struct tokenizer_state * state, struct token * token) {
             case ':':
                 token->type = colon;
                 break;
+            default:
+                printf ("Unknown char \"%c\"\n", cur);
+                exit (EXIT_FAILURE);
+                break;
         }
     }
 }
@@ -219,7 +225,7 @@ static void next_id (struct tokenizer_state * state, struct token * token) {
     int size, old_pos, i;
 
     old_pos = state->pos;
-    while (isalnum ((char)peekc (state))) { readc (state); }
+    while (isalnum ((char)peekc (state)) || (char)peekc (state) == '_') { readc (state); }
     size = state->pos - old_pos;
     tokenizer_rewind (state, size);
 
@@ -255,10 +261,10 @@ static void next_string (struct tokenizer_state * state, struct token * token) {
     old_pos = state->pos;
     while ((char)readc (state) != '"') ;
     size = state->pos - old_pos;
-    tokenizer_rewind (state, size + 1);
+    tokenizer_rewind (state, size);
 
     token->val = (char *)malloc (size);
-    for (i = 0; i < size; i ++) {
+    for (i = 0; i < size - 1; i ++) {
         token->val [i] = (char)readc (state);
     }
     token->val [i] = 0;
