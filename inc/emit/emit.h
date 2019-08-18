@@ -11,6 +11,6 @@ struct emit_state {
 struct emit_state * emit_init ();
 void                emit_free (struct emit_state * state);
 
-void emit_accept (struct emit_state * state, struct ast_node * node);
+void accept (struct emit_state * state, struct ast_node * node);
 
 #endif

@@ -23,4 +23,6 @@ void compile () {
     for (int i = 0; i < stmts->length; i++) {
         printf ("Subtype: %d\n", ((struct ast_node *)vector_get (stmts, i))->type);
     }
+
+    accept (NULL, ast);
 }
