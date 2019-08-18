@@ -253,9 +253,12 @@ static struct ast_node * parse_import (struct parser_state * state) {
     char * mod;
 
     free (expectv (state, id, "import"));
-    mod = expect (state, stringc);
 
-    return import_node_init (mod);
+    if (match (state, id)) {
+        return import_node_init (NULL, parse_access_chain (state));
+    } else {
+        return import_node_init (expect (state, stringc), NULL);
+    }
 }
 
 static struct ast_node * parse_raise (struct parser_state * state) {

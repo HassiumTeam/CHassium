@@ -85,7 +85,8 @@ struct if_state {
 };
 
 struct import_state {
-    char * mod;
+    char                * file;
+    struct vector_state * name;
 };
 
 struct list_decl_state {
@@ -195,7 +196,7 @@ struct ast_node * if_node_init (struct ast_node * expr,
                                 struct ast_node * if_body,
                                 struct ast_node * else_body);
 void if_node_free (struct ast_node * node);
-struct ast_node * import_node_init (char * mod);
+struct ast_node * import_node_init (char * file, struct vector_state * name);
 void import_node_free (struct ast_node * node);
 struct ast_node * list_decl_node_init (struct vector_state * elements);
 void list_decl_node_free (struct ast_node * node);

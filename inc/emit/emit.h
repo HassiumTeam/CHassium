@@ -1,8 +1,11 @@
 #ifndef _EMIT_H_
 #define _EMIT_H_
 
+#include <bin_op_type.h>
+#include <emit/inst.h>
 #include <parser/ast.h>
 #include <parser/node_type.h>
+#include <unary_op_type.h>
 
 struct emit_state {
 

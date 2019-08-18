@@ -27,6 +27,7 @@ OBJECTS += src/compiler.o
 OBJECTS += src/vector.o
 
 INCLUDES += inc/emit/emit.h
+INCLUDES += inc/emit/inst.h
 
 INCLUDES += inc/lexer/token.h
 INCLUDES += inc/lexer/tokenizer.h

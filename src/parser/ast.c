@@ -213,12 +213,13 @@ struct ast_node * if_node_init (struct ast_node * expr, struct ast_node * if_bod
     return node;
 }
 
-struct ast_node * import_node_init (char * mod) {
+struct ast_node * import_node_init (char * file, struct vector_state * name) {
     struct import_state * state;
     struct ast_node     * node;
 
     state = (struct import_state *)calloc (1, sizeof (struct import_state));
-    state->mod = mod;
+    state->file = file;
+    state->name = name;
 
     node = ast_node_init (import_node);
     node->state = state;
