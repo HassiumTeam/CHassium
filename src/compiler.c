@@ -7,7 +7,7 @@ void compile () {
     do {
         tokenizer_next (lexer, token);
 
-        printf ("Token type %d with val: '%s'\n", token->type, token->val);
+//        printf ("Token type %d with val: '%s'\n", token->type, token->val);
     } while (token->type != eof);
 
     tokenizer_rewind (lexer, lexer->pos);

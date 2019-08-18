@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <vector.h>
+#include <util/vector.h>
 
 struct parser_state {
     struct tokenizer_state * lexer;

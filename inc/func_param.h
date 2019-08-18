@@ -1,7 +1,7 @@
 #ifndef _FUNC_PARAM_H_
 #define _FUNC_PARAM_H_
 
-#include <vector.h>
+#include <util/vector.h>
 
 typedef enum {
     enforced_param, object_param, regular_param,

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unary_op_type.h>
-#include <vector.h>
+#include <util/vector.h>
 
 struct ast_node {
     void        * state;

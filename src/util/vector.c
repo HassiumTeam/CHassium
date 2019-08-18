@@ -1,4 +1,4 @@
-#include <vector.h>
+#include <util/vector.h>
 
 static void reallocate (struct vector_state * state);
 
