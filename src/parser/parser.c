@@ -56,7 +56,7 @@ static struct ast_node * parse_comp       (struct parser_state * state);
 static struct ast_node * parse_add        (struct parser_state * state);
 static struct ast_node * parse_mult       (struct parser_state * state);
 static struct ast_node * parse_unary      (struct parser_state * state);
-static struct ast_node * parse_access     (struct parser_state * state);
+static struct ast_node * parse_access     (struct parser_state * state, struct ast_node * left);
 static struct ast_node * parse_term       (struct parser_state * state);
 static struct ast_node * parse_closure    (struct parser_state * state);
 static struct ast_node * parse_obj_decl   (struct parser_state * state);
@@ -338,7 +338,335 @@ static struct ast_node * parse_expr_stmt (struct parser_state * state) {
 }
 
 static struct ast_node * parse_expr (struct parser_state * state) {
+    return parse_assign (state);
+}
 
+static struct ast_node * parse_assign (struct parser_state * state) {
+    struct ast_node * left;
+    char            * val;
+
+    left = parse_or (state);
+
+    if (match (state, assign)) {
+        val = state->token->val;
+        if (strcmp (val, "=") == 0) {
+            accept (state, assign);
+            return assign_node_init (left, parse_assign (state));
+        } else {
+            bin_op_type_t type = 0;
+            if (strcmp (val, "+=") == 0) {
+                type = add_bin_op;
+            } else if (strcmp (val, "&=") == 0) {
+                type = bitwise_and_bin_op;
+            } else if (strcmp (val, "|=") == 0) {
+                type = bitwise_or_bin_op;
+            } else if (strcmp (val, "/=") == 0) {
+                type = div_bin_op;
+            } else if (strcmp (val, "%=") == 0) {
+                type = mod_bin_op;
+            } else if (strcmp (val, "*=") == 0) {
+                type = mul_bin_op;
+            } else if (strcmp (val, "-=") == 0) {
+                type = sub_bin_op;
+            } else if (strcmp (val, "^=") == 0) {
+                type = xor_bin_op;
+            }
+            accept (state, assign);
+
+            return assign_node_init (
+                left,
+                bin_op_node_init (
+                    type,
+                    left,
+                    parse_assign (state)
+                )
+            );
+        }
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_or (struct parser_state * state) {
+    struct ast_node * left;
+
+    left = parse_and (state);
+
+    while (acceptv (state, op, "||")) {
+        left = bin_op_node_init (
+            logical_or_bin_op,
+            left,
+            parse_or (state)
+        );
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_and (struct parser_state * state) {
+    struct ast_node * left;
+
+    left = parse_eq (state);
+
+    while (acceptv (state, op, "&&")) {
+        left = bin_op_node_init (
+            logical_and_bin_op,
+            left,
+            parse_and (state)
+        );
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_eq (struct parser_state * state) {
+    struct ast_node * left;
+    char            * val;
+
+    left = parse_instanceof (state);
+
+    if (match (state, comp)) {
+        val = state->token->val;
+        if (strcmp (val, "==") == 0) {
+            accept (state, comp);
+            return bin_op_node_init (
+                equal_bin_op,
+                left,
+                parse_eq (state)
+            );
+        } else if (strcmp (val, "!=") == 0) {
+            accept (state, comp);
+            return unary_op_node_init (
+                logical_not_unary_op,
+                bin_op_node_init (
+                    equal_bin_op,
+                    left,
+                    parse_eq (state)
+                )
+            );
+        }
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_instanceof (struct parser_state * state) {
+    struct ast_node * left;
+
+    left = parse_comp (state);
+
+    if (acceptv (state, id, "instanceof")) {
+        return bin_op_node_init (
+            instanceof_bin_op,
+            left,
+            parse_instanceof (state)
+        );
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_comp (struct parser_state * state) {
+    struct ast_node * left;
+    char            * val;
+
+    left = parse_add (state);
+
+    if (match (state, comp)) {
+        val = state->token->val;
+        if (strcmp (val, ">") == 0) {
+            accept (state, comp);
+            return bin_op_node_init (
+                greater_bin_op,
+                left,
+                parse_comp (state)
+            );
+        } else if (strcmp (val, ">=") == 0) {
+            accept (state, comp);
+            return bin_op_node_init (
+                greater_or_equal_bin_op,
+                left,
+                parse_comp (state)
+            );
+        } else if (strcmp (val, "<") == 0) {
+            accept (state, comp);
+            return bin_op_node_init (
+                lesser_bin_op,
+                left,
+                parse_comp (state)
+            );
+        } else if (strcmp (val, "<=") == 0) {
+            accept (state, comp);
+            return bin_op_node_init (
+                lesser_or_equal_bin_op,
+                left,
+                parse_comp (state)
+            );
+        }
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_add (struct parser_state * state) {
+    struct ast_node * left;
+    char            * val;
+
+    left = parse_mult (state);
+
+    if (match (state, op)) {
+        val = state->token->val;
+        if (strcmp (val, "+") == 0) {
+            accept (state, op);
+            return bin_op_node_init (
+                add_bin_op,
+                left,
+                parse_add (state)
+            );
+        } else if (strcmp (val, "-") == 0) {
+            accept (state, op);
+            return bin_op_node_init (
+                sub_bin_op,
+                left,
+                parse_add (state)
+            );
+        }
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_mult (struct parser_state * state) {
+    struct ast_node * left;
+    char            * val;
+
+    left = parse_unary (state);
+
+    if (match (state, op)) {
+        val = state->token->val;
+        if (strcmp (val, "%") == 0) {
+            accept (state, op);
+            return bin_op_node_init (
+                mod_bin_op,
+                left,
+                parse_mult (state)
+            );
+        } else if (strcmp (val, "*") == 0) {
+            accept (state, op);
+            return bin_op_node_init (
+                mul_bin_op,
+                left,
+                parse_mult (state)
+            );
+        } else if (strcmp (val, "/") == 0) {
+            accept (state, op);
+            return bin_op_node_init (
+                div_bin_op,
+                left,
+                parse_mult (state)
+            );
+        }
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_unary (struct parser_state * state) {
+    char * val;
+
+    if (match (state, op)) {
+        val = state->token->val;
+        if (strcmp (val, "!") == 0) {
+            return unary_op_node_init (
+                logical_not_unary_op,
+                parse_unary (state)
+            );
+        }
+    }
+
+    return parse_access (state, NULL);
+}
+
+static struct ast_node * parse_access (struct parser_state * state, struct ast_node * left) {
+    struct ast_node * key;
+
+    if (left == NULL) {
+        left = parse_term (state);
+    }
+
+    if (accept (state, dot)) {
+        return parse_access (
+            state,
+            attrib_access_node_init (
+                left,
+                expect (state, id)
+            )
+        );
+    } else if (match (state, oparen)) {
+        return parse_access (
+            state,
+            func_call_node_init (
+                left,
+                parse_arg_list (state)
+            )
+        );
+    } else if (match (state, osquare)) {
+        key = parse_expr (state);
+        expect (state, csquare);
+        return subscript_node_init (
+            left,
+            key
+        );
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_term (struct parser_state * state) {
+    struct ast_node     * expr;
+    struct vector_state * elements;
+    char                * val;
+    float                 f;
+
+    if (match (state, numberc)) {
+        val = expect (state, numberc);
+        f = atof (val);
+        free (val);
+
+        return number_node_init (f);
+    } else if (accept (state, oparen)) {
+        expr = parse_expr (state);
+        expect (state, cparen);
+
+        return expr;
+    } else if (matchv (state, id, "func")) {
+        return parse_closure (state);
+    } else if (acceptv (state, id, "typeof")) {
+        expect (state, oparen);
+        expr = parse_expr (state);
+        expect (state, cparen);
+
+        return typeof_node_init (expr);
+    } else if (match (state, id)) {
+        return id_node_init (expect (state, id));
+    } else if (match (state, obrace)) {
+        return parse_obj_decl (state);
+    } else if (accept (state, osquare)) {
+        elements = vector_init ();
+        while (!accept (state, csquare)) {
+            vector_push (elements, parse_expr (state));
+        }
+
+        return list_decl_node_init (elements);
+    } else if (match (state, stringc)) {
+        return string_node_init (expect (state, stringc));
+    } else {
+        printf (
+            "Unexpected token with type %d and value \"%s\"!",
+            state->token->type,
+            state->token->val
+        );
+    }
 }
 
 static struct vector_state * parse_access_chain (struct parser_state * state) {
@@ -350,6 +678,41 @@ static struct vector_state * parse_access_chain (struct parser_state * state) {
     } while (accept (state, dot));
 
     return chain;
+}
+
+static struct vector_state * parse_arg_list (struct parser_state * state) {
+    struct vector_state * args;
+
+    expect (state, oparen);
+
+    args = vector_init ();
+    while (!accept (state, cparen)) {
+        vector_push (args, parse_expr (state));
+        accept (state, comma);
+    }
+
+    return args;
+}
+
+static struct ast_node * parse_closure (struct parser_state * state) {
+    struct vector_state * params;
+    struct vector_state * return_type = 0;
+    struct ast_node     * body;
+
+    free (expectv (state, id, "func"));
+    params = parse_func_args (state);
+
+    if (accept (state, colon)) {
+        return_type = parse_access_chain (state);
+    }
+
+    body   = parse_stmt (state);
+
+    return closure_node_init (
+        params,
+        return_type,
+        body
+    );
 }
 
 static struct vector_state * parse_func_args (struct parser_state * state) {
@@ -375,6 +738,31 @@ static struct vector_state * parse_func_args (struct parser_state * state) {
     }
 
     return args;
+}
+
+static struct ast_node * parse_obj_decl (struct parser_state * state) {
+    struct vector_state * ids;
+    struct vector_state * vals;
+    char                * id_;
+
+    ids = vector_init ();
+    vals = vector_init ();
+
+    expect (state, obrace);
+    while (!accept (state, cbrace)) {
+        id_ = expect (state, id);
+        vector_push (ids, id_);
+
+        if (accept (state, colon)) {
+            vector_push (vals, parse_expr (state));
+        } else {
+            vector_push (vals, id_node_init (id_));
+        }
+
+        accept (state, comma);
+    }
+
+    return obj_decl_node_init (ids, vals);
 }
 
 static struct vector_state * parse_object_params (struct parser_state * state) {

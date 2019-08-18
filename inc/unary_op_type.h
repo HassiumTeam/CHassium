@@ -2,7 +2,7 @@
 #define _UNARY_OP_TYPE_H_
 
 typedef enum {
-    logical_not, post_dec, post_inc, pre_dec, pre_inc,
+    logical_not_unary_op, post_dec_unary_op, post_inc_unary_op, pre_dec_unary_op, pre_inc_unary_op,
 } unary_op_type_t;
 
 #endif
