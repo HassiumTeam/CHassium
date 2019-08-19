@@ -2,6 +2,7 @@
 #define _INST_H_
 
 #include <bin_op_type.h>
+#include <stdlib.h>
 #include <unary_op_type.h>
 
 typedef enum {
@@ -62,7 +63,7 @@ struct list_decl_inst {
 };
 
 struct load_attrib_inst {
-    char * name;
+    char * attrib;
 };
 
 struct load_id_inst {
@@ -118,27 +119,27 @@ struct use_local_inst {
     struct vector_state * indices;
 };
 
-struct bin_op_inst                 * bin_op_inst_init                 (bin_op_type_t type);
-struct call_inst                   * call_inst_init                   (int arg_count);
-struct compile_module_inst         * compile_module_inst_init         (char * mod);
-struct import_inst                 * import_inst_init                 (char * file, struct vector_state * name);
-struct jump_inst                   * jump_inst_init                   (int label);
-struct jump_if_true_inst           * jump_if_true_inst_init           (int label);
-struct jump_if_false_inst          * jump_if_false_inst_init          (int label);
-struct list_decl_inst              * list_decl_inst_init              (int count);
-struct load_attrib_inst            * load_attrib_inst_init            (char * attrib);
-struct load_id_inst                * load_id_inst_init                (int index, char * name);
-struct load_number_inst            * load_number_inst_init            (float f);
-struct load_string_inst            * load_string_inst_init            (char * str);
-struct obj_decl_inst               * obj_decl_inst_init               (struct vector_state * ids);
-struct obj_destructure_global_inst * obj_destructure_global_inst_init (struct vector_state * vars, struct vector_state * indices);
-struct obj_destructure_local_inst  * obj_destructure_local_inst_init  (struct vector_state * vars, struct vector_state * indices);
-struct store_attrib_inst           * store_attrib_inst_init           (char * attrib);
-struct store_global_inst           * store_global_inst_init           (int symbol);
-struct store_local_inst            * store_local_inst_init            (int symbol);
-struct unary_op_inst               * unary_op_inst_init               (unary_op_type_t type);
-struct use_global_inst             * use_global_inst_init             (struct vector_state * ids, struct vector_state * indices);
-struct use_local_inst              * use_local_inst_init              (struct vector_state * ids, struct vector_state * indices);
+struct inst * bin_op_inst_init                 (bin_op_type_t type);
+struct inst * call_inst_init                   (int arg_count);
+struct inst * compile_module_inst_init         (char * mod);
+struct inst * import_inst_init                 (char * file, struct vector_state * name);
+struct inst * jump_inst_init                   (int label);
+struct inst * jump_if_true_inst_init           (int label);
+struct inst * jump_if_false_inst_init          (int label);
+struct inst * list_decl_inst_init              (int count);
+struct inst * load_attrib_inst_init            (char * attrib);
+struct inst * load_id_inst_init                (int index, char * name);
+struct inst * load_number_inst_init            (float f);
+struct inst * load_string_inst_init            (char * str);
+struct inst * obj_decl_inst_init               (struct vector_state * ids);
+struct inst * obj_destructure_global_inst_init (struct vector_state * vars, struct vector_state * indices);
+struct inst * obj_destructure_local_inst_init  (struct vector_state * vars, struct vector_state * indices);
+struct inst * store_attrib_inst_init           (char * attrib);
+struct inst * store_global_inst_init           (int symbol);
+struct inst * store_local_inst_init            (int symbol);
+struct inst * unary_op_inst_init               (unary_op_type_t type);
+struct inst * use_global_inst_init             (struct vector_state * ids, struct vector_state * indices);
+struct inst * use_local_inst_init              (struct vector_state * ids, struct vector_state * indices);
 
 void bin_op_inst_free                 (struct bin_op_inst * inst);
 void call_inst_free                   (struct call_inst * inst);

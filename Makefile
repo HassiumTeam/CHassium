@@ -15,6 +15,7 @@ LIBDIR   = lib
 BINDIR   = bin
 
 OBJECTS += src/emit/emit.o
+OBJECTS += src/emit/inst.o
 
 OBJECTS += src/has_lib/has_func.o
 OBJECTS += src/has_lib/has_obj.o

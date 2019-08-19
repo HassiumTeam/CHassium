@@ -8,8 +8,8 @@
 #include <util/vector.h>
 
 struct has_func {
-    struct vector_state * instructions;
-    struct int_dict     * labels;
+    struct vector_state   * instructions;
+    struct int_dict_state * labels;
 };
 
 struct has_obj * has_func_init ();
