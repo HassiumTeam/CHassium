@@ -4,11 +4,12 @@
 #include <emit/inst.h>
 #include <has_lib/has_obj.h>
 #include <util/dict.h>
+#include <util/int_dict.h>
 #include <util/vector.h>
 
 struct has_func {
     struct vector_state * instructions;
-    struct vector_state * labels;
+    struct int_dict     * labels;
 };
 
 struct has_obj * has_func_init ();

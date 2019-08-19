@@ -139,7 +139,7 @@ static void accept_attrib_access (struct emit_state * emit, struct attrib_access
 }
 
 static void accept_bin_op (struct emit_state * emit, struct bin_op_state * state) {
-
+    
 }
 
 static void accept_block (struct emit_state * emit, struct block_state * state) {

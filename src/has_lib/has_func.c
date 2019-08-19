@@ -6,7 +6,7 @@ struct has_obj * has_func_init () {
 
     state = (struct has_func *)calloc (1, sizeof (struct has_func));
     state->instructions = vector_init ();
-    state->labels = vector_init ();
+    state->labels       = int_dict_init ();
 
     obj = has_obj_init (state);
 
@@ -30,5 +30,9 @@ void emit (struct has_obj * obj, struct inst * inst) {
 void emit_label (struct has_obj * obj, int label) {
     struct has_func * state = (struct has_func *)obj->state;
 
-
+    int_dict_set (
+        state->labels,
+        label,
+        state->instructions->length
+    );
 }
