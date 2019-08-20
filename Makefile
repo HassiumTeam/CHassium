@@ -16,6 +16,7 @@ BINDIR   = bin
 
 OBJECTS += src/emit/emit.o
 OBJECTS += src/emit/inst.o
+OBJECTS += src/emit/symbol_table.o
 
 OBJECTS += src/has_lib/has_func.o
 OBJECTS += src/has_lib/has_obj.o
@@ -35,6 +36,7 @@ OBJECTS += src/compiler.o
 
 INCLUDES += inc/emit/emit.h
 INCLUDES += inc/emit/inst.h
+INCLUDES += inc/emit/symbol_table.h
 
 INCLUDES += inc/has_lib/has_func.h
 INCLUDES += inc/has_lib/has_obj.h
