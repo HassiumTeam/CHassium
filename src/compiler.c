@@ -24,5 +24,7 @@ void compile () {
         printf ("Subtype: %d\n", ((struct ast_node *)vector_get (stmts, i))->type);
     }
 
-    accept (NULL, ast);
+    struct emit_state * emit = emit_init ();
+    accept (emit, ast);
+    emit_free (emit);
 }

@@ -47,7 +47,7 @@ int get_symbol (struct symbol_table_state * state, char * id) {
 
     for (int i = 0; i < state->scopes->length; i++) {
         scope = vector_get (state->scopes, i);
-        val = scope_get (scope, id);
+        val   = scope_get  (scope, id);
 
         if (val != -1) {
             return val;
@@ -60,7 +60,7 @@ int get_symbol (struct symbol_table_state * state, char * id) {
 int handle_symbol (struct symbol_table_state * state, char * id) {
     struct scope * scope;
 
-    if (!has_symbol (state, id)) {
+    if (has_symbol (state, id)) {
         scope = vector_peek (state->scopes);
         scope_set (scope, id, state->next_index++);
     }
@@ -75,12 +75,12 @@ int has_symbol (struct symbol_table_state * state, char * id) {
     for (int i = 0; i < state->scopes->length; i++) {
         scope = vector_get (state->scopes, i);
 
-        if (scope_get (scope, id)) {
+        if (scope_get (scope, id) != -1) {
             return 1;
         }
     }
 
-    return -1;
+    return 0;
 }
 
 void leave_scope (struct symbol_table_state * state) {
@@ -155,6 +155,6 @@ static int scope_get_index (struct scope * scope, char * id) {
 static void reallocate (struct scope * scope) {
     scope->size += SCOPE_SIZE;
 
-    scope->ids  = realloc (scope->ids,  scope->size);
-    scope->vals = realloc (scope->vals, scope->size);
+    scope->ids  = realloc (scope->ids,  sizeof (char *) * scope->size);
+    scope->vals = realloc (scope->vals, sizeof (int)    * scope->size);
 }

@@ -3,16 +3,13 @@
 
 #include <emit/inst.h>
 #include <has_lib/has_obj.h>
-#include <util/dict.h>
-#include <util/int_dict.h>
 #include <util/vector.h>
 
 struct has_func {
-    struct vector_state   * instructions;
-    struct int_dict_state * labels;
+    char * name;
 };
 
-struct has_obj * has_func_init ();
+struct has_obj * has_func_init (char * name);
 void             has_func_free (struct has_obj * obj);
 
 #endif

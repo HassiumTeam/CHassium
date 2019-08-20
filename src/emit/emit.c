@@ -1,10 +1,21 @@
 #include <emit/emit.h>
 
 struct emit_state * emit_init () {
+    struct emit_state * state;
 
+    state               = (struct emit_state *)calloc (1, sizeof (struct emit_state));
+    state->symbol_table = symbol_table_init ();
+    state->emit_stack   = vector_init ();
+
+    vector_push (state->emit_stack, has_obj_init (NULL));
+
+    return state;
 }
 
 void emit_free (struct emit_state * state) {
+    symbol_table_free (state->symbol_table);
+    vector_free       (state->emit_stack);
+
     free (state);
 }
 
@@ -37,6 +48,12 @@ static void accept_typeof        (struct emit_state * emit, struct typeof_state 
 static void accept_unary_op      (struct emit_state * emit, struct unary_op_state      * state);
 static void accept_use           (struct emit_state * emit, struct use_state           * state);
 static void accept_while         (struct emit_state * emit, struct while_state         * state);
+
+static        void      emit_inst  (struct emit_state * emit, struct inst * inst);
+static        void      emit_label (struct emit_state * emit, int label);
+static struct has_obj * emit_peek  (struct emit_state * emit);
+static struct has_obj * emit_pop   (struct emit_state * emit);
+static        void      emit_push  (struct emit_state * emit, struct has_obj * obj);
 
 void accept (struct emit_state * state, struct ast_node * node) {
     switch (node->type) {
@@ -131,7 +148,36 @@ void accept (struct emit_state * state, struct ast_node * node) {
 }
 
 static void accept_assign (struct emit_state * emit, struct assign_state * state) {
+    struct vector_state        * vars;
+    struct ast_node            * left;
+    struct attrib_access_state * attrib_access_state;
+    struct list_decl_state     * list_decl_state;
+    struct subscript_state     * subscript_state;
+    struct id_state            * id_state;
 
+    accept (emit, state->right);
+
+    left = state->left;
+    switch (left->type) {
+        case attrib_access_node:
+            attrib_access_state = (struct attrib_access_state *)left->state;
+
+            accept (emit, attrib_access_state->target);
+            printf ("%s\n", attrib_access_state->id);
+            emit_inst   (emit, store_attrib_inst_init (attrib_access_state->id));
+            break;
+        case list_decl_node:
+
+            break;
+        case subscript_node:
+
+            break;
+        case id_node:
+
+            break;
+        default:
+            break;
+    }
 }
 
 static void accept_attrib_access (struct emit_state * emit, struct attrib_access_state * state) {
@@ -139,11 +185,13 @@ static void accept_attrib_access (struct emit_state * emit, struct attrib_access
 }
 
 static void accept_bin_op (struct emit_state * emit, struct bin_op_state * state) {
-    
+
 }
 
 static void accept_block (struct emit_state * emit, struct block_state * state) {
-
+    for (int i = 0; i < state->stmts->length; i++) {
+        accept (emit, vector_get (state->stmts, i));
+    }
 }
 
 static void accept_break (struct emit_state * emit) {
@@ -163,7 +211,8 @@ static void accept_continue (struct emit_state * emit) {
 }
 
 static void accept_expr_stmt (struct emit_state * emit, struct expr_stmt_state * state) {
-
+    accept (emit, state->expr);
+    emit_inst (emit, pop_inst_init ());
 }
 
 static void accept_for (struct emit_state * emit, struct for_state * state) {
@@ -244,4 +293,24 @@ static void accept_use (struct emit_state * emit, struct use_state * state) {
 
 static void accept_while (struct emit_state * emit, struct while_state * state) {
 
+}
+
+static void emit_inst (struct emit_state * emit, struct inst * inst) {
+    has_obj_emit (emit_peek (emit), inst);
+}
+
+static void emit_label (struct emit_state * emit, int label) {
+    has_obj_emit_label (emit_peek (emit), label);
+}
+
+static struct has_obj * emit_peek (struct emit_state * emit) {
+    return vector_peek (emit->emit_stack);
+}
+
+static struct has_obj * emit_pop (struct emit_state * emit) {
+    return vector_pop (emit->emit_stack);
+}
+
+static void emit_push (struct emit_state * emit, struct has_obj * obj) {
+    vector_push (emit->emit_stack, obj);
 }
