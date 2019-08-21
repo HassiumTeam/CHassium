@@ -41,7 +41,7 @@ struct inst * compile_module_inst_init (char * file) {
     state       = (struct compile_module_inst *)calloc (1, sizeof (struct compile_module_inst));
     state->file = (char *)calloc (strlen (file), sizeof (char));
 
-    strcpy (state->file, file);
+    memcpy (state->file, file, strlen (file));
 
     inst = inst_init (compile_module_inst, state);
 
@@ -63,7 +63,7 @@ struct inst * import_inst_init (char * file, struct vector_state * name) {
     state = (struct import_inst *)calloc (1, sizeof (struct import_inst));
     if (file) {
         state->file = (char *)calloc (strlen (file), sizeof (char));
-        strcpy (state->file, file);
+        memcpy (state->file, file, strlen (file));
     }
     if (name) {
         state->name = (struct vector_state *)calloc (1, sizeof (struct vector_state));
@@ -130,7 +130,7 @@ struct inst * load_attrib_inst_init (char * attrib) {
     state         = (struct load_attrib_inst *)calloc (1, sizeof (struct load_attrib_inst));
     state->attrib = (char *)calloc (strlen (attrib), sizeof (char));
 
-    strcpy (state->attrib, attrib);
+    memcpy (state->attrib, attrib, strlen (attrib));
 
     inst = inst_init (load_attrib_inst, state);
 
@@ -145,7 +145,7 @@ struct inst * load_id_inst_init (int index, char * name) {
     state->index = index;
     if (name) {
         state->name = (char *)calloc (strlen (name), sizeof (char));
-        strcpy (state->name, name);
+        memcpy (state->name, name, strlen (name));
     }
 
     inst = inst_init (load_id_inst, state);
@@ -172,7 +172,7 @@ struct inst * load_string_inst_init (char * str) {
     state      = (struct load_string_inst *)calloc (1, sizeof (struct load_string_inst));
     state->str = (char *)calloc (strlen (str), sizeof (char));
 
-    strcpy (state->str, str);
+    memcpy (state->str, str, strlen (str));
 
     inst = inst_init (load_string_inst, state);
 
@@ -234,7 +234,7 @@ struct inst * store_attrib_inst_init (char * attrib) {
     state         = (struct store_attrib_inst *)calloc (1, sizeof (struct store_attrib_inst));
     state->attrib = (char *)calloc (strlen (attrib), sizeof (char));
 
-    strcpy (state->attrib, attrib);
+    memcpy (state->attrib, attrib, strlen (attrib));
 
     inst = inst_init (store_attrib_inst, state);
 

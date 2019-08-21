@@ -841,10 +841,10 @@ static char * expect (struct parser_state * state, tok_type_t type) {
     char * ret;
 
     if (match (state, type)) {
-        ret = 0;
+        ret = NULL;
         if (state->token->val) {
-            ret = (char *)malloc (strlen (state->token->val));
-            strcpy (ret, state->token->val);
+            ret = (char *)calloc (strlen (state->token->val), sizeof (char));
+            memcpy (ret, state->token->val, strlen (state->token->val));
         }
 
         token_free (state->token);
@@ -868,8 +868,11 @@ static char * expect (struct parser_state * state, tok_type_t type) {
 static char * expectv (struct parser_state * state, tok_type_t type, const char * val) {
     char * ret;
     if (matchv (state, type, val)) {
-        char * ret = (char *)malloc (strlen (state->token->val));
-        strcpy (ret, state->token->val);
+        ret = NULL;
+        if (state->token->val) {
+            ret = (char *)malloc (strlen (state->token->val));
+            memcpy (ret, state->token->val, strlen (state->token->val));
+        }
 
         token_free (state->token);
         state->token = token_init ();

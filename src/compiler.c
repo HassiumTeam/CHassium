@@ -25,7 +25,7 @@ void compile () {
     }
 
     struct emit_state * emit = emit_init ();
-    accept (emit, ast);
+    //accept (emit, ast);
     ast_node_free (ast);
     emit_free (emit);
 }

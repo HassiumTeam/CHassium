@@ -589,6 +589,7 @@ void func_call_node_free (struct ast_node * node) {
 
 void func_decl_node_free (struct ast_node * node) {
     struct func_decl_state * state = (struct func_decl_state *)node->state;
+
     free              (state->name);
     param_list_free   (state->params);
     if (state->return_type) {
@@ -598,19 +599,39 @@ void func_decl_node_free (struct ast_node * node) {
 }
 
 void id_node_free (struct ast_node * node) {
+    struct id_state * state = (struct id_state *)node->state;
 
+    free (state->id);
 }
 
 void if_node_free (struct ast_node * node) {
+    struct if_state * state = (struct if_state *)node->state;
 
+    ast_node_free (state->expr);
+    ast_node_free (state->if_body);
+    if (state->else_body) {
+        ast_node_free (state->else_body);
+    }
 }
 
 void import_node_free (struct ast_node * node) {
+    struct import_state * state = (struct import_state *)node->state;
 
+    if (state->file) {
+        free (state->file);
+    }
+    if (state->name) {
+        access_chain_free (state->name);
+    }
 }
 
 void list_decl_node_free (struct ast_node * node) {
+    struct list_decl_state * state = (struct list_decl_state *)node->state;
 
+    for (int i = 0; i < state->elements->length; i++) {
+        ast_node_free (vector_get (state->elements, i));
+    }
+    vector_free (state->elements);
 }
 
 void number_node_free (struct ast_node * node) {
@@ -618,46 +639,88 @@ void number_node_free (struct ast_node * node) {
 }
 
 void obj_decl_node_free (struct ast_node * node) {
+    struct obj_decl_state * state = (struct obj_decl_state *)node->state;
 
+    for (int i = 0; i < state->ids->length; i++) {
+        free (vector_get (state->ids, i));
+    }
+    vector_free (state->ids);
+
+    for (int i = 0; i < state->vals->length; i++) {
+        ast_node_free (vector_get (state->vals, i));
+    }
+    vector_free (state->vals);
 }
 
 void raise_node_free (struct ast_node * node) {
+    struct raise_state * state = (struct raise_state *)node->state;
+
+    ast_node_free (state->expr);
 }
 
 void return_node_free (struct ast_node * node) {
+    struct return_state * state = (struct return_state *)node->state;
 
+    ast_node_free (state->expr);
 }
 
 void string_node_free (struct ast_node * node) {
+    struct string_state * state = (struct string_state *)node->state;
 
+    free (state->str);
 }
 
 void subscript_node_free (struct ast_node * node) {
+    struct subscript_state * state = (struct subscript_state *)node->state;
 
+    ast_node_free (state->target);
+    ast_node_free (state->index);
 }
 
 void super_node_free (struct ast_node * node) {
+    struct super_state * state = (struct super_state *)node->state;
 
+    for (int i = 0; i < state->args->length; i++) {
+        ast_node_free (vector_get (state->args, i));
+    }
+    vector_free (state->args);
 }
 
 void try_catch_node_free (struct ast_node * node) {
+    struct try_catch_state * state = (struct try_catch_state *)node->state;
 
+    ast_node_free (state->try_body);
+    ast_node_free (state->catch_body);
 }
 
 void typeof_node_free (struct ast_node * node) {
+    struct typeof_state * state = (struct typeof_state *)node->state;
 
+    ast_node_free (state->expr);
 }
 
 void unary_op_node_free (struct ast_node * node) {
+    struct unary_op_state * state = (struct unary_op_state *)node->state;
 
+    ast_node_free (state->target);
 }
 
 void use_node_free (struct ast_node * node) {
+    struct use_state * state = (struct use_state *)node->state;
 
+    for (int i = 0; i < state->imports->length; i++) {
+        free (vector_get (state->imports, i));
+    }
+    vector_free (state->imports);
+
+    free (state->mod);
 }
 
 void while_node_free (struct ast_node * node) {
+    struct while_state * state = (struct while_state *)node->state;
 
+    ast_node_free (state->expr);
+    ast_node_free (state->body);
 }
 
 void access_chain_free (struct vector_state * chain) {

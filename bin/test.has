@@ -1,8 +1,3 @@
-
-use TestsStats from "tests_stats.has";
-
-stats = TestsStats ();
-
 func main () {
     assign_tests ();
 
@@ -39,20 +34,6 @@ func assign_tests () {
 
     assert (i == { one: 1, two: "two", }, "i is { one: 1, two: `two`}");
     assert (j == { three: 3, four: "four", }, "j is { three: 3, four: `four` }");
-
-    equality_tests (a, b, c, d, e, f);
-    comparison_tests (c, d);
-    logic_tests (a, b);
-    arithmatic_tests (c, d);
-    string_tests (e, f);
-    array_tests (g, h);
-    object_tests (i, j);
-    return_tests ();
-    loop_tests ();
-    oop_tests ();
-    extends_tests ();
-    closure_tests ();
-    try_catch_tests ();
 }
 
 func equality_tests (a, b, c, d, e, f) {
@@ -64,39 +45,40 @@ func equality_tests (a, b, c, d, e, f) {
 
     assert (e == e, "e == e");
     assert (e != f, "e != f");
-}
+    }
 
-func comparison_tests (c, d) {
-    assert ((c > d), "c > d");
-    assert ((c > c) == false, "c > c == false");
-    assert ((c >= d), "c >= d");
-    assert ((c >= c), "c >= c");
-    assert ((d < c), "d < c");
-    assert ((d < d) == false, "d < d == false");
-    assert ((d <= c), "d <= c");
-    assert ((d <= d), "d <= d");
-}
+    func comparison_tests (c, d) {
+        assert ((c > d), "c > d");
+        assert ((c > c) == false, "c > c == false");
+        assert ((c >= d), "c >= d");
+        assert ((c >= c), "c >= c");
+        assert ((d < c), "d < c");
+        assert ((d < d) == false, "d < d == false");
+        assert ((d <= c), "d <= c");
+        assert ((d <= d), "d <= d");
+    }
 
-func logic_tests (a, b) {
-    assert (a && a, "a && a");
-    assert (a && b == false, "a && b == false");
-    assert (a || b, "a || b");
-    assert (b || b == false, "b || b == false");
-}
+    func logic_tests (a, b) {
+        assert (a && a, "a && a");
+        assert (a && b == false, "a && b == false");
+        assert (a || b, "a || b");
+        assert (b || b == false, "b || b == false");
+    }
 
-func arithmatic_tests (c, d) {
-    assert ((c + d) == 18, "c + d == 18");
-    assert ((c / d) == 8, "c / d == 8");
-    assert ((c % (d + 1)) == 1, "c % (d + 1) == 1");
-    assert ((c * d) == 32, "c * d == 32");
-    assert ((c - d) == 14, "d - c == 14");
-}
+    func arithmatic_tests (c, d) {
+        assert ((c + d) == 18, "c + d == 18");
+        assert ((c / d) == 8, "c / d == 8");
+        assert ((c % (d + 1)) == 1, "c % (d + 1) == 1");
+        assert ((c * d) == 32, "c * d == 32");
+        assert ((c - d) == 14, "d - c == 14");
+    }
 
-func string_tests(e, f) {
-    assert ((e + f) == "Hello world!", "e + f == 'Hello world!'");
-    assert (e [1] == "e", "e [1] == 'e'");
-    assert (f.length == 7, "f.length == 7");
-}
+    func string_tests(e, f) {
+        assert ((e + f) == "Hello world!", "e + f == 'Hello world!'");
+        assert (e [1] == "e", "e [1] == 'e'");
+        assert (f.length == 7, "f.length == 7");
+    }
+
 
 func array_tests(g, h) {
     assert ((g [0] + g [1]) == 3, "g [0] + g [1] == 3");
@@ -116,6 +98,7 @@ func array_tests(g, h) {
     assert (g.pop () == 4, "g.pop () == 4");
 }
 
+
 func object_tests(i, j) {
     assert ((i.one + j.three) == 4, "i.one + j.three == 4");
     assert ((i.one = 2) == 2, "i.one = 2 == 2");
@@ -132,7 +115,6 @@ func object_tests(i, j) {
 
     test_func_0 (1, { b: "attrib 1", j, }, 3);
 }
-
 func test_func_0 (a, { b, j, }, d) {
     assert (b == "attrib 1", "b == 'attrib 1'");
     assert (j == { three: 4, four: "four", },
