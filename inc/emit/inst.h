@@ -3,7 +3,10 @@
 
 #include <bin_op_type.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unary_op_type.h>
+#include <util/int_vector.h>
+#include <util/vector.h>
 
 typedef enum {
     bin_op_inst, break_inst, build_closure_inst, build_exception_handler_inst, call_inst,
@@ -84,13 +87,13 @@ struct obj_decl_inst {
 };
 
 struct obj_destructure_global_inst {
-    struct vector_state * vars;
-    struct vector_state * indices;
+    struct vector_state     * vars;
+    struct int_vector_state * indices;
 };
 
 struct obj_destructure_local_inst {
-    struct vector_state * vars;
-    struct vector_state * indices;
+    struct vector_state     * vars;
+    struct int_vector_state * indices;
 };
 
 struct store_attrib_inst {
@@ -134,12 +137,13 @@ struct inst * load_id_inst_init                (int index, char * name);
 struct inst * load_number_inst_init            (float f);
 struct inst * load_string_inst_init            (char * str);
 struct inst * obj_decl_inst_init               (struct vector_state * ids);
-struct inst * obj_destructure_global_inst_init (struct vector_state * vars, struct vector_state * indices);
-struct inst * obj_destructure_local_inst_init  (struct vector_state * vars, struct vector_state * indices);
+struct inst * obj_destructure_global_inst_init (struct vector_state * vars, struct int_vector_state * indices);
+struct inst * obj_destructure_local_inst_init  (struct vector_state * vars, struct int_vector_state * indices);
 struct inst * pop_inst_init                    ();
 struct inst * store_attrib_inst_init           (char * attrib);
 struct inst * store_global_inst_init           (int symbol);
 struct inst * store_local_inst_init            (int symbol);
+struct inst * store_subscript_inst_init        ();
 struct inst * unary_op_inst_init               (unary_op_type_t type);
 struct inst * use_global_inst_init             (struct vector_state * ids, struct vector_state * indices);
 struct inst * use_local_inst_init              (struct vector_state * ids, struct vector_state * indices);

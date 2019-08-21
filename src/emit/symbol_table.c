@@ -60,7 +60,7 @@ int get_symbol (struct symbol_table_state * state, char * id) {
 int handle_symbol (struct symbol_table_state * state, char * id) {
     struct scope * scope;
 
-    if (has_symbol (state, id)) {
+    if (!has_symbol (state, id)) {
         scope = vector_peek (state->scopes);
         scope_set (scope, id, state->next_index++);
     }
@@ -81,6 +81,10 @@ int has_symbol (struct symbol_table_state * state, char * id) {
     }
 
     return 0;
+}
+
+int in_global_scope (struct symbol_table_state * state) {
+    return state->scopes->length == 1;
 }
 
 void leave_scope (struct symbol_table_state * state) {

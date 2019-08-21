@@ -148,12 +148,13 @@ void accept (struct emit_state * state, struct ast_node * node) {
 }
 
 static void accept_assign (struct emit_state * emit, struct assign_state * state) {
-    struct vector_state        * vars;
-    struct ast_node            * left;
     struct attrib_access_state * attrib_access_state;
     struct list_decl_state     * list_decl_state;
     struct subscript_state     * subscript_state;
     struct id_state            * id_state;
+    struct ast_node            * left;
+    struct vector_state        * vars;
+    struct int_vector_state    * indices;
 
     accept (emit, state->right);
 
@@ -162,18 +163,54 @@ static void accept_assign (struct emit_state * emit, struct assign_state * state
         case attrib_access_node:
             attrib_access_state = (struct attrib_access_state *)left->state;
 
-            accept (emit, attrib_access_state->target);
-            printf ("%s\n", attrib_access_state->id);
-            emit_inst   (emit, store_attrib_inst_init (attrib_access_state->id));
+            accept    (emit, attrib_access_state->target);
+            emit_inst (emit, store_attrib_inst_init (attrib_access_state->id));
             break;
         case list_decl_node:
+            list_decl_state = (struct list_decl_state *)left->state;
 
+            vars = vector_init ();
+            for (int i = 0; i < list_decl_state->elements->length; i++) {
+                id_state = ((struct ast_node *)vector_get (list_decl_state->elements, i))->state;
+                vector_push (vars, id_state->id);
+            }
+
+            indices = int_vector_init ();
+            for (int i = 0; i < vars->length; i++) {
+                int_vector_push(
+                    indices,
+                    handle_symbol (
+                        emit->symbol_table,
+                        vector_get (vars, i)
+                    )
+                );
+            }
+
+            if (in_global_scope (emit->symbol_table)) {
+                emit_inst (emit, obj_destructure_global_inst_init (vars, indices));
+            } else {
+                emit_inst (emit, obj_destructure_local_inst_init (vars, indices));
+            }
             break;
         case subscript_node:
+            subscript_state = (struct subscript_state *)left->state;
 
+            accept    (emit, subscript_state->index);
+            accept    (emit, subscript_state->target);
+            emit_inst (emit, store_subscript_inst_init ());
             break;
         case id_node:
+            id_state = (struct id_state *)left->state;
 
+            if (in_global_scope (emit->symbol_table)) {
+                emit_inst (emit, store_global_inst_init (
+                    handle_symbol (emit->symbol_table, id_state->id)
+                ));
+            } else {
+                emit_inst (emit, store_local_inst_init (
+                    handle_symbol (emit->symbol_table, id_state->id)
+                ));
+            }
             break;
         default:
             break;

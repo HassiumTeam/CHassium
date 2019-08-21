@@ -15,12 +15,12 @@ struct symbol_table_state {
 struct symbol_table_state * symbol_table_init ();
 void                        symbol_table_free (struct symbol_table_state * state);
 
-void enter_scope    (struct symbol_table_state * state);
-int  get_symbol     (struct symbol_table_state * state, char * id);
-int  handle_symbol  (struct symbol_table_state * state, char * id);
-int  has_symbol     (struct symbol_table_state * state, char * id);
-int  in_local_scope (struct symbol_table_state * state);
-void leave_scope    (struct symbol_table_state * state);
-int  tmp_symbol     (struct symbol_table_state * state);
+void enter_scope     (struct symbol_table_state * state);
+int  get_symbol      (struct symbol_table_state * state, char * id);
+int  handle_symbol   (struct symbol_table_state * state, char * id);
+int  has_symbol      (struct symbol_table_state * state, char * id);
+int  in_global_scope (struct symbol_table_state * state);
+void leave_scope     (struct symbol_table_state * state);
+int  tmp_symbol      (struct symbol_table_state * state);
 
 #endif

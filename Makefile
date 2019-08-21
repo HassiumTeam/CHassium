@@ -29,6 +29,7 @@ OBJECTS += src/parser/parser.o
 
 OBJECTS += src/util/dict.o
 OBJECTS += src/util/int_dict.o
+OBJECTS += src/util/int_vector.o
 OBJECTS += src/util/vector.o
 
 OBJECTS += src/main.o
@@ -50,6 +51,7 @@ INCLUDES += inc/parser/parser.h
 
 INCLUDES += inc/util/dict.h
 INCLUDES += inc/util/int_dict.h
+INCLUDES += inc/util/int_vector.h
 INCLUDES += inc/util/vector.h
 
 INCLUDES += inc/bin_op_type.h
