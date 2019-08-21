@@ -1,5 +1,99 @@
 #include <parser/ast.h>
 
+void ast_node_free (struct ast_node * ast) {
+    switch (ast->type) {
+        case assign_node:
+            assign_node_free (ast);
+            break;
+        case attrib_access_node:
+            attrib_access_node_free (ast);
+            break;
+        case bin_op_node:
+            bin_op_node_free (ast);
+            break;
+        case block_node:
+            block_node_free (ast);
+            break;
+        case break_node:
+            break;
+        case class_node:
+            class_node_free (ast);
+            break;
+        case closure_node:
+            closure_node_free (ast);
+            break;
+        case continue_node:
+            break;
+        case expr_stmt_node:
+            expr_stmt_node_free (ast);
+            break;
+        case for_node:
+            for_node_free (ast);
+            break;
+        case foreach_node:
+            foreach_node_free (ast);
+            break;
+        case func_call_node:
+            func_call_node_free (ast);
+            break;
+        case func_decl_node:
+            func_decl_node_free (ast);
+            break;
+        case id_node:
+            id_node_free (ast);
+            break;
+        case if_node:
+            if_node_free (ast);
+            break;
+        case import_node:
+            import_node_free (ast);
+            break;
+        case list_decl_node:
+            list_decl_node_free (ast);
+            break;
+        case number_node:
+            number_node_free (ast);
+            break;
+        case obj_decl_node:
+            obj_decl_node_free (ast);
+            break;
+        case raise_node:
+            raise_node_free (ast);
+            break;
+        case return_node:
+            return_node_free (ast);
+            break;
+        case string_node:
+            string_node_free (ast);
+            break;
+        case subscript_node:
+            subscript_node_free (ast);
+            break;
+        case super_node:
+            super_node_free (ast);
+            break;
+        case try_catch_node:
+            try_catch_node_free (ast);
+            break;
+        case typeof_node:
+            typeof_node_free (ast);
+            break;
+        case unary_op_node:
+            unary_op_node_free (ast);
+            break;
+        case use_node:
+            use_node_free (ast);
+            break;
+        case while_node:
+            while_node_free (ast);
+            break;
+    }
+    if (ast->state) {
+        free (ast->state);
+    }
+    free (ast);
+};
+
 static struct ast_node * ast_node_init (node_type_t type) {
     struct ast_node * node = (struct ast_node *)calloc (1, sizeof (struct ast_node));
     node->type = type;
@@ -7,13 +101,14 @@ static struct ast_node * ast_node_init (node_type_t type) {
     return node;
 }
 
-struct ast_node * assign_node_init (struct ast_node * left, struct ast_node * right) {
+struct ast_node * assign_node_init (struct ast_node * left, struct ast_node * right, int free_left) {
     struct assign_state * state;
     struct ast_node     * node;
 
     state = (struct assign_state *)calloc (1, sizeof (struct assign_state));
-    state->left  = left;
-    state->right = right;
+    state->left      = left;
+    state->right     = right;
+    state->free_left = free_left;
 
     node = ast_node_init (assign_node);
     node->state = state;
@@ -54,10 +149,10 @@ struct ast_node * block_node_init (struct vector_state * stmts) {
     struct block_state * state;
     struct ast_node    * node;
 
-    state = (struct block_state *)calloc (1, sizeof (struct block_state));
+    state        = (struct block_state *)calloc (1, sizeof (struct block_state));
     state->stmts = stmts;
 
-    node = ast_node_init (block_node);
+    node        = ast_node_init (block_node);
     node->state = state;
 
     return node;
@@ -66,7 +161,7 @@ struct ast_node * block_node_init (struct vector_state * stmts) {
 struct ast_node * break_node_init () {
     struct ast_node * node;
 
-    node = ast_node_init (break_node);
+    node        = ast_node_init (break_node);
     node->state = 0;
 
     return node;
@@ -400,4 +495,196 @@ struct ast_node * while_node_init (struct ast_node * expr, struct ast_node * bod
     node->state = state;
 
     return node;
+}
+
+void assign_node_free (struct ast_node * node) {
+    struct assign_state * state = (struct assign_state *)node->state;
+
+    if (state->free_left) {
+        ast_node_free (state->left);
+    }
+    ast_node_free (state->right);
+}
+
+void attrib_access_node_free (struct ast_node * node) {
+    struct attrib_access_state * state = (struct attrib_access_state *)node->state;
+
+    ast_node_free (state->target);
+    free          (state->id);
+}
+
+void bin_op_node_free (struct ast_node * node) {
+    struct bin_op_state * state = (struct bin_op_state *)node->state;
+
+    ast_node_free (state->left);
+    ast_node_free (state->right);
+}
+
+void block_node_free (struct ast_node * node) {
+    struct block_state * state = (struct block_state *)node->state;
+
+    for (int i = 0; i < state->stmts->length; i++) {
+        ast_node_free (vector_get (state->stmts, i));
+    }
+    vector_free (state->stmts);
+}
+
+void class_node_free (struct ast_node * node) {
+    struct class_state * state = (struct class_state *)node->state;
+    int extends_length;
+
+    free (state->name);
+    if (state->extends) {
+        for (int i = 0; i < state->extends->length; i++) {
+            free (vector_get (state->extends, i));
+        }
+        vector_free   (state->extends);
+    }
+    ast_node_free (state->body);
+}
+
+void closure_node_free (struct ast_node * node) {
+    struct closure_state * state = (struct closure_state *)node->state;
+
+    param_list_free (state->params);
+    if (state->return_type) {
+        access_chain_free (state->return_type);
+    }
+
+    ast_node_free (state->body);
+}
+
+void expr_stmt_node_free (struct ast_node * node) {
+    struct expr_stmt_state * state = (struct expr_stmt_state *)node->state;
+
+    ast_node_free (state->expr);
+}
+
+void for_node_free (struct ast_node * node) {
+    struct for_state * state = (struct for_state *)node->state;
+
+    ast_node_free (state->pre_stmt);
+    ast_node_free (state->expr);
+    ast_node_free (state->rep_stmt);
+    ast_node_free (state->body);
+}
+
+void foreach_node_free (struct ast_node * node) {
+    struct foreach_state * state = (struct foreach_state *)node->state;
+
+    free          (state->id);
+    ast_node_free (state->target);
+    ast_node_free (state->body);
+}
+
+void func_call_node_free (struct ast_node * node) {
+    struct func_call_state * state = (struct func_call_state *)node->state;
+
+    ast_node_free (state->target);
+    for (int i = 0; i < state->args->length; i++) {
+        ast_node_free (vector_get (state->args, i));
+    }
+    vector_free   (state->args);
+}
+
+void func_decl_node_free (struct ast_node * node) {
+    struct func_decl_state * state = (struct func_decl_state *)node->state;
+    free              (state->name);
+    param_list_free   (state->params);
+    if (state->return_type) {
+        access_chain_free (state->return_type);
+    }
+    ast_node_free     (state->body);
+}
+
+void id_node_free (struct ast_node * node) {
+
+}
+
+void if_node_free (struct ast_node * node) {
+
+}
+
+void import_node_free (struct ast_node * node) {
+
+}
+
+void list_decl_node_free (struct ast_node * node) {
+
+}
+
+void number_node_free (struct ast_node * node) {
+
+}
+
+void obj_decl_node_free (struct ast_node * node) {
+
+}
+
+void raise_node_free (struct ast_node * node) {
+}
+
+void return_node_free (struct ast_node * node) {
+
+}
+
+void string_node_free (struct ast_node * node) {
+
+}
+
+void subscript_node_free (struct ast_node * node) {
+
+}
+
+void super_node_free (struct ast_node * node) {
+
+}
+
+void try_catch_node_free (struct ast_node * node) {
+
+}
+
+void typeof_node_free (struct ast_node * node) {
+
+}
+
+void unary_op_node_free (struct ast_node * node) {
+
+}
+
+void use_node_free (struct ast_node * node) {
+
+}
+
+void while_node_free (struct ast_node * node) {
+
+}
+
+void access_chain_free (struct vector_state * chain) {
+    for (int i = 0; i < chain->length; i++) {
+        free (vector_get (chain, i));
+    }
+    vector_free (chain);
+}
+
+void param_list_free (struct vector_state * args) {
+    struct func_param * param;
+
+    for (int i = 0; i < args->length; i++) {
+        param = vector_get (args, i);
+        if (param->id) {
+            free (param->id);
+        }
+        if (param->vals) {
+            for (int j = 0; j < param->vals->length; j++) {
+                free (vector_get (param->vals, j));
+            }
+            vector_free (param->vals);
+        }
+        if (param->enforced_type) {
+            access_chain_free (param->enforced_type);
+        }
+        free (param);
+    }
+    vector_free (args);
 }

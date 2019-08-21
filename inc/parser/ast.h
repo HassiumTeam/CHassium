@@ -2,6 +2,7 @@
 #define _AST_H_
 
 #include <bin_op_type.h>
+#include <func_param.h>
 #include <parser/node_type.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -16,6 +17,7 @@ struct ast_node {
 struct assign_state {
     struct ast_node * left;
     struct ast_node * right;
+    int               free_left;
 };
 
 struct attrib_access_state {
@@ -147,8 +149,10 @@ struct while_state {
     struct ast_node * body;
 };
 
+void ast_node_free ();
 struct ast_node * assign_node_init (struct ast_node * left,
-                                    struct ast_node * right);
+                                    struct ast_node * right,
+                                    int               free_left);
 void assign_node_free (struct ast_node * node);
 struct ast_node * attrib_access_node_init (struct ast_node * target,
                                            char            * id);
@@ -230,5 +234,8 @@ void use_node_free (struct ast_node * node);
 struct ast_node * while_node_init (struct ast_node * expr,
                                    struct ast_node * body);
 void while_node_free (struct ast_node * node);
+
+void access_chain_free (struct vector_state * chain);
+void param_list_free (struct vector_state * args);
 
 #endif

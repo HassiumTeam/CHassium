@@ -362,7 +362,7 @@ static struct ast_node * parse_assign (struct parser_state * state) {
         val = state->token->val;
         if (strcmp (val, "=") == 0) {
             accept (state, assign);
-            return assign_node_init (left, parse_assign (state));
+            return assign_node_init (left, parse_assign (state), 1);
         } else {
             bin_op_type_t type = 0;
             if (strcmp (val, "+=") == 0) {
@@ -390,7 +390,8 @@ static struct ast_node * parse_assign (struct parser_state * state) {
                     type,
                     left,
                     parse_assign (state)
-                )
+                ),
+                0
             );
         }
     }
