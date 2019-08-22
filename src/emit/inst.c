@@ -100,6 +100,30 @@ struct inst * import_inst_init (char * file, struct vector_state * name) {
     return inst;
 }
 
+struct inst * iter_inst_init () {
+    struct inst * inst;
+
+    inst = inst_init (iter_inst, NULL);
+
+    return inst;
+}
+
+struct inst * iter_full_inst_init () {
+    struct inst * inst;
+
+    inst = inst_init (iter_full_inst, NULL);
+
+    return inst;
+}
+
+struct inst * iter_next_inst_init () {
+    struct inst * inst;
+
+    inst = inst_init (iter_next_inst, NULL);
+
+    return inst;
+}
+
 struct inst * jump_inst_init (int label) {
     struct jump_inst * state;
     struct inst      * inst;

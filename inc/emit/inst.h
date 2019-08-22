@@ -136,6 +136,9 @@ struct inst * import_inst_init                  (char * file, struct vector_stat
 struct inst * jump_inst_init                    (int label);
 struct inst * jump_if_true_inst_init            (int label);
 struct inst * jump_if_false_inst_init           (int label);
+struct inst * iter_inst_init                    ();
+struct inst * iter_full_inst_init               ();
+struct inst * iter_next_inst_init               ();
 struct inst * list_decl_inst_init               (int count);
 struct inst * load_attrib_inst_init             (char * attrib);
 struct inst * load_id_inst_init                 (int index, char * name);

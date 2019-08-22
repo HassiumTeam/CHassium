@@ -31,7 +31,7 @@ struct has_obj * emit_get_module (struct emit_state * state) {
 static void accept_assign        (struct emit_state * emit, struct assign_state        * state);
 static void accept_attrib_access (struct emit_state * emit, struct attrib_access_state * state);
 static void accept_bin_op        (struct emit_state * emit, struct bin_op_state        * state);
-static void accept_block         (struct emit_state * emit, struct block_state         * state);
+static void accept_block         (struct emit_state * emit, struct block_state         * state, int ignore_scope);
 static void accept_break         (struct emit_state * emit);
 static void accept_class         (struct emit_state * emit, struct class_state         * state);
 static void accept_closure       (struct emit_state * emit, struct closure_state       * state);
@@ -78,7 +78,7 @@ void accept (struct emit_state * state, struct ast_node * node) {
             accept_bin_op (state, (struct bin_op_state *)node->state);
             break;
         case block_node:
-            accept_block (state, (struct block_state *)node->state);
+            accept_block (state, (struct block_state *)node->state, 0);
             break;
         case break_node:
             accept_break (state);
@@ -243,9 +243,17 @@ static void accept_bin_op (struct emit_state * emit, struct bin_op_state * state
     emit_inst (emit, bin_op_inst_init (state->type));
 }
 
-static void accept_block (struct emit_state * emit, struct block_state * state) {
+static void accept_block (struct emit_state * emit, struct block_state * state, int ignore_scope) {
+    if (!ignore_scope) {
+        enter_scope (emit->symbol_table);
+    }
+
     for (int i = 0; i < state->stmts->length; i++) {
         accept (emit, vector_get (state->stmts, i));
+    }
+
+    if (!ignore_scope) {
+        leave_scope (emit->symbol_table);
     }
 }
 
@@ -290,19 +298,22 @@ static void accept_expr_stmt (struct emit_state * emit, struct expr_stmt_state *
 }
 
 static void accept_for (struct emit_state * emit, struct for_state * state) {
-    int body_label = next_label (emit);
-    int cont_label = next_label (emit);
-    int end_label  = next_label (emit);
+    int body_label, cont_label, end_label;
+    int break_count, cont_count;
+
+    body_label = next_label (emit);
+    cont_label = next_label (emit);
+    end_label  = next_label (emit);
 
     accept     (emit, state->pre_stmt);
     emit_label (emit, body_label);
     accept     (emit, state->expr);
     emit_inst  (emit, jump_if_false_inst_init (end_label));
 
-    int break_count = emit->break_labels   ->length;
-    int cont_count  = emit->cont_labels->length;
-    int_vector_push  (emit->break_labels, end_label);
-    int_vector_push  (emit->cont_labels,  cont_label);
+    break_count =    emit->break_labels->length;
+    cont_count  =    emit->cont_labels ->length;
+    int_vector_push (emit->break_labels, end_label);
+    int_vector_push (emit->cont_labels,  cont_label);
 
     accept (emit, state->body);
     restore_labels (emit, break_count, cont_count);
@@ -314,7 +325,45 @@ static void accept_for (struct emit_state * emit, struct for_state * state) {
 }
 
 static void accept_foreach (struct emit_state * emit, struct foreach_state * state) {
-    
+    int body_label, end_label;
+    int break_count, cont_count;
+    int tmp;
+
+    enter_scope (emit->symbol_table);
+
+    body_label = next_label (emit);
+    end_label  = next_label (emit);
+    tmp        = tmp_symbol (emit->symbol_table);
+
+    accept     (emit, state->target);
+    emit_inst  (emit, iter_inst_init        ());
+    emit_inst  (emit, store_local_inst_init (tmp));
+
+    emit_label (emit, body_label);
+    emit_inst  (emit, load_id_inst_init      (tmp, NULL));
+    emit_inst  (emit, iter_full_inst_init    ());
+    emit_inst  (emit, jump_if_true_inst_init (end_label));
+    emit_inst  (emit, load_id_inst_init      (tmp, NULL));
+    emit_inst  (emit, iter_next_inst_init    ());
+    emit_inst  (emit, store_local_inst_init  (handle_symbol (emit->symbol_table, state->id)));
+
+    break_count =    emit->break_labels->length;
+    cont_count  =    emit->cont_labels ->length;
+    int_vector_push (emit->break_labels, end_label);
+    int_vector_push (emit->cont_labels,  body_label);
+
+    if (state->body->type == block_node) {
+        accept_block (emit, (struct block_state *)state->body->state, 1);
+    } else {
+        accept       (emit, state->body);
+    }
+
+    restore_labels (emit, break_count, cont_count);
+
+    emit_inst (emit, jump_inst_init (body_label));
+    emit_label (emit, end_label);
+
+    leave_scope (emit->symbol_table);
 }
 
 static void accept_func_call (struct emit_state * emit, struct func_call_state * state) {
