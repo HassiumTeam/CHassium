@@ -10,6 +10,6 @@ struct has_func {
 };
 
 struct has_obj * has_func_init (char * name);
-void             has_func_free (struct has_obj * obj);
+void             has_func_free (void * state);
 
 #endif

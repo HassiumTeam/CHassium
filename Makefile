@@ -18,6 +18,7 @@ OBJECTS += src/emit/emit.o
 OBJECTS += src/emit/inst.o
 OBJECTS += src/emit/symbol_table.o
 
+OBJECTS += src/has_lib/has_class.o
 OBJECTS += src/has_lib/has_func.o
 OBJECTS += src/has_lib/has_obj.o
 
@@ -39,6 +40,7 @@ INCLUDES += inc/emit/emit.h
 INCLUDES += inc/emit/inst.h
 INCLUDES += inc/emit/symbol_table.h
 
+INCLUDES += inc/has_lib/has_class.h
 INCLUDES += inc/has_lib/has_func.h
 INCLUDES += inc/has_lib/has_obj.h
 
@@ -81,3 +83,7 @@ remove: clean
 .PHONY: run
 run:
 	@bin/hassium
+
+.PHONY: leakcheck
+leakcheck:
+	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium

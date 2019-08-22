@@ -151,7 +151,7 @@ static struct ast_node * parse_break (struct parser_state * state) {
 
 static struct ast_node * parse_class (struct parser_state * state) {
     char                * name;
-    struct vector_state * extends = 0;
+    struct vector_state * extends = NULL;
     struct ast_node     * body;
 
     free (expectv (state, id, "class"));

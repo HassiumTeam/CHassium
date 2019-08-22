@@ -12,10 +12,11 @@ struct has_obj {
     struct vector_state   * instructions;
     struct int_dict_state * labels;
 
-    void * state;
+    void                  * state;
+    void                 (* free_state) (void *);
 };
 
-struct has_obj * has_obj_init (void * state);
+struct has_obj * has_obj_init (void * state, void (* free_state) (void *));
 void             has_obj_free (struct has_obj * obj);
 
 struct has_obj * has_obj_get_attrib (struct has_obj * obj, char * name);

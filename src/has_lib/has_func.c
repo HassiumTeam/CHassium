@@ -7,15 +7,14 @@ struct has_obj * has_func_init (char * name) {
     state = (struct has_func *)calloc (1, sizeof (struct has_func));
     state->name = name;
 
-    obj = has_obj_init (state);
+    obj = has_obj_init (state, has_func_free);
 
     return obj;
 }
 
-void has_func_free (struct has_obj * obj) {
-    struct has_func * state = obj->state;
+void has_func_free (void * state) {
+    struct has_func * func = state;
 
-    free (state->name);
-
-    has_obj_free (obj);
+    free (func->name);
+    free (func);
 }
