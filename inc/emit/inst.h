@@ -14,7 +14,7 @@ typedef enum {
     jump_inst, jump_if_true_inst, jump_if_false_inst, list_decl_inst, load_attrib_inst,
     load_id_inst, load_number_inst, load_string_inst, load_subscript_inst, obj_decl_inst,
     obj_destructure_global_inst, obj_destructure_local_inst, pop_inst,
-    pop_instruction_handler_inst, push_inst, raise_inst, return_inst, self_reference_inst,
+    pop_exception_handler_inst, push_inst, raise_inst, return_inst, self_reference_inst,
     store_attrib_inst, store_global_inst, store_local_inst, store_subscript_inst,
     super_inst, typeof_inst, unary_op_inst, use_global_inst, use_local_inst,
 } inst_type_t;
@@ -111,6 +111,10 @@ struct store_local_inst {
     int symbol;
 };
 
+struct super_inst {
+    int arg_count;
+};
+
 struct unary_op_inst {
     unary_op_type_t type;
 };
@@ -144,14 +148,21 @@ struct inst * load_attrib_inst_init             (char * attrib);
 struct inst * load_id_inst_init                 (int index, char * name);
 struct inst * load_number_inst_init             (float f);
 struct inst * load_string_inst_init             (char * str);
+struct inst * load_subscript_inst_init          ();
 struct inst * obj_decl_inst_init                (struct vector_state * ids);
 struct inst * obj_destructure_global_inst_init  (struct vector_state * vars, struct int_vector_state * indices);
 struct inst * obj_destructure_local_inst_init   (struct vector_state * vars, struct int_vector_state * indices);
 struct inst * pop_inst_init                     ();
+struct inst * pop_exception_handler_inst_init   ();
+struct inst * raise_inst_init                   ();
+struct inst * return_inst_init                  ();
+struct inst * self_reference_inst_init          ();
 struct inst * store_attrib_inst_init            (char * attrib);
 struct inst * store_global_inst_init            (int symbol);
 struct inst * store_local_inst_init             (int symbol);
 struct inst * store_subscript_inst_init         ();
+struct inst * super_inst_init                   (int arg_count);
+struct inst * typeof_inst_init                  ();
 struct inst * unary_op_inst_init                (unary_op_type_t type);
 struct inst * use_global_inst_init              (struct vector_state * ids, struct vector_state * indices);
 struct inst * use_local_inst_init               (struct vector_state * ids, struct vector_state * indices);

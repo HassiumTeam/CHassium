@@ -760,7 +760,7 @@ static struct ast_node * parse_obj_decl (struct parser_state * state) {
     char                * id_;
     char                * tmp;
 
-    ids = vector_init ();
+    ids  = vector_init ();
     vals = vector_init ();
 
     expect (state, obrace);

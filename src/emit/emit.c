@@ -367,7 +367,12 @@ static void accept_foreach (struct emit_state * emit, struct foreach_state * sta
 }
 
 static void accept_func_call (struct emit_state * emit, struct func_call_state * state) {
+    for (int i = state->args->length - 1; i >= 0; i--) {
+        accept (emit, vector_get (state->args, i));
+    }
 
+    accept    (emit, state->target);
+    emit_inst (emit, call_inst_init (state->args->length));
 }
 
 static void accept_func_decl (struct emit_state * emit, struct func_decl_state * state) {
@@ -386,63 +391,129 @@ static void accept_func_decl (struct emit_state * emit, struct func_decl_state *
 }
 
 static void accept_id (struct emit_state * emit, struct id_state * state) {
-
+    if (strcmp (state->id, "this")) {
+        emit_inst (emit, self_reference_inst_init ());
+    } else if (has_symbol (emit->symbol_table, state->id)) {
+        emit_inst (emit, load_id_inst_init (get_symbol (emit->symbol_table, state->id), NULL));
+    } else {
+        emit_inst (emit, load_id_inst_init (0, state->id));
+    }
 }
 
 static void accept_if (struct emit_state * emit, struct if_state * state) {
+    int else_label, end_label;
 
+    else_label = next_label (emit);
+    end_label  = next_label (emit);
+
+    accept     (emit, state->expr);
+    emit_inst  (emit, jump_if_false_inst_init (else_label));
+    accept     (emit, state->if_body);
+    emit_inst  (emit, jump_inst_init (end_label));
+
+    emit_label (emit, else_label);
+    if (state->else_body) {
+        accept     (emit, state->else_body);
+    }
+    emit_label (emit, end_label);
 }
 
 static void accept_import (struct emit_state * emit, struct import_state * state) {
-
+    emit_inst (emit, import_inst_init (state->file, state->name));
 }
 
 static void accept_list_decl (struct emit_state * emit, struct list_decl_state * state) {
+    int count;
 
+    count = state->elements->length;
+    for (int i = count - 1; i >= 0; i--) {
+        accept (emit, vector_get (state->elements, i));
+    }
+
+    emit_inst (emit, list_decl_inst_init (count));
 }
 
 static void accept_number (struct emit_state * emit, struct number_state * state) {
-
+    emit_inst (emit, load_number_inst_init (state->f));
 }
 
 static void accept_obj_decl (struct emit_state * emit, struct obj_decl_state * state) {
-
+    for (int i = state->vals->length - 1; i >= 0; i--) {
+        accept (emit, vector_get (state->vals, i));
+    }
+    emit_inst (emit, obj_decl_inst_init (state->ids));
 }
 
 static void accept_raise (struct emit_state * emit, struct raise_state * state) {
-
+    accept    (emit, state->expr);
+    emit_inst (emit, raise_inst_init ());
 }
 
 static void accept_return (struct emit_state * emit, struct return_state * state) {
-
+    accept    (emit, state->expr);
+    emit_inst (emit, return_inst_init ());
 }
 
 static void accept_string (struct emit_state * emit, struct string_state * state) {
-
+    emit_inst (emit, load_string_inst_init (state->str));
 }
 
 static void accept_subscript (struct emit_state * emit, struct subscript_state * state) {
+    accept    (emit, state->index);
+    accept    (emit, state->target);
 
+    emit_inst (emit, load_subscript_inst_init ());
 }
 
 static void accept_super (struct emit_state * emit, struct super_state * state) {
+    int arg_count;
 
+    arg_count = state->args->length;
+    for (int i = arg_count - 1; i >= 0; i--) {
+        accept (emit, vector_get (state->args, i));
+    }
+
+    emit_inst (emit, super_inst_init (arg_count));
 }
 
 static void accept_try_catch (struct emit_state * emit, struct try_catch_state * state) {
+    struct has_obj * func;
+    int              caught_label;
 
+    func = has_func_init (NULL, vector_init (), NULL);
+
+    emit_push   (emit, func);
+    enter_scope (emit->symbol_table);
+
+    accept      (emit, state->catch_body);
+
+    leave_scope (emit->symbol_table);
+    emit_pop    (emit);
+
+    caught_label = next_label (emit);
+
+    emit_inst (emit, build_exception_handler_inst_init (func, caught_label));
+
+    enter_scope (emit->symbol_table);
+    accept      (emit, state->try_body);
+    leave_scope (emit->symbol_table);
+
+    emit_inst   (emit, pop_exception_handler_inst_init ());
+    emit_label  (emit, caught_label);
 }
 
 static void accept_typeof (struct emit_state * emit, struct typeof_state * state) {
-
+    accept    (emit, state->expr);
+    emit_inst (emit, typeof_inst_init ());
 }
 
 static void accept_unary_op (struct emit_state * emit, struct unary_op_state * state) {
-
+    accept    (emit, state->target);
+    emit_inst (emit, unary_op_inst_init (state->type));
 }
 
 static void accept_use (struct emit_state * emit, struct use_state * state) {
-
+    
 }
 
 static void accept_while (struct emit_state * emit, struct while_state * state) {

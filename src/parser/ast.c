@@ -623,11 +623,6 @@ void number_node_free (struct ast_node * node) {
 void obj_decl_node_free (struct ast_node * node) {
     struct obj_decl_state * state = (struct obj_decl_state *)node->state;
 
-    for (int i = 0; i < state->ids->length; i++) {
-        free (vector_get (state->ids, i));
-    }
-    vector_free (state->ids);
-
     for (int i = 0; i < state->vals->length; i++) {
         ast_node_free (vector_get (state->vals, i));
     }

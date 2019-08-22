@@ -228,14 +228,20 @@ struct inst * load_string_inst_init (char * str) {
     return inst;
 }
 
+struct inst * load_subscript_inst_init () {
+    struct inst * inst;
+
+    inst = inst_init (load_subscript_inst, NULL);
+
+    return inst;
+}
+
 struct inst * obj_decl_inst_init (struct vector_state * ids) {
     struct obj_decl_inst * state;
     struct inst          * inst;
 
     state      = (struct obj_decl_inst *)calloc (1, sizeof (struct obj_decl_inst));
-    state->ids = (struct vector_state *)calloc (1, sizeof (struct vector_state));
-
-    memcpy (state->ids, ids, sizeof (struct vector_state));
+    state->ids = ids;
 
     inst = inst_init (obj_decl_inst, state);
 
@@ -272,6 +278,38 @@ struct inst * pop_inst_init () {
     struct inst * inst;
 
     inst = inst_init (pop_inst, NULL);
+
+    return inst;
+}
+
+struct inst * pop_exception_handler_inst_init () {
+    struct inst * inst;
+
+    inst = inst_init (pop_exception_handler_inst, NULL);
+
+    return inst;
+}
+
+struct inst * raise_inst_init () {
+    struct inst * inst;
+
+    inst = inst_init (raise_inst, NULL);
+
+    return inst;
+}
+
+struct inst * return_inst_init () {
+    struct inst * inst;
+
+    inst = inst_init (return_inst, NULL);
+
+    return inst;
+}
+
+struct inst * self_reference_inst_init () {
+    struct inst * inst;
+
+    inst = inst_init (self_reference_inst, NULL);
 
     return inst;
 }
@@ -318,6 +356,26 @@ struct inst * store_subscript_inst_init () {
     struct inst * inst;
 
     inst = inst_init (store_subscript_inst, NULL);
+
+    return inst;
+}
+
+struct inst * super_inst_init (int arg_count) {
+    struct super_inst * state;
+    struct inst       * inst;
+
+    state            = (struct super_inst *)calloc (1, sizeof (struct super_inst));
+    state->arg_count = arg_count;
+
+    inst = inst_init (super_inst, state);
+
+    return inst;
+}
+
+struct inst * typeof_inst_init () {
+    struct inst * inst;
+
+    inst = inst_init (typeof_inst, NULL);
 
     return inst;
 }
