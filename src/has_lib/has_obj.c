@@ -15,6 +15,8 @@ void has_obj_free (struct has_obj * obj) {
     if (obj->state) {
         free (obj->state);
     }
+    vector_free (obj->instructions);
+    int_dict_free (obj->labels);
     free (obj);
 }
 

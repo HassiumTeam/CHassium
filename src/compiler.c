@@ -2,19 +2,11 @@
 
 void compile () {
     struct tokenizer_state * lexer = tokenizer_init(fopen ("bin/test.has", "rb"));
-    struct token * token = (struct token *)malloc (sizeof (struct token));
-
-    do {
-        tokenizer_next (lexer, token);
-
-//        printf ("Token type %d with val: '%s'\n", token->type, token->val);
-    } while (token->type != eof);
-
-    tokenizer_rewind (lexer, lexer->pos);
-
     struct parser_state * parser = parser_init (lexer);
     struct ast_node * ast = parser_parse (parser);
     tokenizer_free (lexer);
+    parser_free (parser);
+
 
     printf ("Type: %d\n", ast->type);
 

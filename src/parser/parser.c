@@ -644,8 +644,7 @@ static struct ast_node * parse_term (struct parser_state * state) {
         val = expect (state, numberc);
         f = atof (val);
         free (val);
-
-        return number_node_init (f);
+        return number_node_init (2);
     } else if (accept (state, oparen)) {
         expr = parse_expr (state);
         expect (state, cparen);
@@ -759,6 +758,7 @@ static struct ast_node * parse_obj_decl (struct parser_state * state) {
     struct vector_state * ids;
     struct vector_state * vals;
     char                * id_;
+    char                * tmp;
 
     ids = vector_init ();
     vals = vector_init ();
@@ -771,7 +771,9 @@ static struct ast_node * parse_obj_decl (struct parser_state * state) {
         if (accept (state, colon)) {
             vector_push (vals, parse_expr (state));
         } else {
-            vector_push (vals, id_node_init (id_));
+            tmp = (char *)calloc (strlen (id_) + 1, sizeof (char));
+            memcpy (tmp, id_, strlen (id_) + 1);
+            vector_push (vals, id_node_init (tmp));
         }
 
         accept (state, comma);
@@ -843,8 +845,8 @@ static char * expect (struct parser_state * state, tok_type_t type) {
     if (match (state, type)) {
         ret = NULL;
         if (state->token->val) {
-            ret = (char *)calloc (strlen (state->token->val), sizeof (char));
-            memcpy (ret, state->token->val, strlen (state->token->val));
+            ret = (char *)calloc (strlen (state->token->val) + 1, sizeof (char));
+            memcpy (ret, state->token->val, strlen (state->token->val) + 1);
         }
 
         token_free (state->token);
@@ -870,8 +872,8 @@ static char * expectv (struct parser_state * state, tok_type_t type, const char 
     if (matchv (state, type, val)) {
         ret = NULL;
         if (state->token->val) {
-            ret = (char *)malloc (strlen (state->token->val));
-            memcpy (ret, state->token->val, strlen (state->token->val));
+            ret = (char *)malloc (strlen (state->token->val) + 1);
+            memcpy (ret, state->token->val, strlen (state->token->val) + 1);
         }
 
         token_free (state->token);

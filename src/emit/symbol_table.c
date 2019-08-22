@@ -33,6 +33,7 @@ void symbol_table_free (struct symbol_table_state * state) {
     for (int i = 0; i < length; i++) {
         scope_free (vector_pop (state->scopes));
     }
+    vector_free (state->scopes);
 
     free (state);
 }

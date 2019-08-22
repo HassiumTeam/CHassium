@@ -14,7 +14,10 @@ struct emit_state * emit_init () {
 
 void emit_free (struct emit_state * state) {
     symbol_table_free (state->symbol_table);
-    vector_free       (state->emit_stack);
+    for (int i = 0; i < state->emit_stack->length; i++) {
+        has_obj_free (vector_get (state->emit_stack, i));
+    }
+    vector_free (state->emit_stack);
 
     free (state);
 }

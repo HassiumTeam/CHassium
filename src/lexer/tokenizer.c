@@ -252,7 +252,6 @@ static void next_number (struct tokenizer_state * state, struct token * token) {
         token->val [i] = (char)readc (state);
     }
     token->val [i] = 0;
-
     token->type = numberc;
 }
 

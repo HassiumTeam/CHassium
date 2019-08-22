@@ -39,9 +39,9 @@ struct inst * compile_module_inst_init (char * file) {
     struct inst                * inst;
 
     state       = (struct compile_module_inst *)calloc (1, sizeof (struct compile_module_inst));
-    state->file = (char *)calloc (strlen (file), sizeof (char));
+    state->file = (char *)calloc (strlen (file) + 1, sizeof (char));
 
-    memcpy (state->file, file, strlen (file));
+    memcpy (state->file, file, strlen (file) + 1);
 
     inst = inst_init (compile_module_inst, state);
 
@@ -62,8 +62,8 @@ struct inst * import_inst_init (char * file, struct vector_state * name) {
 
     state = (struct import_inst *)calloc (1, sizeof (struct import_inst));
     if (file) {
-        state->file = (char *)calloc (strlen (file), sizeof (char));
-        memcpy (state->file, file, strlen (file));
+        state->file = (char *)calloc (strlen (file) + 1, sizeof (char));
+        memcpy (state->file, file, strlen (file) + 1);
     }
     if (name) {
         state->name = (struct vector_state *)calloc (1, sizeof (struct vector_state));
@@ -128,9 +128,9 @@ struct inst * load_attrib_inst_init (char * attrib) {
     struct inst             * inst;
 
     state         = (struct load_attrib_inst *)calloc (1, sizeof (struct load_attrib_inst));
-    state->attrib = (char *)calloc (strlen (attrib), sizeof (char));
+    state->attrib = (char *)calloc (strlen (attrib) + 1, sizeof (char));
 
-    memcpy (state->attrib, attrib, strlen (attrib));
+    memcpy (state->attrib, attrib, strlen (attrib) + 1);
 
     inst = inst_init (load_attrib_inst, state);
 
@@ -144,8 +144,8 @@ struct inst * load_id_inst_init (int index, char * name) {
     state        = (struct load_id_inst *)calloc (1, sizeof (struct load_id_inst));
     state->index = index;
     if (name) {
-        state->name = (char *)calloc (strlen (name), sizeof (char));
-        memcpy (state->name, name, strlen (name));
+        state->name = (char *)calloc (strlen (name) + 1, sizeof (char));
+        memcpy (state->name, name, strlen (name) + 1);
     }
 
     inst = inst_init (load_id_inst, state);
@@ -170,9 +170,9 @@ struct inst * load_string_inst_init (char * str) {
     struct inst             * inst;
 
     state      = (struct load_string_inst *)calloc (1, sizeof (struct load_string_inst));
-    state->str = (char *)calloc (strlen (str), sizeof (char));
+    state->str = (char *)calloc (strlen (str) + 1, sizeof (char));
 
-    memcpy (state->str, str, strlen (str));
+    memcpy (state->str, str, strlen (str) + 1);
 
     inst = inst_init (load_string_inst, state);
 
@@ -232,9 +232,9 @@ struct inst * store_attrib_inst_init (char * attrib) {
     struct inst              * inst;
 
     state         = (struct store_attrib_inst *)calloc (1, sizeof (struct store_attrib_inst));
-    state->attrib = (char *)calloc (strlen (attrib), sizeof (char));
+    state->attrib = (char *)calloc (strlen (attrib) + 1, sizeof (char));
 
-    memcpy (state->attrib, attrib, strlen (attrib));
+    memcpy (state->attrib, attrib, strlen (attrib) + 1);
 
     inst = inst_init (store_attrib_inst, state);
 
@@ -290,7 +290,7 @@ struct inst * use_global_inst_init (struct vector_state * ids, struct vector_sta
     struct inst            * inst;
 
     state          = (struct use_global_inst *)calloc (1, sizeof (struct use_global_inst));
-    state->ids     = (struct vector_state *)calloc (1, sizeof (struct vector_state));
+    state->ids     = (struct vector_state *)   calloc (1, sizeof (struct vector_state));
     state->indices = indices;
 
     memcpy (state->ids, ids, sizeof (struct vector_state));
