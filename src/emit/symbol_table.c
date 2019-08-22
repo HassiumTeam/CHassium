@@ -109,12 +109,6 @@ static struct scope * scope_init () {
 }
 
 static void scope_free (struct scope * scope) {
-    int length = scope->length;
-
-    for (int i = 0; i < length; i++) {
-        free (scope->ids [i]);
-    }
-
     free (scope->ids);
     free (scope->vals);
     free (scope);

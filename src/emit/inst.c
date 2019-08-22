@@ -22,6 +22,31 @@ struct inst * break_inst_init () {
     return inst;
 }
 
+struct inst * build_closure_inst_init (struct has_obj * func) {
+    struct build_closure_inst * state;
+    struct inst               * inst;
+
+    state       = (struct build_closure_inst *)calloc (1, sizeof (struct build_closure_inst));
+    state->func = func;
+
+    inst = inst_init (build_closure_inst, state);
+
+    return inst;
+}
+
+struct inst * build_exception_handler_inst_init (struct has_obj * func, int caught_label) {
+    struct build_exception_handler_inst * state;
+    struct inst                         * inst;
+
+    state               = (struct build_exception_handler_inst *)calloc (1, sizeof (struct build_exception_handler_inst));
+    state->func         = func;
+    state->caught_label = caught_label;
+
+    inst = inst_init (build_exception_handler_inst, state);
+
+    return inst;
+}
+
 struct inst * call_inst_init (int arg_count) {
     struct call_inst * state;
     struct inst      * inst;
@@ -323,4 +348,128 @@ static struct inst * inst_init (inst_type_t type, void * state) {
     inst->state = state;
 
     return inst;
+}
+
+void inst_free (struct inst * inst) {
+    switch (inst->type) {
+        case build_closure_inst:
+            build_closure_inst_free ((struct build_closure_inst *)inst->state);
+            break;
+        case build_exception_handler_inst:
+            build_exception_handler_inst_free ((struct build_exception_handler_inst *)inst->state);
+            break;
+        case compile_module_inst:
+            compile_module_inst_free ((struct compile_module_inst *)inst->state);
+            break;
+        case import_inst:
+            import_inst_free ((struct import_inst *)inst->state);
+            break;
+        case load_attrib_inst:
+            load_attrib_inst_free ((struct load_attrib_inst *)inst->state);
+            break;
+        case load_id_inst:
+            load_id_inst_free ((struct load_id_inst *)inst->state);
+            break;
+        case load_string_inst:
+            load_string_inst_free ((struct load_string_inst *)inst->state);
+            break;
+        case obj_decl_inst:
+            obj_decl_inst_free ((struct obj_decl_inst *)inst->state);
+            break;
+        case obj_destructure_global_inst:
+            obj_destructure_global_inst_free ((struct obj_destructure_global_inst *)inst->state);
+            break;
+        case obj_destructure_local_inst:
+            obj_destructure_local_inst_free ((struct obj_destructure_local_inst *)inst->state);
+            break;
+        case store_attrib_inst:
+            store_attrib_inst_free ((struct store_attrib_inst *)inst->state);
+            break;
+        case use_global_inst:
+            use_global_inst_free ((struct use_global_inst *)inst->state);
+            break;
+        case use_local_inst:
+            use_local_inst_free ((struct use_local_inst *)inst->state);
+            break;
+        defaut:
+            break;
+    }
+
+    if (inst->state) {
+        free (inst->state);
+    }
+    free (inst);
+}
+
+static void access_chain_free (struct vector_state * chain);
+
+void build_closure_inst_free (struct build_closure_inst * inst) {
+    has_obj_free (inst->func);
+}
+
+void build_exception_handler_inst_free (struct build_exception_handler_inst * inst) {
+    has_obj_free (inst->func);
+}
+
+void compile_module_inst_free (struct compile_module_inst * inst) {
+    free (inst->file);
+}
+
+void import_inst_free (struct import_inst * inst) {
+    if (inst->file) {
+        free (inst->file);
+    }
+    if (inst->name) {
+        access_chain_free (inst->name);
+    }
+}
+
+void load_attrib_inst_free (struct load_attrib_inst * inst) {
+    free (inst->attrib);
+}
+
+void load_id_inst_free (struct load_id_inst * inst) {
+    if (inst->name) {
+        free (inst->name);
+    }
+}
+
+void load_string_inst_free (struct load_string_inst * inst) {
+    free (inst->str);
+}
+
+void obj_decl_inst_free (struct obj_decl_inst * inst) {
+    access_chain_free (inst->ids);
+}
+
+void obj_destructure_global_inst_free (struct obj_destructure_global_inst * inst) {
+    access_chain_free (inst->vars);
+    int_vector_free   (inst->indices);
+}
+
+void obj_destructure_local_inst_free (struct obj_destructure_local_inst * inst) {
+    access_chain_free (inst->vars);
+    int_vector_free   (inst->indices);
+}
+
+void store_attrib_inst_free (struct store_attrib_inst * inst) {
+    free (inst->attrib);
+}
+
+void use_global_inst_free (struct use_global_inst * inst) {
+    access_chain_free (inst->ids);
+    vector_free   (inst->indices);
+}
+
+void use_local_inst_free (struct use_local_inst * inst) {
+    access_chain_free (inst->ids);
+    vector_free   (inst->indices);
+}
+
+static void access_chain_free (struct vector_state * chain) {
+    for (int i = 0; i < chain->length; i++) {
+        free (vector_get (chain, i));
+    }
+
+    vector_free (chain);
 }

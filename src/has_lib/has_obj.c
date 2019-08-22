@@ -12,10 +12,16 @@ struct has_obj * has_obj_init (void * state) {
 
 void has_obj_free (struct has_obj * obj) {
     dict_free (obj->attribs);
+    
     if (obj->state) {
         free (obj->state);
     }
+
+    for (int i = 0; i < obj->instructions->length; i++) {
+        inst_free (vector_get (obj->instructions, i));
+    }
     vector_free (obj->instructions);
+
     int_dict_free (obj->labels);
     free (obj);
 }
