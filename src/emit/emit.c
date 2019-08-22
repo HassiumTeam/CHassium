@@ -14,12 +14,13 @@ struct emit_state * emit_init () {
 
 void emit_free (struct emit_state * state) {
     symbol_table_free (state->symbol_table);
-    for (int i = 0; i < state->emit_stack->length; i++) {
-        has_obj_free (vector_get (state->emit_stack, i));
-    }
     vector_free (state->emit_stack);
 
     free (state);
+}
+
+struct has_obj * emit_get_module (struct emit_state * state) {
+    return vector_pop (state->emit_stack);
 }
 
 static void accept_assign        (struct emit_state * emit, struct assign_state        * state);

@@ -11,8 +11,6 @@ struct has_obj * has_obj_init (void * state) {
 }
 
 void has_obj_free (struct has_obj * obj) {
-    dict_free (obj->attribs);
-    
     if (obj->state) {
         free (obj->state);
     }
@@ -21,8 +19,13 @@ void has_obj_free (struct has_obj * obj) {
         inst_free (vector_get (obj->instructions, i));
     }
     vector_free (obj->instructions);
-
     int_dict_free (obj->labels);
+
+    for (int i = 0; i < obj->attribs->keys->length; i++) {
+        has_obj_free (dict_get (obj->attribs, vector_get (obj->attribs->keys, i)));
+    }
+    dict_free (obj->attribs);
+
     free (obj);
 }
 

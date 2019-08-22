@@ -18,6 +18,7 @@ struct emit_state {
 struct emit_state * emit_init ();
 void                emit_free (struct emit_state * state);
 
-void accept (struct emit_state * state, struct ast_node * node);
+struct has_obj * emit_get_module (struct emit_state * state);
+void             accept          (struct emit_state * state, struct ast_node * node);
 
 #endif
