@@ -80,4 +80,4 @@ remove: clean
 
 .PHONY: run
 run:
-	@bin/hassium bin/test.has
+	@bin/hassium

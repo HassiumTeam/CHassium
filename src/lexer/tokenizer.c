@@ -2,7 +2,6 @@
 
 struct tokenizer_state * tokenizer_init (FILE * f) {
     struct tokenizer_state * state = (struct tokenizer_state *)malloc(sizeof (struct tokenizer_state));
-
     state->pos = 0;
     fseek (f, 0, SEEK_END);
     state->len = (uint32_t)ftell (f);
@@ -14,6 +13,8 @@ struct tokenizer_state * tokenizer_init (FILE * f) {
         state->code [state->pos++] = c;
     }
 
+    fclose (f);
+
     state->pos = 0;
 
     state->row = 1;
@@ -23,7 +24,7 @@ struct tokenizer_state * tokenizer_init (FILE * f) {
 }
 
 void tokenizer_free (struct tokenizer_state * state) {
-    if (state->code != NULL) {
+    if (state->code) {
         free (state->code);
     }
 

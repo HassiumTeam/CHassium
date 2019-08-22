@@ -1,7 +1,7 @@
 #include <compiler.h>
 
 void compile () {
-    struct tokenizer_state * lexer = tokenizer_init(fopen ("bin/test.has", "r"));
+    struct tokenizer_state * lexer = tokenizer_init(fopen ("bin/test.has", "rb"));
     struct token * token = (struct token *)malloc (sizeof (struct token));
 
     do {
@@ -14,6 +14,7 @@ void compile () {
 
     struct parser_state * parser = parser_init (lexer);
     struct ast_node * ast = parser_parse (parser);
+    tokenizer_free (lexer);
 
     printf ("Type: %d\n", ast->type);
 
