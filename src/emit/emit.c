@@ -164,6 +164,7 @@ static void accept_assign (struct emit_state * emit, struct assign_state * state
     struct ast_node            * left;
     struct vector_state        * vars;
     struct int_vector_state    * indices;
+    char                       * tmp;
 
     accept (emit, state->right);
 
@@ -181,7 +182,9 @@ static void accept_assign (struct emit_state * emit, struct assign_state * state
             vars = vector_init ();
             for (int i = 0; i < list_decl_state->elements->length; i++) {
                 id_state = ((struct ast_node *)vector_get (list_decl_state->elements, i))->state;
-                vector_push (vars, id_state->id);
+                tmp = (char *)calloc (strlen (id_state->id) + 1, sizeof (char));
+                memcpy (tmp, id_state->id, strlen (id_state->id) + 1);
+                vector_push (vars, tmp);
             }
 
             indices = int_vector_init ();
@@ -250,19 +253,15 @@ static void accept_break (struct emit_state * emit) {
 
 static void accept_class (struct emit_state * emit, struct class_state * state) {
     struct has_obj      * class;
-    char                * name;
     struct vector_state * extends = NULL;
-
-    name = (char *)calloc (strlen (state->name) + 1, sizeof (char));
-    memcpy (name, state->name, strlen (state->name) + 1);
 
     if (state->extends) {
         extends = (struct vector_state *)calloc (1, sizeof (struct vector_state));
         memcpy (extends, state->extends, sizeof (struct vector_state));
     }
 
-    class = has_class_init (name, extends);
-    has_obj_set_attrib (emit_peek (emit), name, class);
+    class = has_class_init (state->name, extends);
+    has_obj_set_attrib (emit_peek (emit), state->name, class);
 
     emit_push (emit, class);
     accept    (emit, state->body);
@@ -270,7 +269,19 @@ static void accept_class (struct emit_state * emit, struct class_state * state) 
 }
 
 static void accept_closure (struct emit_state * emit, struct closure_state * state) {
+    struct has_obj * func;
 
+    func = has_func_init (NULL, state->params, state->return_type);
+
+    emit_push (emit, func);
+
+    enter_scope (emit->symbol_table);
+    accept (emit, state->body);
+    leave_scope (emit->symbol_table);
+
+    emit_pop (emit);
+
+    emit_inst (emit, build_closure_inst_init (func));
 }
 
 static void accept_continue (struct emit_state * emit) {
@@ -295,7 +306,18 @@ static void accept_func_call (struct emit_state * emit, struct func_call_state *
 }
 
 static void accept_func_decl (struct emit_state * emit, struct func_decl_state * state) {
+    struct has_obj * func;
 
+    func = has_func_init (state->name, state->params, state->return_type);
+    has_obj_set_attrib (emit_peek (emit), state->name, func);
+
+    emit_push   (emit, func);
+
+    enter_scope (emit->symbol_table);
+    accept      (emit, state->body);
+    leave_scope (emit->symbol_table);
+
+    emit_pop    (emit);
 }
 
 static void accept_id (struct emit_state * emit, struct id_state * state) {

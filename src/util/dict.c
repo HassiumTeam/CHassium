@@ -34,7 +34,11 @@ void * dict_get (struct dict_state * state, char * key) {
 }
 
 void dict_set (struct dict_state * state, char * key, void * val) {
-    vector_push (state->keys, key);
+    char * new_key;
+
+    new_key = (char *)calloc (strlen (key), strlen (key));
+    memcpy (new_key, key, strlen (key));
+    vector_push (state->keys, new_key);
     vector_push (state->vals, val);
     state->count++;
 }

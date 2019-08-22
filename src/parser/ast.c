@@ -542,11 +542,6 @@ void class_node_free (struct ast_node * node) {
 void closure_node_free (struct ast_node * node) {
     struct closure_state * state = (struct closure_state *)node->state;
 
-    param_list_free (state->params);
-    if (state->return_type) {
-        access_chain_free (state->return_type);
-    }
-
     ast_node_free (state->body);
 }
 
@@ -586,11 +581,6 @@ void func_call_node_free (struct ast_node * node) {
 void func_decl_node_free (struct ast_node * node) {
     struct func_decl_state * state = (struct func_decl_state *)node->state;
 
-    free              (state->name);
-    param_list_free   (state->params);
-    if (state->return_type) {
-        access_chain_free (state->return_type);
-    }
     ast_node_free     (state->body);
 }
 

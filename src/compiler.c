@@ -19,7 +19,7 @@ void compile () {
 
     struct emit_state * emit = emit_init ();
     accept (emit, ast);
-    has_obj_free (emit_get_module (emit));
     ast_node_free (ast);
+    has_obj_free (emit_get_module (emit));
     emit_free (emit);
 }
