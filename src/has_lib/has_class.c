@@ -23,5 +23,7 @@ void has_class_free (void * state) {
         vector_free (class->extends);
     }
 
+    free (class->name);
+
     free (class);
 }

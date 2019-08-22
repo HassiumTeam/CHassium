@@ -17,7 +17,8 @@ struct emit_state {
     struct symbol_table_state * symbol_table;
     struct vector_state       * emit_stack;
     struct int_vector_state   * break_labels;
-    struct int_vector_state   * continue_labels;
+    struct int_vector_state   * cont_labels;
+    int                         next_label;
 };
 
 struct emit_state * emit_init ();

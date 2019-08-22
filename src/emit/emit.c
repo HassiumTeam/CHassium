@@ -7,7 +7,8 @@ struct emit_state * emit_init () {
     state->symbol_table    = symbol_table_init ();
     state->emit_stack      = vector_init ();
     state->break_labels    = int_vector_init ();
-    state->continue_labels = int_vector_init ();
+    state->cont_labels     = int_vector_init ();
+    state->next_label      = 0;
 
     vector_push (state->emit_stack, has_obj_init (NULL, NULL));
 
@@ -16,11 +17,11 @@ struct emit_state * emit_init () {
 
 void emit_free (struct emit_state * state) {
     symbol_table_free (state->symbol_table);
-    vector_free (state->emit_stack);
-    int_vector_free (state->break_labels);
-    int_vector_free (state->continue_labels);
+    vector_free       (state->emit_stack);
+    int_vector_free   (state->break_labels);
+    int_vector_free   (state->cont_labels);
 
-    free (state);
+    free              (state);
 }
 
 struct has_obj * emit_get_module (struct emit_state * state) {
@@ -63,6 +64,7 @@ static struct has_obj * emit_peek      (struct emit_state * emit);
 static struct has_obj * emit_pop       (struct emit_state * emit);
 static        void      emit_push      (struct emit_state * emit, struct has_obj * obj);
 static        void      restore_labels (struct emit_state * emit, int break_count, int continue_count);
+static        int       next_label     (struct emit_state * emit);
 
 void accept (struct emit_state * state, struct ast_node * node) {
     switch (node->type) {
@@ -253,14 +255,8 @@ static void accept_break (struct emit_state * emit) {
 
 static void accept_class (struct emit_state * emit, struct class_state * state) {
     struct has_obj      * class;
-    struct vector_state * extends = NULL;
 
-    if (state->extends) {
-        extends = (struct vector_state *)calloc (1, sizeof (struct vector_state));
-        memcpy (extends, state->extends, sizeof (struct vector_state));
-    }
-
-    class = has_class_init (state->name, extends);
+    class = has_class_init (state->name, state->extends);
     has_obj_set_attrib (emit_peek (emit), state->name, class);
 
     emit_push (emit, class);
@@ -276,7 +272,7 @@ static void accept_closure (struct emit_state * emit, struct closure_state * sta
     emit_push (emit, func);
 
     enter_scope (emit->symbol_table);
-    accept (emit, state->body);
+    accept      (emit, state->body);
     leave_scope (emit->symbol_table);
 
     emit_pop (emit);
@@ -285,7 +281,7 @@ static void accept_closure (struct emit_state * emit, struct closure_state * sta
 }
 
 static void accept_continue (struct emit_state * emit) {
-
+    emit_label (emit, int_vector_pop (emit->cont_labels));
 }
 
 static void accept_expr_stmt (struct emit_state * emit, struct expr_stmt_state * state) {
@@ -294,11 +290,31 @@ static void accept_expr_stmt (struct emit_state * emit, struct expr_stmt_state *
 }
 
 static void accept_for (struct emit_state * emit, struct for_state * state) {
+    int body_label = next_label (emit);
+    int cont_label = next_label (emit);
+    int end_label  = next_label (emit);
 
+    accept     (emit, state->pre_stmt);
+    emit_label (emit, body_label);
+    accept     (emit, state->expr);
+    emit_inst  (emit, jump_if_false_inst_init (end_label));
+
+    int break_count = emit->break_labels   ->length;
+    int cont_count  = emit->cont_labels->length;
+    int_vector_push  (emit->break_labels, end_label);
+    int_vector_push  (emit->cont_labels,  cont_label);
+
+    accept (emit, state->body);
+    restore_labels (emit, break_count, cont_count);
+
+    emit_label (emit, cont_label);
+    accept     (emit, state->rep_stmt);
+    emit_inst  (emit, jump_inst_init (body_label));
+    emit_label (emit, end_label);
 }
 
 static void accept_foreach (struct emit_state * emit, struct foreach_state * state) {
-
+    
 }
 
 static void accept_func_call (struct emit_state * emit, struct func_call_state * state) {
@@ -409,7 +425,11 @@ static void restore_labels (struct emit_state * emit, int break_count, int conti
         int_vector_pop (emit->break_labels);
     }
 
-    while (emit->continue_labels->length > continue_count) {
-        int_vector_pop (emit->continue_labels);
+    while (emit->cont_labels->length > continue_count) {
+        int_vector_pop (emit->cont_labels);
     }
+}
+
+static int next_label (struct emit_state * emit) {
+    return emit->next_label++;
 }

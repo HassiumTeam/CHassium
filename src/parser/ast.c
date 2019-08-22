@@ -532,10 +532,6 @@ void block_node_free (struct ast_node * node) {
 void class_node_free (struct ast_node * node) {
     struct class_state * state = (struct class_state *)node->state;
 
-    free (state->name);
-    if (state->extends) {
-        free (state->extends);
-    }
     ast_node_free (state->body);
 }
 
