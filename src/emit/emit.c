@@ -258,7 +258,7 @@ static void accept_block (struct emit_state * emit, struct block_state * state, 
 }
 
 static void accept_break (struct emit_state * emit) {
-    emit_label (emit, int_vector_pop (emit->break_labels));
+    emit_inst (emit, jump_inst_init (int_vector_pop (emit->break_labels)));
 }
 
 static void accept_class (struct emit_state * emit, struct class_state * state) {
@@ -289,7 +289,7 @@ static void accept_closure (struct emit_state * emit, struct closure_state * sta
 }
 
 static void accept_continue (struct emit_state * emit) {
-    emit_label (emit, int_vector_pop (emit->cont_labels));
+    emit_inst (emit, jump_inst_init (int_vector_pop (emit->cont_labels)));
 }
 
 static void accept_expr_stmt (struct emit_state * emit, struct expr_stmt_state * state) {

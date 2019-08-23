@@ -7,23 +7,52 @@ struct has_obj * has_obj_init (void * state, void (* free_state) (void *)) {
     obj->attribs      = dict_init ();
     obj->instructions = vector_init ();
     obj->labels       = int_dict_init ();
+    obj->ref_count    = 0;
+
     obj->state        = state;
     obj->free_state   = free_state;
+
+    gc_add (obj);
+
+    return obj;
 }
 
 void has_obj_free (struct has_obj * obj) {
-    char * key;
-    for (int i = 0; i < obj->attribs->keys->length; i++) {
-        has_obj_free (dict_get (obj->attribs,  vector_get (obj->attribs->keys, i)));
+    for (int i = 0; i < obj->attribs->vals->length; i++) {
+        gc_remove_ref (vector_get (obj->attribs->vals, i));
     }
 
     dict_free (obj->attribs);
+
     if (obj->state) {
         obj->free_state (obj->state);
     }
+
     for (int i = 0; i < obj->instructions->length; i++) {
         inst_free (vector_get (obj->instructions, i));
     }
+
+    vector_free   (obj->instructions);
+    int_dict_free (obj->labels);
+
+    free (obj);
+}
+
+void has_obj_recursive_free (struct has_obj * obj) {
+    for (int i = 0; i < obj->attribs->vals->length; i++) {
+        has_obj_recursive_free (vector_get (obj->attribs->vals, i));
+    }
+
+    dict_free (obj->attribs);
+
+    if (obj->state) {
+        obj->free_state (obj->state);
+    }
+
+    for (int i = 0; i < obj->instructions->length; i++) {
+        inst_free (vector_get (obj->instructions, i));
+    }
+
     vector_free   (obj->instructions);
     int_dict_free (obj->labels);
 
@@ -35,6 +64,7 @@ struct has_obj * has_obj_get_attrib (struct has_obj * obj, char * name) {
 }
 
 void has_obj_set_attrib (struct has_obj * obj, char * name, struct has_obj * val) {
+    //gc_add_ref (val);
     dict_set (obj->attribs, name, val);
 }
 

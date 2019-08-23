@@ -11,13 +11,17 @@ struct has_obj {
     struct has_obj        * type;
     struct vector_state   * instructions;
     struct int_dict_state * labels;
+    int                     ref_count;
 
     void                  * state;
     void                 (* free_state) (void *);
 };
 
-struct has_obj * has_obj_init (void * state, void (* free_state) (void *));
-void             has_obj_free (struct has_obj * obj);
+#include <vm/gc.h>
+
+struct has_obj * has_obj_init           (void * state, void (* free_state) (void *));
+void             has_obj_free           (struct has_obj * obj);
+void             has_obj_recursive_free (struct has_obj * obj);
 
 struct has_obj * has_obj_get_attrib (struct has_obj * obj, char * name);
 void             has_obj_set_attrib (struct has_obj * obj, char * name, struct has_obj * val);

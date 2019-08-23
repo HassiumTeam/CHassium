@@ -484,11 +484,9 @@ void inst_free (struct inst * inst) {
 static void access_chain_free (struct vector_state * chain);
 
 void build_closure_inst_free (struct build_closure_inst * inst) {
-    has_obj_free (inst->func);
 }
 
 void build_exception_handler_inst_free (struct build_exception_handler_inst * inst) {
-    has_obj_free (inst->func);
 }
 
 void compile_module_inst_free (struct compile_module_inst * inst) {

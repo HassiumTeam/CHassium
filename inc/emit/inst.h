@@ -130,12 +130,10 @@ struct use_local_inst {
 };
 
 struct inst * bin_op_inst_init                  (bin_op_type_t type);
-struct inst * break_inst_init                   ();
 struct inst * build_closure_inst_init           (struct has_obj * func);
 struct inst * build_exception_handler_inst_init (struct has_obj * func, int caught_label);
 struct inst * call_inst_init                    (int arg_count);
 struct inst * compile_module_inst_init          (char * mod);
-struct inst * continue_inst_init                ();
 struct inst * import_inst_init                  (char * file, struct vector_state * name);
 struct inst * jump_inst_init                    (int label);
 struct inst * jump_if_true_inst_init            (int label);
@@ -169,12 +167,10 @@ struct inst * use_local_inst_init               (struct vector_state * ids, stru
 
 void inst_free                         (struct inst                         * inst);
 void bin_op_inst_free                  (struct bin_op_inst                  * inst);
-void break_inst_free                   ();
 void build_closure_inst_free           (struct build_closure_inst           * obj);
 void build_exception_handler_inst_free (struct build_exception_handler_inst * obj);
 void call_inst_free                    (struct call_inst                    * inst);
 void compile_module_inst_free          (struct compile_module_inst          * inst);
-void continue_inst_free                ();
 void import_inst_free                  (struct import_inst                  * inst);
 void jump_inst_free                    (struct jump_inst                    * inst);
 void jump_if_true_inst_free            (struct jump_if_true_inst            * inst);
