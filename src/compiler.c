@@ -1,6 +1,6 @@
 #include <compiler.h>
 
-void compile () {
+struct has_obj * compile () {
     struct tokenizer_state * lexer = tokenizer_init(fopen ("bin/test.has", "rb"));
     struct parser_state * parser = parser_init (lexer);
     struct ast_node * ast = parser_parse (parser);
@@ -20,6 +20,8 @@ void compile () {
     struct emit_state * emit = emit_init ();
     accept (emit, ast);
     ast_node_free (ast);
-    has_obj_free (emit_get_module (emit));
+    struct has_obj * mod = emit_get_module (emit);
     emit_free (emit);
+
+    return mod;
 }

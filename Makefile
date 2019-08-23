@@ -33,6 +33,9 @@ OBJECTS += src/util/int_dict.o
 OBJECTS += src/util/int_vector.o
 OBJECTS += src/util/vector.o
 
+OBJECTS += src/vm/stack_frame.o
+OBJECTS += src/vm/vm.o
+
 OBJECTS += src/main.o
 OBJECTS += src/compiler.o
 
@@ -55,6 +58,9 @@ INCLUDES += inc/util/dict.h
 INCLUDES += inc/util/int_dict.h
 INCLUDES += inc/util/int_vector.h
 INCLUDES += inc/util/vector.h
+
+INCLUDES += inc/vm/stack_frame.h
+INCLUDES += inc/vm/vm.h
 
 INCLUDES += inc/bin_op_type.h
 INCLUDES += inc/compiler.h

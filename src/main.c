@@ -1,5 +1,15 @@
 #include <compiler.h>
+#include <vm/vm.h>
 
 int main (int argc, char * argv[]) {
-    compile ();
+    struct has_obj  * mod;
+    struct vm_state * vm;
+
+    mod = compile ();
+    vm  = vm_init (mod);
+
+    vm_run (vm, mod, NULL);
+
+    vm_free (vm);
+    has_obj_free (mod);
 }

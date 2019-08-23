@@ -2,6 +2,7 @@
 #define _COMPILER_H_
 
 #include <emit/emit.h>
+#include <has_lib/has_obj.h>
 #include <lexer/token.h>
 #include <lexer/tokenizer.h>
 #include <parser/ast.h>
@@ -11,6 +12,6 @@
 #include <stdlib.h>
 #include <util/vector.h>
 
-void compile ();
+struct has_obj * compile ();
 
 #endif
