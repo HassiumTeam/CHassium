@@ -37,11 +37,31 @@ struct has_obj * get_var (struct stack_frame * state, int id) {
 }
 
 void set_global (struct stack_frame * state, int id, struct has_obj * val) {
+    gc_add_ref (val);
+
     frame_set (state->global_frame, id, val);
 }
 
 void set_var (struct stack_frame * state, int id, struct has_obj * val) {
+    gc_add_ref (val);
+
     frame_set (vector_peek (state->frames), id, val);
+}
+
+struct frame * peek_frame (struct stack_frame * state) {
+    return vector_peek (state->frames);
+}
+
+void pop_frame (struct stack_frame * state) {
+    frame_free (vector_pop (state->frames));
+}
+
+void push_frame (struct stack_frame * state, struct frame * frame) {
+    if (frame == NULL) {
+        frame = frame_init ();
+    }
+
+    vector_push (state->frames, frame);
 }
 
 static struct frame * frame_init () {
@@ -56,6 +76,10 @@ static struct frame * frame_init () {
 
 static void frame_free (struct frame * frame) {
     int_vector_free (frame->ids);
+
+    for (int i = 0; i < frame->vals->length; i++) {
+        gc_remove_ref (vector_get (frame->vals, i));
+    }
     vector_free     (frame->vals);
 
     free (frame);

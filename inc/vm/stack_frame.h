@@ -4,6 +4,7 @@
 #include <has_lib/has_obj.h>
 #include <util/int_vector.h>
 #include <util/vector.h>
+#include <vm/gc.h>
 
 struct frame {
     struct int_vector_state * ids;
@@ -22,7 +23,7 @@ struct has_obj * get_global (struct stack_frame * state, int id);
 struct has_obj * get_var    (struct stack_frame * state, int id);
 
 struct frame   * peek_frame (struct stack_frame * state);
-struct frame   * pop_frame  (struct stack_frame * state);
+void             pop_frame  (struct stack_frame * state);
 void             push_frame (struct stack_frame * state, struct frame * frame);
 
 void             set_global (struct stack_frame * state, int id, struct has_obj * val);
