@@ -497,7 +497,6 @@ void load_id_inst_free (struct load_id_inst * inst) {
 }
 
 void load_string_inst_free (struct load_string_inst * inst) {
-    free (inst->str);
 }
 
 void obj_decl_inst_free (struct obj_decl_inst * inst) {

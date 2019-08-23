@@ -11,7 +11,7 @@ struct vm_state * vm_init (struct has_obj * mod) {
     state->exception_returns  = vector_init ();
     state->exception_handlers = vector_init ();
 
-    import_module (state, default_mod_init ());
+    import_module (state, get_default_mod ());
 
     return state;
 }
@@ -218,10 +218,14 @@ static void call (struct vm_state * vm, struct run_state * run_state, struct cal
     struct vector_state * args;
     struct has_obj      * target;
 
-    args   = vector_init ();
     target = vector_pop (run_state->stack);
 
-    has_obj_invoke (target, vm, run_state->self, args);
+    args   = vector_init ();
+    for (int i = 0; i < state->arg_count; i++) {
+        vector_push (args, vector_pop (run_state->stack));
+    }
+
+    has_obj_invoke (target, vm, args);
 }
 
 static void compile_module (struct vm_state * vm, struct run_state * run_state, struct compile_module_inst * state) {
@@ -296,12 +300,12 @@ static void load_id (struct vm_state * vm, struct run_state * run_state, struct 
     }
 }
 
-static void load_number             (struct vm_state * vm, struct run_state * run_state, struct load_number_inst             * state) {
+static void load_number (struct vm_state * vm, struct run_state * run_state, struct load_number_inst * state) {
 
 }
 
-static void load_string             (struct vm_state * vm, struct run_state * run_state, struct load_string_inst             * state) {
-
+static void load_string (struct vm_state * vm, struct run_state * run_state, struct load_string_inst * state) {
+    vector_push (run_state->stack, has_string_init (state->str));
 }
 
 static void load_subscript          (struct vm_state * vm, struct run_state * run_state) {

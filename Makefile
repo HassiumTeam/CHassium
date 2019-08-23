@@ -19,6 +19,7 @@ OBJECTS += src/emit/inst.o
 OBJECTS += src/emit/symbol_table.o
 
 OBJECTS += src/has_lib/modules/default/default_mod.o
+OBJECTS += src/has_lib/modules/default/string.o
 
 OBJECTS += src/has_lib/has_class.o
 OBJECTS += src/has_lib/has_func.o
@@ -49,6 +50,7 @@ INCLUDES += inc/emit/inst.h
 INCLUDES += inc/emit/symbol_table.h
 
 INCLUDES += inc/has_lib/modules/default/default_mod.h
+INCLUDES += inc/has_lib/modules/default/string.h
 
 INCLUDES += inc/has_lib/has_class.h
 INCLUDES += inc/has_lib/has_func.h
