@@ -18,8 +18,11 @@ OBJECTS += src/emit/emit.o
 OBJECTS += src/emit/inst.o
 OBJECTS += src/emit/symbol_table.o
 
+OBJECTS += src/has_lib/modules/default/default_mod.o
+
 OBJECTS += src/has_lib/has_class.o
 OBJECTS += src/has_lib/has_func.o
+OBJECTS += src/has_lib/has_method.o
 OBJECTS += src/has_lib/has_obj.o
 
 OBJECTS += src/lexer/token.o
@@ -44,8 +47,11 @@ INCLUDES += inc/emit/emit.h
 INCLUDES += inc/emit/inst.h
 INCLUDES += inc/emit/symbol_table.h
 
+INCLUDES += inc/has_lib/modules/default/default_mod.h
+
 INCLUDES += inc/has_lib/has_class.h
 INCLUDES += inc/has_lib/has_func.h
+INCLUDES += inc/has_lib/has_method.h
 INCLUDES += inc/has_lib/has_obj.h
 
 INCLUDES += inc/lexer/token.h

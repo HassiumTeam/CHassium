@@ -1,5 +1,7 @@
 #include <vm/vm.h>
 
+static void import_module (struct vm_state * vm, struct has_obj * mod);
+
 struct vm_state * vm_init (struct has_obj * mod) {
     struct vm_state * state;
 
@@ -8,6 +10,8 @@ struct vm_state * vm_init (struct has_obj * mod) {
     state->stack_frame        = stack_frame_init ();
     state->exception_returns  = vector_init ();
     state->exception_handlers = vector_init ();
+
+    import_module (state, default_mod_init ());
 
     return state;
 }
@@ -201,7 +205,7 @@ static void call (struct vm_state * vm, struct run_state * run_state, struct cal
 
 }
 
-static void compile_module          (struct vm_state * vm, struct run_state * run_state, struct compile_module_inst          * state) {
+static void compile_module (struct vm_state * vm, struct run_state * run_state, struct compile_module_inst * state) {
 
 }
 
@@ -319,4 +323,13 @@ static void use_global              (struct vm_state * vm, struct run_state * ru
 
 static void use_local               (struct vm_state * vm, struct run_state * run_state, struct use_local_inst               * state) {
 
+}
+
+static void import_module (struct vm_state * vm, struct has_obj * mod) {
+    char * key;
+
+    for (int i = 0; i < mod->attribs->keys->length; i++) {
+        key = vector_get (mod->attribs->keys, i);
+        has_obj_set_attrib (vm->mod, key, vector_get (mod->attribs->vals, i));
+    }
 }

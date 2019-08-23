@@ -12,6 +12,8 @@ struct vm_state {
     struct vector_state * exception_returns;
 };
 
+#include <has_lib/modules/default/default_mod.h>
+
 struct vm_state * vm_init (struct has_obj  * mod);
 void              vm_free (struct vm_state * state);
 
