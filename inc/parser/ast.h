@@ -141,7 +141,7 @@ struct unary_op_state {
 
 struct use_state {
     struct vector_state * imports;
-    char                * mod;
+    struct ast_node     * expr;
 };
 
 struct while_state {
@@ -229,7 +229,7 @@ struct ast_node * unary_op_node_init (unary_op_type_t   type,
                                       struct ast_node * target);
 void unary_op_node_free (struct ast_node * node);
 struct ast_node * use_node_init (struct vector_state * import,
-                                 char                * mod);
+                                 struct ast_node     * expr);
 void use_node_free (struct ast_node * node);
 struct ast_node * while_node_init (struct ast_node * expr,
                                    struct ast_node * body);

@@ -513,11 +513,35 @@ static void accept_unary_op (struct emit_state * emit, struct unary_op_state * s
 }
 
 static void accept_use (struct emit_state * emit, struct use_state * state) {
-    
+    if (state->expr->type == string_node) {
+        emit_inst (emit, compile_module_inst_init (((struct string_state *)state->expr->state)->str));
+    } else {
+        accept (emit, state->expr);
+    }
 }
 
 static void accept_while (struct emit_state * emit, struct while_state * state) {
+    int body_label, end_label;
+    int break_count, cont_count;
 
+    body_label = next_label (emit);
+    end_label  = next_label (emit);
+
+    emit_label (emit, body_label);
+    accept     (emit, state->expr);
+    emit_inst  (emit, jump_if_false_inst_init (end_label));
+
+    break_count = emit->break_labels->length;
+    cont_count  = emit->cont_labels ->length;
+    int_vector_push (emit->break_labels, end_label);
+    int_vector_push (emit->cont_labels,  body_label);
+
+    accept     (emit, state->body);
+    restore_labels (emit, break_count, cont_count);
+
+    emit_inst  (emit, jump_inst_init (body_label));
+
+    emit_label (emit, end_label);
 }
 
 static void emit_inst (struct emit_state * emit, struct inst * inst) {

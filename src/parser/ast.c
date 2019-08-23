@@ -405,11 +405,11 @@ struct ast_node * subscript_node_init (struct ast_node * target, struct ast_node
     struct subscript_state * state;
     struct ast_node        * node;
 
-    state = (struct subscript_state *)calloc (1, sizeof (struct subscript_state));
+    state         = (struct subscript_state *)calloc (1, sizeof (struct subscript_state));
     state->target = target;
     state->index  = index;
 
-    node = ast_node_init (subscript_node);
+    node        = ast_node_init (subscript_node);
     node->state = state;
 
     return node;
@@ -419,10 +419,10 @@ struct ast_node * super_node_init (struct vector_state * args) {
     struct super_state * state;
     struct ast_node    * node;
 
-    state = (struct super_state *)malloc (sizeof (struct super_state));
+    state       = (struct super_state *)malloc (sizeof (struct super_state));
     state->args = args;
 
-    node = ast_node_init (super_node);
+    node        = ast_node_init (super_node);
     node->state = state;
 
     return node;
@@ -436,7 +436,7 @@ struct ast_node * try_catch_node_init (struct ast_node * try_body, struct ast_no
     state->try_body = try_body;
     state->catch_body = catch_body;
 
-    node = ast_node_init (try_catch_node);
+    node        = ast_node_init (try_catch_node);
     node->state = state;
 
     return node;
@@ -449,7 +449,7 @@ struct ast_node * typeof_node_init (struct ast_node * expr) {
     state = (struct typeof_state *)calloc (1, sizeof (struct typeof_state));
     state->expr = expr;
 
-    node = ast_node_init (typeof_node);
+    node        = ast_node_init (typeof_node);
     node->state = state;
 
     return node;
@@ -463,21 +463,21 @@ struct ast_node * unary_op_node_init (unary_op_type_t type, struct ast_node * ta
     state->type = type;
     state->target = target;
 
-    node = ast_node_init (unary_op_node);
+    node        = ast_node_init (unary_op_node);
     node->state = state;
 
     return node;
 }
 
-struct ast_node * use_node_init (struct vector_state * imports, char * mod) {
+struct ast_node * use_node_init (struct vector_state * imports, struct ast_node * expr) {
     struct use_state * state;
     struct ast_node  * node;
 
-    state = (struct use_state *)calloc (1, sizeof (struct use_state));
+    state          = (struct use_state *)calloc (1, sizeof (struct use_state));
     state->imports = imports;
-    state->mod     = mod;
+    state->expr    = expr;
 
-    node = ast_node_init (use_node);
+    node        = ast_node_init (use_node);
     node->state = state;
 
     return node;
@@ -487,11 +487,11 @@ struct ast_node * while_node_init (struct ast_node * expr, struct ast_node * bod
     struct while_state * state;
     struct ast_node    * node;
 
-    state = (struct while_state *)calloc (1, sizeof (struct while_state));
+    state       = (struct while_state *)calloc (1, sizeof (struct while_state));
     state->expr = expr;
     state->body = body;
 
-    node = ast_node_init (while_node);
+    node        = ast_node_init (while_node);
     node->state = state;
 
     return node;
@@ -688,9 +688,14 @@ void use_node_free (struct ast_node * node) {
     for (int i = 0; i < state->imports->length; i++) {
         free (vector_get (state->imports, i));
     }
-    vector_free (state->imports);
+    vector_free   (state->imports);
 
-    free (state->mod);
+    if (state->expr->type == string_node) {
+        free (state->expr->state);
+        free (state->expr);
+    } else {
+        ast_node_free (state->expr);
+    }
 }
 
 void while_node_free (struct ast_node * node) {

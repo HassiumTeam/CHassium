@@ -64,9 +64,7 @@ struct inst * compile_module_inst_init (char * file) {
     struct inst                * inst;
 
     state       = (struct compile_module_inst *)calloc (1, sizeof (struct compile_module_inst));
-    state->file = (char *)calloc (strlen (file) + 1, sizeof (char));
-
-    memcpy (state->file, file, strlen (file) + 1);
+    state->file = file;
 
     inst = inst_init (compile_module_inst, state);
 

@@ -309,7 +309,7 @@ static struct ast_node * parse_try_catch (struct parser_state * state) {
 
 static struct ast_node * parse_use (struct parser_state * state) {
     struct vector_state * imports;
-    char                * mod;
+    struct ast_node     * expr;
 
     free (expectv (state, id, "use"));
 
@@ -319,9 +319,9 @@ static struct ast_node * parse_use (struct parser_state * state) {
     } while (accept (state, comma));
 
     free (expectv (state, id, "from"));
-    mod = expect (state, stringc);
+    expr = parse_expr (state);
 
-    return use_node_init (imports, mod);
+    return use_node_init (imports, expr);
 }
 
 static struct ast_node * parse_while (struct parser_state * state) {
