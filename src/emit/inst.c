@@ -14,14 +14,6 @@ struct inst * bin_op_inst_init (bin_op_type_t type) {
     return inst;
 }
 
-struct inst * break_inst_init () {
-    struct inst * inst;
-
-    inst = inst_init (break_inst, NULL);
-
-    return inst;
-}
-
 struct inst * build_closure_inst_init (struct has_obj * func) {
     struct build_closure_inst * state;
     struct inst               * inst;
@@ -67,14 +59,6 @@ struct inst * compile_module_inst_init (char * file) {
     state->file = file;
 
     inst = inst_init (compile_module_inst, state);
-
-    return inst;
-}
-
-struct inst * continue_inst_init () {
-    struct inst * inst;
-
-    inst = inst_init (continue_inst, NULL);
 
     return inst;
 }

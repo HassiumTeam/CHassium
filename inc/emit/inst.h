@@ -9,8 +9,8 @@
 #include <util/vector.h>
 
 typedef enum {
-    bin_op_inst, break_inst, build_closure_inst, build_exception_handler_inst, call_inst,
-    continue_inst, compile_module_inst, import_inst, iter_inst, iter_next_inst, iter_full_inst,
+    bin_op_inst, build_closure_inst, build_exception_handler_inst, call_inst,
+    compile_module_inst, import_inst, iter_inst, iter_next_inst, iter_full_inst,
     jump_inst, jump_if_true_inst, jump_if_false_inst, list_decl_inst, load_attrib_inst,
     load_id_inst, load_number_inst, load_string_inst, load_subscript_inst, obj_decl_inst,
     obj_destructure_global_inst, obj_destructure_local_inst, pop_inst,
