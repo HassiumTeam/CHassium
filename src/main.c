@@ -13,8 +13,8 @@ int main (int argc, char * argv[]) {
 
     vm_run (vm, mod, NULL);
     gc_run ();
-    
     vm_free (vm);
 
+    gc_run ();
     gc_free ();
 }

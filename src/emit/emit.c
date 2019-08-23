@@ -2,6 +2,7 @@
 
 struct emit_state * emit_init () {
     struct emit_state * state;
+    struct has_obj    * mod;
 
     state                  = (struct emit_state *)calloc (1, sizeof (struct emit_state));
     state->symbol_table    = symbol_table_init ();
@@ -10,7 +11,10 @@ struct emit_state * emit_init () {
     state->cont_labels     = int_vector_init ();
     state->next_label      = 0;
 
-    vector_push (state->emit_stack, has_obj_init (NULL, NULL));
+    mod = has_obj_init (NULL, NULL);
+    gc_add_ref (mod);
+
+    vector_push (state->emit_stack, mod);
 
     return state;
 }

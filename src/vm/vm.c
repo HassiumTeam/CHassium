@@ -17,6 +17,8 @@ struct vm_state * vm_init (struct has_obj * mod) {
 }
 
 void vm_free (struct vm_state * state) {
+    gc_remove_ref (state->mod);
+
     stack_frame_free (state->stack_frame);
     vector_free      (state->exception_returns);
     vector_free      (state->exception_handlers);

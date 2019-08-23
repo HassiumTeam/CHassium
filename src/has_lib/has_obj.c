@@ -72,7 +72,10 @@ void has_obj_set_attrib (struct has_obj * obj, char * name, struct has_obj * val
         gc_remove_ref (has_obj_get_attrib (obj, name));
     }
 
-    gc_add_ref (val);
+    if (obj != val) {
+        gc_add_ref (val);
+    }
+    
     dict_set (obj->attribs, name, val);
 }
 

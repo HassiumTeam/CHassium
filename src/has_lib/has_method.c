@@ -9,6 +9,8 @@ struct has_obj * has_method_init (struct has_obj * (* invoke) (struct vm_state *
 
     obj = has_obj_init (state, has_method_free);
 
+    has_obj_set_attrib (obj, "_invoke", obj);
+
     return obj;
 }
 

@@ -15,7 +15,6 @@ struct has_obj * default_mod_init () {
 
 struct has_obj * println (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
     struct has_obj * obj;
-
     for (int i = 0; i < args->length; i++) {
         obj = vector_get (args, i);
     }

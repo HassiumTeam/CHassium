@@ -12,6 +12,7 @@
 #include <unary_op_type.h>
 #include <util/int_vector.h>
 #include <util/vector.h>
+#include <vm/gc.h>
 
 struct emit_state {
     struct symbol_table_state * symbol_table;
