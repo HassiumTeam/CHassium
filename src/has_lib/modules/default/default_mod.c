@@ -13,16 +13,12 @@ struct has_obj * default_mod_init () {
     return obj;
 }
 
-struct has_obj * println (struct vm_state * vm, struct has_obj * self, int arg_count, ...) {
+struct has_obj * println (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
     struct has_obj * obj;
-    va_list          ap;
 
-    va_start (ap, arg_count);
-
-    for (int i = 0; i < arg_count; i++) {
-        obj = va_arg (ap, struct has_obj *);
-        printf ("Test\n");
+    for (int i = 0; i < args->length; i++) {
+        obj = vector_get (args, i);
     }
 
-    va_end   (ap);
+    vector_free (args);
 }

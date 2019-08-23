@@ -2,6 +2,7 @@
 #define _HAS_OBJ_H_
 
 #include <emit/inst.h>
+#include <stdarg.h>
 #include <util/dict.h>
 #include <util/int_dict.h>
 #include <util/vector.h>
@@ -18,14 +19,19 @@ struct has_obj {
 };
 
 #include <vm/gc.h>
+#include <vm/vm.h>
 
 struct has_obj * has_obj_init           (void * state, void (* free_state) (void *));
 void             has_obj_free           (struct has_obj * obj);
 void             has_obj_recursive_free (struct has_obj * obj);
 
 struct has_obj * has_obj_get_attrib (struct has_obj * obj, char * name);
+int              has_obj_has_attrib (struct has_obj * obj, char * name);
 void             has_obj_set_attrib (struct has_obj * obj, char * name, struct has_obj * val);
+
 void             has_obj_emit_label (struct has_obj * obj, int label);
 void             has_obj_emit       (struct has_obj * obj, struct inst * inst);
+
+struct vector_state * assemble_args (int arg_count, ...);
 
 #endif

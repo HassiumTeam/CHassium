@@ -63,8 +63,16 @@ struct has_obj * has_obj_get_attrib (struct has_obj * obj, char * name) {
     return (struct has_obj *)dict_get (obj->attribs, name);
 }
 
+int has_obj_has_attrib (struct has_obj * obj, char * name) {
+    return dict_has_key (obj->attribs, name);
+}
+
 void has_obj_set_attrib (struct has_obj * obj, char * name, struct has_obj * val) {
-    //gc_add_ref (val);
+    if (has_obj_has_attrib (obj, name)) {
+        gc_remove_ref (has_obj_get_attrib (obj, name));
+    }
+
+    gc_add_ref (val);
     dict_set (obj->attribs, name, val);
 }
 
@@ -78,4 +86,17 @@ void has_obj_emit_label (struct has_obj * obj, int label) {
         label,
         obj->instructions->length
     );
+}
+
+struct vector_state * assemble_args (int arg_count, ...) {
+    struct vector_state * args;
+    va_list ap;
+
+    args = vector_init ();
+    va_start (ap, arg_count);
+    for (int i = 0; i < arg_count; i++) {
+        vector_push (args, va_arg(ap, struct has_obj *));
+    }
+
+    va_end (ap);
 }

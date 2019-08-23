@@ -391,7 +391,7 @@ static void accept_func_decl (struct emit_state * emit, struct func_decl_state *
 }
 
 static void accept_id (struct emit_state * emit, struct id_state * state) {
-    if (strcmp (state->id, "this")) {
+    if (strcmp (state->id, "this") == 0) {
         emit_inst (emit, self_reference_inst_init ());
     } else if (has_symbol (emit->symbol_table, state->id)) {
         emit_inst (emit, load_id_inst_init (get_symbol (emit->symbol_table, state->id), NULL));

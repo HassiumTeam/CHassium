@@ -15,7 +15,8 @@ struct dict_state {
 struct dict_state * dict_init ();
 void                dict_free (struct dict_state * state);
 
-void * dict_get (struct dict_state * state, char * key);
-void   dict_set (struct dict_state * state, char * key, void * val);
+void * dict_get     (struct dict_state * state, char * key);
+int    dict_has_key (struct dict_state * state, char * key);
+void   dict_set     (struct dict_state * state, char * key, void * val);
 
 #endif

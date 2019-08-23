@@ -24,10 +24,20 @@ void vm_free (struct vm_state * state) {
     free (state);
 }
 
+static void import_module (struct vm_state * vm, struct has_obj * mod) {
+    char * key;
+
+    for (int i = 0; i < mod->attribs->keys->length; i++) {
+        key = vector_get (mod->attribs->keys, i);
+        has_obj_set_attrib (vm->mod, key, vector_get (mod->attribs->vals, i));
+    }
+}
+
 static struct run_state {
     struct vector_state * stack;
     struct inst         * inst;
     struct has_obj      * obj;
+    struct has_obj      * self;
     int                   pos;
 };
 
@@ -69,13 +79,14 @@ static void use_local               (struct vm_state * vm, struct run_state * ru
 struct has_obj * vm_run (struct vm_state * vm, struct has_obj * obj, struct has_obj * self) {
     struct run_state state;
 
-    state.obj = obj;
+    state.obj   = obj;
+    state.self  = self;
     state.stack = vector_init ();
+    state.pos   = 0;
 
-    state.pos = 0;
     while (state.pos < obj->instructions->length) {
         state.inst = vector_get (obj->instructions, state.pos);
-
+        printf("%d\n", state.inst->type);
         switch (state.inst->type) {
             case bin_op_inst:
                 bin_op                     (vm, &state, (struct bin_op_inst *)                state.inst->state);
@@ -202,7 +213,13 @@ static void build_exception_handler (struct vm_state * vm, struct run_state * ru
 }
 
 static void call (struct vm_state * vm, struct run_state * run_state, struct call_inst * state) {
+    struct vector_state * args;
+    struct has_obj      * target;
 
+    args   = vector_init ();
+    target = vector_pop (run_state->stack);
+
+    has_obj_invoke (target, vm, run_state->self, args);
 }
 
 static void compile_module (struct vm_state * vm, struct run_state * run_state, struct compile_module_inst * state) {
@@ -245,8 +262,36 @@ static void load_attrib             (struct vm_state * vm, struct run_state * ru
 
 }
 
-static void load_id                 (struct vm_state * vm, struct run_state * run_state, struct load_id_inst                 * state) {
+static void load_id (struct vm_state * vm, struct run_state * run_state, struct load_id_inst * state) {
+    struct has_obj * obj;
 
+    if (state->name == NULL) {
+        obj = get_var (vm->stack_frame, state->index);
+        if (obj != NULL ){
+            vector_push (run_state->stack, obj);
+        } else {
+            obj = get_global (vm->stack_frame, state->index);
+            if (obj != NULL) {
+                vector_push (run_state->stack, obj);
+            } else {
+                printf ("Cannot load id %d\n", state->index);
+                exit   (EXIT_FAILURE);
+            }
+        }
+    } else {
+        obj = has_obj_get_attrib (run_state->obj, state->name);
+        if (obj != NULL) {
+            vector_push (run_state->stack, obj);
+        } else {
+            obj = has_obj_get_attrib (vm->mod, state->name);
+            if (obj != NULL) {
+                vector_push (run_state->stack, obj);
+            } else {
+                printf ("Cannot load id \"%s\"\n", state->name);
+                exit   (EXIT_FAILURE);
+            }
+        }
+    }
 }
 
 static void load_number             (struct vm_state * vm, struct run_state * run_state, struct load_number_inst             * state) {
@@ -323,13 +368,4 @@ static void use_global              (struct vm_state * vm, struct run_state * ru
 
 static void use_local               (struct vm_state * vm, struct run_state * run_state, struct use_local_inst               * state) {
 
-}
-
-static void import_module (struct vm_state * vm, struct has_obj * mod) {
-    char * key;
-
-    for (int i = 0; i < mod->attribs->keys->length; i++) {
-        key = vector_get (mod->attribs->keys, i);
-        has_obj_set_attrib (vm->mod, key, vector_get (mod->attribs->vals, i));
-    }
 }
