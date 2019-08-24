@@ -31,6 +31,7 @@ void             has_obj_set_attrib (struct has_obj * obj, char * name, struct h
 
 void             has_obj_emit_label (struct has_obj * obj, int label);
 void             has_obj_emit       (struct has_obj * obj, struct inst * inst);
+int              has_obj_get_label  (struct has_obj * obj, int label);
 
 struct vector_state * assemble_args (int arg_count, ...);
 

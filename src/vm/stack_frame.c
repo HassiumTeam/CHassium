@@ -15,6 +15,8 @@ struct stack_frame * stack_frame_init () {
     state->frames       = vector_init ();
     state->global_frame = frame_init ();
 
+    vector_push (state->frames, state->global_frame);
+
     return state;
 }
 
@@ -22,9 +24,8 @@ void stack_frame_free (struct stack_frame * state) {
     for (int i = 0; i < state->frames->length; i++) {
         frame_free (vector_get (state->frames, i));
     }
+    
     vector_free (state->frames);
-
-    frame_free  (state->global_frame);
     free (state);
 }
 

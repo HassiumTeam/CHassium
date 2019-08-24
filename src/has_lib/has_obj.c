@@ -90,3 +90,7 @@ void has_obj_emit_label (struct has_obj * obj, int label) {
         obj->instructions->length
     );
 }
+
+int has_obj_get_label (struct has_obj * obj, int label) {
+    return int_dict_get (obj->labels, label);
+}

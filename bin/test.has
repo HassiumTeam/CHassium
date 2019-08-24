@@ -1,1 +1,3 @@
-println (5 + 92);
+a = 3;
+
+println (a + 2);
