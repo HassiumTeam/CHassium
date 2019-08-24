@@ -644,7 +644,7 @@ static struct ast_node * parse_term (struct parser_state * state) {
         val = expect (state, numberc);
         f = atof (val);
         free (val);
-        return number_node_init (2);
+        return number_node_init (f);
     } else if (accept (state, oparen)) {
         expr = parse_expr (state);
         expect (state, cparen);

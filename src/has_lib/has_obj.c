@@ -75,7 +75,7 @@ void has_obj_set_attrib (struct has_obj * obj, char * name, struct has_obj * val
     if (obj != val) {
         gc_add_ref (val);
     }
-    
+
     dict_set (obj->attribs, name, val);
 }
 
@@ -89,17 +89,4 @@ void has_obj_emit_label (struct has_obj * obj, int label) {
         label,
         obj->instructions->length
     );
-}
-
-struct vector_state * assemble_args (int arg_count, ...) {
-    struct vector_state * args;
-    va_list ap;
-
-    args = vector_init ();
-    va_start (ap, arg_count);
-    for (int i = 0; i < arg_count; i++) {
-        vector_push (args, va_arg(ap, struct has_obj *));
-    }
-
-    va_end (ap);
 }

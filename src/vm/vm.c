@@ -203,7 +203,17 @@ struct has_obj * vm_run (struct vm_state * vm, struct has_obj * obj, struct has_
 }
 
 static void bin_op (struct vm_state * vm, struct run_state * run_state, struct bin_op_inst * state) {
+    struct has_obj * right;
+    struct has_obj * left;
 
+    right = vector_pop (run_state->stack);
+    left  = vector_pop (run_state->stack);
+
+    switch (state->type) {
+        case add_bin_op:
+            vector_push (run_state->stack, has_obj_add (vm, left, right));
+            break;
+    }
 }
 
 static void build_closure (struct vm_state * vm, struct run_state * run_state, struct build_closure_inst * state) {
@@ -225,7 +235,7 @@ static void call (struct vm_state * vm, struct run_state * run_state, struct cal
         vector_push (args, vector_pop (run_state->stack));
     }
 
-    has_obj_invoke (target, vm, args);
+    vector_push (run_state->stack, has_obj_invoke (target, vm, args));
 }
 
 static void compile_module (struct vm_state * vm, struct run_state * run_state, struct compile_module_inst * state) {
@@ -308,11 +318,11 @@ static void load_string (struct vm_state * vm, struct run_state * run_state, str
     vector_push (run_state->stack, has_string_init (state->str));
 }
 
-static void load_subscript          (struct vm_state * vm, struct run_state * run_state) {
+static void load_subscript (struct vm_state * vm, struct run_state * run_state) {
 
 }
 
-static void obj_decl                (struct vm_state * vm, struct run_state * run_state, struct obj_decl_inst                * state) {
+static void obj_decl (struct vm_state * vm, struct run_state * run_state, struct obj_decl_inst                * state) {
 
 }
 
@@ -324,8 +334,8 @@ static void obj_destructure_local   (struct vm_state * vm, struct run_state * ru
 
 }
 
-static void pop                     (struct vm_state * vm, struct run_state * run_state) {
-
+static void pop (struct vm_state * vm, struct run_state * run_state) {
+    vector_pop (run_state->stack);
 }
 
 static void pop_exception_handler   (struct vm_state * vm, struct run_state * run_state) {
