@@ -14,6 +14,10 @@ int main (int argc, char * argv[]) {
     gc_run ();
     vm_run (vm, mod, NULL);
     gc_run ();
+    gc_run ();
+    gc_run ();
+    gc_run ();
+    gc_run ();
 
     vm_free (vm);
     gc_free ();

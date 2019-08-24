@@ -31,6 +31,7 @@ void gc_run () {
 
     for (int i = 0; i < objects->length; i++) {
         obj = vector_get (objects, i);
+        printf ("Checking object at %p with %d refs\n", obj, obj->ref_count);
 
         if (obj->ref_count > 0) {
             vector_push  (new_objects, obj);

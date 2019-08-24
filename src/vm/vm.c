@@ -283,7 +283,17 @@ static void jump_if_false (struct vm_state * vm, struct run_state * run_state, s
 }
 
 static void list_decl (struct vm_state * vm, struct run_state * run_state, struct list_decl_inst * state) {
+    struct vector_state * init;
+    struct has_obj      * obj;
 
+    init = vector_init ();
+    for (int i = 0; i < state->count; i++) {
+        obj = vector_pop (run_state->stack);
+        gc_add_ref (obj);
+        vector_push (init, obj);
+    }
+
+    vector_push (run_state->stack, has_list_init (init));
 }
 
 static void load_attrib (struct vm_state * vm, struct run_state * run_state, struct load_attrib_inst * state) {

@@ -14,6 +14,7 @@ struct vm_state {
 #include <has_lib/has_obj.h>
 #include <has_lib/has_obj_lib.h>
 #include <has_lib/modules/default/default_mod.h>
+#include <has_lib/modules/default/list.h>
 #include <has_lib/modules/default/number.h>
 #include <has_lib/modules/default/string.h>
 
