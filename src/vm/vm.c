@@ -301,7 +301,7 @@ static void load_id (struct vm_state * vm, struct run_state * run_state, struct 
 }
 
 static void load_number (struct vm_state * vm, struct run_state * run_state, struct load_number_inst * state) {
-
+    vector_push (run_state->stack, has_number_init (state->f));
 }
 
 static void load_string (struct vm_state * vm, struct run_state * run_state, struct load_string_inst * state) {

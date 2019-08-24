@@ -7,6 +7,7 @@ void gc_init () {
 }
 
 void gc_free () {
+    gc_run      ();
     vector_free (objects);
 }
 
@@ -37,7 +38,7 @@ void gc_run () {
             has_obj_free (obj);
         }
     }
-    
+
     vector_free (objects);
     objects = new_objects;
 }

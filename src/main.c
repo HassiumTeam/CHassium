@@ -11,10 +11,10 @@ int main (int argc, char * argv[]) {
     mod = compile ();
     vm  = vm_init (mod);
 
+    gc_run ();
     vm_run (vm, mod, NULL);
     gc_run ();
-    vm_free (vm);
 
-    gc_run ();
+    vm_free (vm);
     gc_free ();
 }
