@@ -30,9 +30,13 @@ static struct has_obj * default_mod_init () {
 
 static struct has_obj * println (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
     struct has_obj * obj;
+    char           * str;
+
     for (int i = 0; i < args->length; i++) {
         obj = vector_get (args, i);
-        printf ("%s", has_obj_to_cstring (obj, vm));
+        str = has_obj_to_cstring (obj, vm);
+        printf ("%s", str);
+        free (str);
     }
 
     printf ("\n");

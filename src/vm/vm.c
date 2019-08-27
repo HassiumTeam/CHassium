@@ -306,10 +306,15 @@ static void list_decl (struct vm_state * vm, struct run_state * run_state, struc
 
 static void load_attrib (struct vm_state * vm, struct run_state * run_state, struct load_attrib_inst * state) {
     struct has_obj * target;
+    struct has_obj * val;
 
-    target = gc_remove_ref (vector_pop (run_state->stack));
+    target = vector_pop (run_state->stack);
+    val    = has_obj_get_attrib (target, state->attrib);
 
-    vector_push (run_state->stack, has_obj_get_attrib (target, state->attrib));
+    vector_push (run_state->stack, val);
+
+    gc_remove_ref (target);
+    gc_add_ref    (val);
 }
 
 static void load_id (struct vm_state * vm, struct run_state * run_state, struct load_id_inst * state) {
@@ -389,13 +394,12 @@ static void store_attrib (struct vm_state * vm, struct run_state * run_state, st
     struct has_obj * val;
 
     target = vector_pop (run_state->stack);
+    val    = vector_pop (run_state->stack);
 
     has_obj_set_attrib (target, state->attrib, val);
-
     vector_push (run_state->stack, val);
 
     gc_remove_ref (target);
-    gc_remove_ref (val);
 }
 
 static void store_global (struct vm_state * vm, struct run_state * run_state, struct store_global_inst * state) {

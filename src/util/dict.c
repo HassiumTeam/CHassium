@@ -38,8 +38,8 @@ void dict_set (struct dict_state * state, char * key, void * val) {
     char * new_key;
     int    index;
 
-    new_key = (char *)calloc (strlen (key), strlen (key));
-    memcpy (new_key, key, strlen (key));
+    new_key = (char *)calloc (strlen (key) + 1, strlen (key));
+    memcpy (new_key, key, strlen (key) + 1);
 
     index = get_key_index (state, key);
 
