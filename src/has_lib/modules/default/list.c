@@ -38,8 +38,9 @@ static struct has_obj * _index (struct vm_state * vm, struct has_obj * self, str
     struct has_number * num;
 
     this = (struct has_list *)self->state;
-
     num = (struct has_number *)((struct has_obj *)vector_get (args, 0))->state;
 
+    vector_free (args);
+    
     return vector_get (this->vals, (int)num->val);
 }

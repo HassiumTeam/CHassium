@@ -239,7 +239,7 @@ static void call (struct vm_state * vm, struct run_state * run_state, struct cal
         vector_push (args, vector_pop (run_state->stack));
     }
 
-    vector_push (run_state->stack, gc_add_ref (has_obj_invoke (target, vm, args)));
+    vector_push (run_state->stack, gc_add_ref (has_obj_invoke (vm, target, args)));
 
     gc_remove_vect (args);
     gc_remove_ref  (target);
@@ -358,7 +358,16 @@ static void load_string (struct vm_state * vm, struct run_state * run_state, str
 }
 
 static void load_subscript (struct vm_state * vm, struct run_state * run_state) {
+    struct has_obj * target;
+    struct has_obj * index;
 
+    target = vector_pop (run_state->stack);
+    index  = vector_pop (run_state->stack);
+
+    vector_push (run_state->stack, gc_add_ref (has_obj_index (vm, target, index)));
+
+    gc_remove_ref (target);
+    gc_remove_ref (index);
 }
 
 static void obj_decl (struct vm_state * vm, struct run_state * run_state, struct obj_decl_inst                * state) {
@@ -404,12 +413,11 @@ static void store_attrib (struct vm_state * vm, struct run_state * run_state, st
 
 static void store_global (struct vm_state * vm, struct run_state * run_state, struct store_global_inst * state) {
     struct has_obj * val;
+
     val = vector_pop (run_state->stack);
     set_global (vm->stack_frame, state->symbol, val);
 
     vector_push (run_state->stack, val);
-
-    gc_remove_ref (val);
 }
 
 static void store_local (struct vm_state * vm, struct run_state * run_state, struct store_local_inst * state) {
@@ -417,6 +425,7 @@ static void store_local (struct vm_state * vm, struct run_state * run_state, str
 
     val = vector_pop (run_state->stack);
     set_var (vm->stack_frame, state->symbol, val);
+
     vector_push (run_state->stack, val);
 }
 

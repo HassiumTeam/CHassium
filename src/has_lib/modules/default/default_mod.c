@@ -34,7 +34,7 @@ static struct has_obj * println (struct vm_state * vm, struct has_obj * self, st
 
     for (int i = 0; i < args->length; i++) {
         obj = vector_get (args, i);
-        str = has_obj_to_cstring (obj, vm);
+        str = has_obj_to_cstring (vm, obj);
         printf ("%s", str);
         free (str);
     }
