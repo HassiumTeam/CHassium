@@ -17,7 +17,6 @@ struct has_obj * has_string_init (char * val) {
 
 void has_string_free (void * state) {
     struct has_string * string = state;
-
     free (string->val);
     free (string);
 }

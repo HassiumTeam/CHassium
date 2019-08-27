@@ -272,23 +272,31 @@ static void jump (struct vm_state * vm, struct run_state * run_state, struct jum
 }
 
 static void jump_if_true (struct vm_state * vm, struct run_state * run_state, struct jump_if_true_inst * state) {
-    struct has_number * num;
+    struct has_obj * num_obj;
+    int              num;
 
-    num = (struct has_number *)((struct has_obj *)vector_pop (run_state->stack))->state;
+    num_obj = vector_pop (run_state->stack);
+    num     = has_obj_to_cint (vm, num_obj);
 
-    if (num->val != 0) {
+    if (num != 0) {
         run_state->pos = has_obj_get_label (run_state->obj, state->label);
     }
+
+    gc_remove_ref (num_obj);
 }
 
 static void jump_if_false (struct vm_state * vm, struct run_state * run_state, struct jump_if_false_inst * state) {
-    struct has_number * num;
+    struct has_obj * num_obj;
+    int              num;
 
-    num = (struct has_number *)((struct has_obj *)vector_pop (run_state->stack))->state;
+    num_obj = vector_pop (run_state->stack);
+    num     = has_obj_to_cint (vm, num_obj);
 
-    if (num->val == 0) {
+    if (num == 0) {
         run_state->pos = has_obj_get_label (run_state->obj, state->label);
     }
+
+    gc_remove_ref (num_obj);
 }
 
 static void list_decl (struct vm_state * vm, struct run_state * run_state, struct list_decl_inst * state) {
@@ -354,7 +362,12 @@ static void load_number (struct vm_state * vm, struct run_state * run_state, str
 }
 
 static void load_string (struct vm_state * vm, struct run_state * run_state, struct load_string_inst * state) {
-    vector_push (run_state->stack, gc_add_ref (has_string_init (state->str)));
+    char * str;
+
+    str = (char *)calloc (strlen (state->str) + 1, sizeof (char));
+    memcpy (str, state->str, strlen (state->str) + 1);
+
+    vector_push (run_state->stack, gc_add_ref (has_string_init (str)));
 }
 
 static void load_subscript (struct vm_state * vm, struct run_state * run_state) {

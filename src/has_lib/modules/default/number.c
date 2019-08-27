@@ -1,6 +1,7 @@
 #include <has_lib/modules/default/number.h>
 
 static struct has_obj * _add (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
+static struct has_obj * to_number (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 static struct has_obj * to_string (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 
 struct has_obj * has_number_init (float f) {
@@ -12,6 +13,7 @@ struct has_obj * has_number_init (float f) {
 
     obj = has_obj_init (state, has_number_free);
     has_obj_set_attrib (obj, "_add",     has_method_init (obj, _add));
+    has_obj_set_attrib (obj, "toNumber", has_method_init (obj, to_number));
     has_obj_set_attrib (obj, "toString", has_method_init (obj, to_string));
 
     return obj;
@@ -35,6 +37,10 @@ static struct has_obj * _add (struct vm_state * vm, struct has_obj * self, struc
     return has_number_init (num->val + right->val);
 }
 
+static struct has_obj * to_number (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
+    return self;
+}
+
 static struct has_obj * to_string (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
     struct has_number * num;
     char              * buf;
@@ -43,6 +49,10 @@ static struct has_obj * to_string (struct vm_state * vm, struct has_obj * self, 
 
     buf = (char *)calloc (1, 100);
     sprintf (buf, "%f", num->val);
+
+    if (args != NULL) {
+        vector_free (args);
+    }
 
     return has_string_init (buf);
 }

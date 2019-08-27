@@ -32,6 +32,24 @@ struct has_obj * has_obj_store_index (struct vm_state * vm, struct has_obj * obj
     return has_obj_invoke (vm, _store_index, assemble_args (2, index, val));
 }
 
+float has_obj_to_cfloat (struct vm_state * vm, struct has_obj * obj) {
+    struct has_obj * num_obj;
+    struct has_obj * to_number;
+
+    to_number = has_obj_get_attrib (obj, "toNumber");
+    num_obj  = has_obj_invoke      (vm, to_number, NULL);
+
+    if (num_obj != obj) {
+        has_obj_free (num_obj);
+    }
+
+    return ((struct has_number *)num_obj->state)->val;
+}
+
+int has_obj_to_cint (struct vm_state * vm, struct has_obj * obj) {
+    return (int)has_obj_to_cfloat (vm, obj);
+}
+
 char * has_obj_to_cstring (struct vm_state * vm, struct has_obj * obj) {
     struct has_obj    * str_obj;
     struct has_obj    * to_string;
@@ -44,7 +62,10 @@ char * has_obj_to_cstring (struct vm_state * vm, struct has_obj * obj) {
     ret       = (char *)calloc (strlen (str) + 1, sizeof (char));
 
     memcpy (ret, str, strlen (str) + 1);
-    has_obj_free (str_obj);
+
+    if (str_obj != obj) {
+        has_obj_free (str_obj);
+    }
 
     return ret;
 }
