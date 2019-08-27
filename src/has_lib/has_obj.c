@@ -12,14 +12,14 @@ struct has_obj * has_obj_init (void * state, void (* free_state) (void *)) {
     obj->state        = state;
     obj->free_state   = free_state;
 
-    gc_add (obj);
-
     return obj;
 }
 
 void has_obj_free (struct has_obj * obj) {
     for (int i = 0; i < obj->attribs->vals->length; i++) {
-        gc_remove_ref (vector_get (obj->attribs->vals, i));
+        if (vector_get (obj->attribs->vals, i) != obj) {
+            gc_remove_ref (vector_get (obj->attribs->vals, i));
+        }
     }
 
     dict_free (obj->attribs);

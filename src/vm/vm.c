@@ -17,7 +17,8 @@ struct vm_state * vm_init (struct has_obj * mod) {
 }
 
 void vm_free (struct vm_state * state) {
-    gc_remove_ref (state->mod);
+    gc_remove_ref    (state->mod);
+    gc_remove_ref    (get_default_mod ());
 
     stack_frame_free (state->stack_frame);
     vector_free      (state->exception_returns);
@@ -64,7 +65,7 @@ static void load_subscript          (struct vm_state * vm, struct run_state * ru
 static void obj_decl                (struct vm_state * vm, struct run_state * run_state, struct obj_decl_inst                * state);
 static void obj_destructure_global  (struct vm_state * vm, struct run_state * run_state, struct obj_destructure_global_inst  * state);
 static void obj_destructure_local   (struct vm_state * vm, struct run_state * run_state, struct obj_destructure_local_inst   * state);
-static void pop                     (struct vm_state * vm, struct run_state * run_state);
+static void pop_                    (struct vm_state * vm, struct run_state * run_state);
 static void pop_exception_handler   (struct vm_state * vm, struct run_state * run_state);
 static void raise                   (struct vm_state * vm, struct run_state * run_state);
 static void self_reference          (struct vm_state * vm, struct run_state * run_state);
@@ -154,7 +155,7 @@ struct has_obj * vm_run (struct vm_state * vm, struct has_obj * obj, struct has_
                 obj_destructure_local      (vm, &state, (struct obj_destructure_local_inst *)   state.inst->state);
                 break;
             case pop_inst:
-                pop                        (vm, &state);
+                pop_                       (vm, &state);
                 break;
             case pop_exception_handler_inst:
                 pop_exception_handler      (vm, &state);
@@ -211,9 +212,12 @@ static void bin_op (struct vm_state * vm, struct run_state * run_state, struct b
 
     switch (state->type) {
         case add_bin_op:
-            vector_push (run_state->stack, has_obj_add (vm, left, right));
+            vector_push (run_state->stack, gc_add_ref (has_obj_add (vm, left, right)));
             break;
     }
+
+    gc_remove_ref (left);
+    gc_remove_ref (right);
 }
 
 static void build_closure (struct vm_state * vm, struct run_state * run_state, struct build_closure_inst * state) {
@@ -235,7 +239,12 @@ static void call (struct vm_state * vm, struct run_state * run_state, struct cal
         vector_push (args, vector_pop (run_state->stack));
     }
 
-    vector_push (run_state->stack, has_obj_invoke (target, vm, args));
+    vector_push (run_state->stack, gc_add_ref (has_obj_invoke (target, vm, args)));
+
+    gc_remove_vect (args);
+    gc_remove_ref  (target);
+
+    vector_free (args);
 }
 
 static void compile_module (struct vm_state * vm, struct run_state * run_state, struct compile_module_inst * state) {
@@ -289,17 +298,16 @@ static void list_decl (struct vm_state * vm, struct run_state * run_state, struc
     init = vector_init ();
     for (int i = 0; i < state->count; i++) {
         obj = vector_pop (run_state->stack);
-        gc_add_ref (obj);
         vector_push (init, obj);
     }
 
-    vector_push (run_state->stack, has_list_init (init));
+    vector_push (run_state->stack, gc_add_ref (has_list_init (init)));
 }
 
 static void load_attrib (struct vm_state * vm, struct run_state * run_state, struct load_attrib_inst * state) {
     struct has_obj * target;
 
-    target = vector_pop (run_state->stack);
+    target = gc_remove_ref (vector_pop (run_state->stack));
 
     vector_push (run_state->stack, has_obj_get_attrib (target, state->attrib));
 }
@@ -310,11 +318,11 @@ static void load_id (struct vm_state * vm, struct run_state * run_state, struct 
     if (state->name == NULL) {
         obj = get_var (vm->stack_frame, state->index);
         if (obj != NULL ){
-            vector_push (run_state->stack, obj);
+            vector_push (run_state->stack, gc_add_ref (obj));
         } else {
             obj = get_global (vm->stack_frame, state->index);
             if (obj != NULL) {
-                vector_push (run_state->stack, obj);
+                vector_push (run_state->stack, gc_add_ref (obj));
             } else {
                 printf ("Cannot load id %d\n", state->index);
                 exit   (EXIT_FAILURE);
@@ -323,11 +331,11 @@ static void load_id (struct vm_state * vm, struct run_state * run_state, struct 
     } else {
         obj = has_obj_get_attrib (run_state->obj, state->name);
         if (obj != NULL) {
-            vector_push (run_state->stack, obj);
+            vector_push (run_state->stack, gc_add_ref (obj));
         } else {
             obj = has_obj_get_attrib (vm->mod, state->name);
             if (obj != NULL) {
-                vector_push (run_state->stack, obj);
+                vector_push (run_state->stack, gc_add_ref (obj));
             } else {
                 printf ("Cannot load id \"%s\"\n", state->name);
                 exit   (EXIT_FAILURE);
@@ -337,11 +345,11 @@ static void load_id (struct vm_state * vm, struct run_state * run_state, struct 
 }
 
 static void load_number (struct vm_state * vm, struct run_state * run_state, struct load_number_inst * state) {
-    vector_push (run_state->stack, has_number_init (state->f));
+    vector_push (run_state->stack, gc_add_ref (has_number_init (state->f)));
 }
 
 static void load_string (struct vm_state * vm, struct run_state * run_state, struct load_string_inst * state) {
-    vector_push (run_state->stack, has_string_init (state->str));
+    vector_push (run_state->stack, gc_add_ref (has_string_init (state->str)));
 }
 
 static void load_subscript (struct vm_state * vm, struct run_state * run_state) {
@@ -360,8 +368,8 @@ static void obj_destructure_local (struct vm_state * vm, struct run_state * run_
 
 }
 
-static void pop (struct vm_state * vm, struct run_state * run_state) {
-    vector_pop (run_state->stack);
+static void pop_ (struct vm_state * vm, struct run_state * run_state) {
+    gc_remove_ref (vector_pop (run_state->stack));
 }
 
 static void pop_exception_handler (struct vm_state * vm, struct run_state * run_state) {
@@ -373,7 +381,7 @@ static void raise (struct vm_state * vm, struct run_state * run_state) {
 }
 
 static void self_reference (struct vm_state * vm, struct run_state * run_state) {
-    vector_push (run_state->stack, run_state->self);
+    vector_push (run_state->stack, gc_add_ref (run_state->self));
 }
 
 static void store_attrib (struct vm_state * vm, struct run_state * run_state, struct store_attrib_inst * state) {
@@ -385,6 +393,9 @@ static void store_attrib (struct vm_state * vm, struct run_state * run_state, st
     has_obj_set_attrib (target, state->attrib, val);
 
     vector_push (run_state->stack, val);
+
+    gc_remove_ref (target);
+    gc_remove_ref (val);
 }
 
 static void store_global (struct vm_state * vm, struct run_state * run_state, struct store_global_inst * state) {
@@ -393,6 +404,8 @@ static void store_global (struct vm_state * vm, struct run_state * run_state, st
     set_global (vm->stack_frame, state->symbol, val);
 
     vector_push (run_state->stack, val);
+
+    gc_remove_ref (val);
 }
 
 static void store_local (struct vm_state * vm, struct run_state * run_state, struct store_local_inst * state) {
@@ -400,7 +413,6 @@ static void store_local (struct vm_state * vm, struct run_state * run_state, str
 
     val = vector_pop (run_state->stack);
     set_var (vm->stack_frame, state->symbol, val);
-
     vector_push (run_state->stack, val);
 }
 

@@ -17,13 +17,20 @@ struct has_obj * has_obj_add (struct vm_state * vm, struct has_obj * left, struc
 }
 
 char * has_obj_to_cstring (struct has_obj * obj, struct vm_state * vm) {
-    struct has_string * str;
+    struct has_obj    * str_obj;
     struct has_obj    * to_string;
+    char              * ret;
+    char              * str;
 
     to_string = has_obj_get_attrib (obj, "toString");
-    str       = (struct has_string *)has_obj_invoke     (to_string, vm, NULL)->state;
+    str_obj   = has_obj_invoke (to_string, vm, NULL);
+    str       = ((struct has_string *)(str_obj->state))->val;
+    ret       = (char *)calloc (strlen (str) + 1, sizeof (char));
 
-    return str->val;
+    memcpy (ret, str, strlen (str) + 1);
+    has_obj_free (str_obj);
+
+    return ret;
 }
 
 struct vector_state * assemble_args (int arg_count, ...) {

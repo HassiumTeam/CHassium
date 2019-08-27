@@ -27,8 +27,6 @@ void has_list_free (void * state) {
     for (int i = 0; i < list->vals->length; i++) {
         obj = vector_get (list->vals, i);
         gc_remove_ref (obj);
-        printf ("Object at %p now has %d refs\n", obj, obj->ref_count);
-        gc_run ();
     }
 
     vector_free (list->vals);

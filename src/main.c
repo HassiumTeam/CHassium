@@ -6,19 +6,10 @@ int main (int argc, char * argv[]) {
     struct has_obj  * mod;
     struct vm_state * vm;
 
-    gc_init ();
-
     mod = compile ();
     vm  = vm_init (mod);
 
-    gc_run ();
     vm_run (vm, mod, NULL);
-    gc_run ();
-    gc_run ();
-    gc_run ();
-    gc_run ();
-    gc_run ();
 
     vm_free (vm);
-    gc_free ();
 }

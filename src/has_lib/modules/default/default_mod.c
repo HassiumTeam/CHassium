@@ -21,7 +21,7 @@ static struct has_obj * default_mod_init () {
     has_null = has_obj_init (NULL, NULL);
 
     obj = has_obj_init (NULL, NULL);
-    
+
     has_obj_set_attrib (obj, "null",    has_null);
     has_obj_set_attrib (obj, "println", has_method_init (NULL, println));
 
@@ -36,8 +36,6 @@ static struct has_obj * println (struct vm_state * vm, struct has_obj * self, st
     }
 
     printf ("\n");
-
-    vector_free (args);
 
     return has_null;
 }

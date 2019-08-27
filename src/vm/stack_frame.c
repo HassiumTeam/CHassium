@@ -24,7 +24,7 @@ void stack_frame_free (struct stack_frame * state) {
     for (int i = 0; i < state->frames->length; i++) {
         frame_free (vector_get (state->frames, i));
     }
-    
+
     vector_free (state->frames);
     free (state);
 }
@@ -79,10 +79,10 @@ static void frame_free (struct frame * frame) {
     int_vector_free (frame->ids);
 
     for (int i = 0; i < frame->vals->length; i++) {
+        struct has_obj * obj = vector_get (frame->vals, i);
         gc_remove_ref (vector_get (frame->vals, i));
     }
     vector_free     (frame->vals);
-
     free (frame);
 }
 
