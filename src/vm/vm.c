@@ -383,8 +383,29 @@ static void load_subscript (struct vm_state * vm, struct run_state * run_state) 
     gc_remove_ref (index);
 }
 
-static void obj_decl (struct vm_state * vm, struct run_state * run_state, struct obj_decl_inst                * state) {
+static void obj_decl (struct vm_state * vm, struct run_state * run_state, struct obj_decl_inst * state) {
+    struct has_obj * obj;
+    struct has_obj * vals [state->ids->length];
 
+    for (int i = 0; i < state->ids->length; i++) {
+        vals [i] = vector_pop (run_state->stack);
+    }
+
+    obj = has_obj_init (NULL, NULL);
+
+    for (int i = 0; i < state->ids->length; i++) {
+        has_obj_set_attrib (
+            obj,
+            vector_get (state->ids, i),
+            vals [i]
+        );
+    }
+
+    vector_push (run_state->stack, gc_add_ref (obj));
+
+    for (int i = 0; i < state->ids->length; i++) {
+        gc_remove_ref (vals [i]);
+    }
 }
 
 static void obj_destructure_global (struct vm_state * vm, struct run_state * run_state, struct obj_destructure_global_inst  * state) {
