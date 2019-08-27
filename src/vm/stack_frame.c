@@ -80,8 +80,9 @@ static void frame_free (struct frame * frame) {
 
     for (int i = 0; i < frame->vals->length; i++) {
         struct has_obj * obj = vector_get (frame->vals, i);
-        gc_remove_ref (vector_get (frame->vals, i));
+        gc_remove_ref (obj);
     }
+
     vector_free     (frame->vals);
     free (frame);
 }

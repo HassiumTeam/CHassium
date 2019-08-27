@@ -1,6 +1,7 @@
 #include <has_lib/modules/default/list.h>
 
-static struct has_obj * _index (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
+static struct has_obj * _index       (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
+static struct has_obj * _store_index (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 
 struct has_obj * has_list_init (struct vector_state * init) {
     struct has_list * state;
@@ -15,7 +16,8 @@ struct has_obj * has_list_init (struct vector_state * init) {
     }
 
     obj = has_obj_init (state, has_list_free);
-    has_obj_set_attrib (obj, "_index", has_method_init (obj, _index));
+    has_obj_set_attrib (obj, "_index",       has_method_init (obj, _index));
+    has_obj_set_attrib (obj, "_store_index", has_method_init (obj, _store_index));
 
     return obj;
 }
@@ -35,12 +37,33 @@ void has_list_free (void * state) {
 
 static struct has_obj * _index (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
     struct has_list   * this;
-    struct has_number * num;
+    struct has_number * index;
 
-    this = (struct has_list *)self->state;
-    num = (struct has_number *)((struct has_obj *)vector_get (args, 0))->state;
+    this  = (struct has_list *)self->state;
+    index = (struct has_number *)((struct has_obj *)vector_get (args, 0))->state;
 
     vector_free (args);
-    
-    return vector_get (this->vals, (int)num->val);
+
+    return vector_get (this->vals, (int)index->val);
+}
+
+static struct has_obj * _store_index (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
+    struct has_list   * this;
+    int                 index;
+    struct has_obj    * val;
+
+    this  = (struct has_list *)self->state;
+    index = (int)((struct has_number *)((struct has_obj *)vector_get (args, 0))->state)->val;
+    val   = vector_get (args, 1);
+
+    // Remove reference to prior object.
+    if (index < this->vals->length) {
+        gc_remove_ref (vector_get (this->vals, index));
+    }
+
+    vector_set (this->vals, index, val);
+
+    vector_free (args);
+
+    return val;
 }

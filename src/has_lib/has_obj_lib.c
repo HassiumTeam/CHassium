@@ -24,6 +24,14 @@ struct has_obj * has_obj_invoke (struct vm_state * vm, struct has_obj * obj, str
     return invokable->invoke (vm, invokable->self, args);
 }
 
+struct has_obj * has_obj_store_index (struct vm_state * vm, struct has_obj * obj, struct has_obj * index, struct has_obj * val) {
+    struct has_obj * _store_index;
+
+    _store_index = has_obj_get_attrib (obj, "_store_index");
+
+    return has_obj_invoke (vm, _store_index, assemble_args (2, index, val));
+}
+
 char * has_obj_to_cstring (struct vm_state * vm, struct has_obj * obj) {
     struct has_obj    * str_obj;
     struct has_obj    * to_string;

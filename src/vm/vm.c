@@ -430,7 +430,19 @@ static void store_local (struct vm_state * vm, struct run_state * run_state, str
 }
 
 static void store_subscript (struct vm_state * vm, struct run_state * run_state) {
+    struct has_obj * obj;
+    struct has_obj * index;
+    struct has_obj * val;
 
+    obj   = vector_pop (run_state->stack);
+    index = vector_pop (run_state->stack);
+    val   = vector_pop (run_state->stack);
+
+    has_obj_store_index (vm, obj, index, gc_add_ref (val));
+    vector_push (run_state->stack, val);
+
+    gc_remove_ref (obj);
+    gc_remove_ref (index);
 }
 
 static void super (struct vm_state * vm, struct run_state * run_state, struct super_inst * state) {
