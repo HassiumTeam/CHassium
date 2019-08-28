@@ -98,6 +98,12 @@ struct inst * iter_full_inst_init () {
     return inst;
 }
 
+struct inst * iter_free_inst_init () {
+    struct inst * inst;
+
+    inst = inst_init (iter_free_inst, NULL);
+}
+
 struct inst * iter_next_inst_init () {
     struct inst * inst;
 

@@ -1,6 +1,7 @@
 #include <has_lib/modules/default/list.h>
 
 static struct has_obj * _index       (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
+static struct has_obj * _iter        (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 static struct has_obj * _store_index (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 
 struct has_obj * has_list_init (struct vector_state * init) {
@@ -17,6 +18,7 @@ struct has_obj * has_list_init (struct vector_state * init) {
 
     obj = has_obj_init (state, has_list_free);
     has_obj_set_attrib (obj, "_index",       has_method_init (obj, _index));
+    has_obj_set_attrib (obj, "_iter",        has_method_init (obj, _iter));
     has_obj_set_attrib (obj, "_store_index", has_method_init (obj, _store_index));
 
     return obj;
@@ -45,6 +47,20 @@ static struct has_obj * _index (struct vm_state * vm, struct has_obj * self, str
     vector_free (args);
 
     return vector_get (this->vals, (int)index->val);
+}
+
+static struct has_obj * _iter (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
+    struct has_list     * this;
+    struct vector_state * vals;
+
+    this = (struct has_list *)(self->state);
+
+    vals = vector_init ();
+    for (int i = 0; i < this->vals->length; i++) {
+        vector_push (vals, vector_get (this->vals, i));
+    }
+
+    return has_iter_init (vals);
 }
 
 static struct has_obj * _store_index (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {

@@ -9,14 +9,14 @@
 #include <util/vector.h>
 
 typedef enum {
-    bin_op_inst, build_closure_inst, build_exception_handler_inst, call_inst,            // 0-3
-    compile_module_inst, import_inst, iter_inst, iter_next_inst, iter_full_inst,        //  4-8
-    jump_inst, jump_if_true_inst, jump_if_false_inst, list_decl_inst, load_attrib_inst,  // 9-13
-    load_id_inst, load_number_inst, load_string_inst, load_subscript_inst, obj_decl_inst,  // 14-18
-    obj_destructure_global_inst, obj_destructure_local_inst, pop_inst,                      // 19-21
-    pop_exception_handler_inst, push_inst, raise_inst, return_inst, self_reference_inst,    // 22-26
-    store_attrib_inst, store_global_inst, store_local_inst, store_subscript_inst,       // 27-30
-    super_inst, typeof_inst, unary_op_inst, use_global_inst, use_local_inst,            // 31-35
+    bin_op_inst, build_closure_inst, build_exception_handler_inst, call_inst,                    // 0-3
+    compile_module_inst, import_inst, iter_inst, iter_next_inst, iter_full_inst, iter_free_inst, // 4-9
+    jump_inst, jump_if_true_inst, jump_if_false_inst, list_decl_inst, load_attrib_inst,          // 10-14
+    load_id_inst, load_number_inst, load_string_inst, load_subscript_inst, obj_decl_inst,        // 15-19
+    obj_destructure_global_inst, obj_destructure_local_inst, pop_inst,                           // 20-22
+    pop_exception_handler_inst, push_inst, raise_inst, return_inst, self_reference_inst,         // 23-27
+    store_attrib_inst, store_global_inst, store_local_inst, store_subscript_inst,                // 28-31
+    super_inst, typeof_inst, unary_op_inst, use_global_inst, use_local_inst,                     // 32-36
 } inst_type_t;
 
 struct inst {
@@ -139,6 +139,7 @@ struct inst * jump_inst_init                    (int label);
 struct inst * jump_if_true_inst_init            (int label);
 struct inst * jump_if_false_inst_init           (int label);
 struct inst * iter_inst_init                    ();
+struct inst * iter_free_inst_init               ();
 struct inst * iter_full_inst_init               ();
 struct inst * iter_next_inst_init               ();
 struct inst * list_decl_inst_init               (int count);

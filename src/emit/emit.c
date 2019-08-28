@@ -363,9 +363,11 @@ static void accept_foreach (struct emit_state * emit, struct foreach_state * sta
     }
 
     restore_labels (emit, break_count, cont_count);
+    emit_inst  (emit, jump_inst_init (body_label));
 
-    emit_inst (emit, jump_inst_init (body_label));
     emit_label (emit, end_label);
+    emit_inst  (emit, load_id_inst_init (tmp, NULL));
+    emit_inst  (emit, iter_free_inst_init ());
 
     leave_scope (emit->symbol_table);
 }

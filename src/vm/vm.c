@@ -52,6 +52,7 @@ static void compile_module          (struct vm_state * vm, struct run_state * ru
 static void import                  (struct vm_state * vm, struct run_state * run_state, struct import_inst                  * state);
 static void iter                    (struct vm_state * vm, struct run_state * run_state);
 static void iter_full               (struct vm_state * vm, struct run_state * run_state);
+static void iter_free               (struct vm_state * vm, struct run_state * run_state);
 static void iter_next               (struct vm_state * vm, struct run_state * run_state);
 static void jump                    (struct vm_state * vm, struct run_state * run_state, struct jump_inst                    * state);
 static void jump_if_true            (struct vm_state * vm, struct run_state * run_state, struct jump_if_true_inst            * state);
@@ -114,6 +115,9 @@ struct has_obj * vm_run (struct vm_state * vm, struct has_obj * obj, struct has_
                 break;
             case iter_full_inst:
                 iter_full                  (vm, &state);
+                break;
+            case iter_free_inst:
+                iter_free                  (vm, &state);
                 break;
             case iter_next_inst:
                 iter_next                  (vm, &state);
@@ -256,19 +260,44 @@ static void import (struct vm_state * vm, struct run_state * run_state, struct i
 }
 
 static void iter (struct vm_state * vm, struct run_state * run_state) {
+    struct has_obj * obj;
 
+    obj = vector_pop (run_state->stack);
+
+    vector_push (run_state->stack, has_obj_iter (vm, obj));
+
+    gc_remove_ref (obj);
+}
+
+static void iter_free (struct vm_state * vm, struct run_state * run_state) {
+    struct has_obj * iterable;
+
+    iterable = vector_pop (run_state->stack);
+    gc_remove_ref (iterable);
 }
 
 static void iter_full (struct vm_state * vm, struct run_state * run_state) {
+    struct has_obj * iterable;
 
+    iterable = vector_pop (run_state->stack);;
+
+    vector_push (run_state->stack, gc_add_ref (has_obj_iter_full (vm, iterable)));
+
+    gc_remove_ref (iterable);
 }
 
 static void iter_next (struct vm_state * vm, struct run_state * run_state) {
+    struct has_obj * iterable;
 
+    iterable = vector_pop (run_state->stack);
+
+    vector_push (run_state->stack, has_obj_iter_next (vm, iterable));
+
+    gc_remove_ref (iterable);
 }
 
 static void jump (struct vm_state * vm, struct run_state * run_state, struct jump_inst * state) {
-    run_state->pos = has_obj_get_label (run_state->obj, state->label);
+    run_state->pos = has_obj_get_label (run_state->obj, state->label) - 1;
 }
 
 static void jump_if_true (struct vm_state * vm, struct run_state * run_state, struct jump_if_true_inst * state) {
@@ -279,7 +308,7 @@ static void jump_if_true (struct vm_state * vm, struct run_state * run_state, st
     num     = has_obj_to_cint (vm, num_obj);
 
     if (num != 0) {
-        run_state->pos = has_obj_get_label (run_state->obj, state->label);
+        run_state->pos = has_obj_get_label (run_state->obj, state->label) - 1;
     }
 
     gc_remove_ref (num_obj);
@@ -293,7 +322,7 @@ static void jump_if_false (struct vm_state * vm, struct run_state * run_state, s
     num     = has_obj_to_cint (vm, num_obj);
 
     if (num == 0) {
-        run_state->pos = has_obj_get_label (run_state->obj, state->label);
+        run_state->pos = has_obj_get_label (run_state->obj, state->label) - 1;
     }
 
     gc_remove_ref (num_obj);

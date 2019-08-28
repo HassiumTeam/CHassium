@@ -16,6 +16,30 @@ struct has_obj * has_obj_index (struct vm_state * vm, struct has_obj * obj, stru
     return has_obj_invoke (vm, _index, assemble_args (1, index));
 }
 
+struct has_obj * has_obj_iter (struct vm_state * vm, struct has_obj * obj) {
+    struct has_obj * _iter;
+
+    _iter = has_obj_get_attrib (obj, "_iter");
+
+    return has_obj_invoke (vm, _iter, NULL);
+}
+
+struct has_obj * has_obj_iter_full (struct vm_state * vm, struct has_obj * obj) {
+    struct has_obj * _iter_full;
+
+    _iter_full = has_obj_get_attrib (obj, "iter_full");
+
+    return has_obj_invoke (vm, _iter_full, NULL);
+}
+
+struct has_obj * has_obj_iter_next (struct vm_state * vm, struct has_obj * obj) {
+    struct has_obj * _iter_next;
+
+    _iter_next = has_obj_get_attrib (obj, "iter_next");
+
+    return has_obj_invoke (vm, _iter_next, NULL);
+}
+
 struct has_obj * has_obj_invoke (struct vm_state * vm, struct has_obj * obj, struct vector_state * args) {
     struct has_method * invokable;
 

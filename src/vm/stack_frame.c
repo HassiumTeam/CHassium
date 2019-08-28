@@ -38,12 +38,26 @@ struct has_obj * get_var (struct stack_frame * state, int id) {
 }
 
 void set_global (struct stack_frame * state, int id, struct has_obj * val) {
+    struct has_obj * prior_val;
+
+    prior_val = get_global (state, id);
+    if (prior_val != NULL) {
+        gc_remove_ref (prior_val);
+    }
+
     gc_add_ref (val);
 
     frame_set (state->global_frame, id, val);
 }
 
 void set_var (struct stack_frame * state, int id, struct has_obj * val) {
+    struct has_obj * prior_val;
+
+    prior_val = get_var (state, id);
+    if (prior_val != NULL) {
+        gc_remove_ref (prior_val);
+    }
+
     gc_add_ref (val);
 
     frame_set (vector_peek (state->frames), id, val);
