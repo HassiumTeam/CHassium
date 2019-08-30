@@ -1,8 +1,7 @@
-main ();
-a = 1;
-func main () {
-    a = 3;
-    println ("Hello, World!");
-    println (a + 2);
+main (3);
+a = 2;
+func main (a) {
+    a = a + 1;
+    println (a);
 }
 println (a);

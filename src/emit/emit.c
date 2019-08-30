@@ -382,7 +382,8 @@ static void accept_func_call (struct emit_state * emit, struct func_call_state *
 }
 
 static void accept_func_decl (struct emit_state * emit, struct func_decl_state * state) {
-    struct has_obj * func;
+    struct has_obj    * func;
+    struct func_param * param;
 
     func = has_func_init (state->name, state->params, state->return_type);
     has_obj_set_attrib (emit_peek (emit), state->name, func);
@@ -390,6 +391,26 @@ static void accept_func_decl (struct emit_state * emit, struct func_decl_state *
     emit_push   (emit, func);
 
     enter_scope (emit->symbol_table);
+
+    for (int i = 0; i < state->params->length; i++) {
+        param = vector_get (state->params, i);
+
+        if (param->type == regular_param || param->type == enforced_param) {
+            param->symbol = handle_symbol (emit->symbol_table, param->id);
+        } else if (param->type == object_param) {
+            param->symbols = int_vector_init ();
+            for (int i = 0; i < param->ids->length; i++) {
+                int_vector_push (
+                    param->symbols,
+                    handle_symbol (
+                        emit->symbol_table,
+                        vector_get (param->ids, i)
+                    )
+                );
+            }
+        }
+    }
+
     accept      (emit, state->body);
     leave_scope (emit->symbol_table);
 

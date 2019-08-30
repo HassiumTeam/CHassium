@@ -720,11 +720,11 @@ void param_list_free (struct vector_state * args) {
         if (param->id) {
             free (param->id);
         }
-        if (param->vals) {
-            for (int j = 0; j < param->vals->length; j++) {
-                free (vector_get (param->vals, j));
+        if (param->ids) {
+            for (int j = 0; j < param->ids->length; j++) {
+                free (vector_get (param->ids, j));
             }
-            vector_free (param->vals);
+            vector_free (param->ids);
         }
         if (param->enforced_type) {
             access_chain_free (param->enforced_type);

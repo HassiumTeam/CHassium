@@ -42,7 +42,7 @@ static struct has_obj * _invoke (struct vm_state * vm, struct has_obj * self, st
 
     import_args (vm, this, args);
     ret = vm_run (vm, self, NULL);
-    
+
     pop_frame  (vm->stack_frame);
 
     return ret;
@@ -55,7 +55,6 @@ static void import_args (struct vm_state * vm, struct has_func * state, struct v
     for (int i = 0; i < state->params->length; i++) {
         arg_val = vector_get (args, i);
         param   = vector_get (state->params, i);
-
         switch (param->type) {
             case enforced_param:
 

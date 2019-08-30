@@ -740,13 +740,16 @@ static struct vector_state * parse_func_args (struct parser_state * state) {
         param = (struct func_param *)calloc (1, sizeof (struct func_param));
         if (match (state, obrace)) {
             param->type = object_param;
-            param->vals = parse_object_params (state);
+            param->ids = parse_object_params (state);
         } else {
+            param->type = regular_param;
             param->id = expect (state, id);
             if (accept (state, colon)) {
+                param->type = enforced_param;
                 param->enforced_type = parse_access_chain (state);
             }
         }
+
         vector_push (args, param);
         accept (state, comma);
     }
