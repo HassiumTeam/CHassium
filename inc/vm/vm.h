@@ -21,6 +21,7 @@ struct vm_state {
 struct vm_state * vm_init (struct has_obj  * mod);
 void              vm_free (struct vm_state * state);
 
-struct has_obj  * vm_run  (struct vm_state * vm, struct has_obj * obj, struct has_obj * self);
+struct has_obj  * vm_run                  (struct vm_state * vm, struct has_obj      * obj, struct has_obj * self);
+struct has_obj  * vm_resolve_access_chain (struct vm_state * vm, struct vector_state * chain);
 
 #endif

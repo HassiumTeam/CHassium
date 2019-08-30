@@ -10,6 +10,7 @@ typedef enum {
 struct func_param {
     func_param_type_t     type;
     char                * id;
+    int                   symbol;
     struct vector_state * vals;
     struct vector_state * enforced_type;
 };

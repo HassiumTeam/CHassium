@@ -1,5 +1,8 @@
-a = [ 2, 3, 5 ];
-
-foreach (b in a) {
-    println (b);
+main ();
+a = 1;
+func main () {
+    a = 3;
+    println ("Hello, World!");
+    println (a + 2);
 }
+println (a);

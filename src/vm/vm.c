@@ -205,6 +205,23 @@ struct has_obj * vm_run (struct vm_state * vm, struct has_obj * obj, struct has_
     }
 
     vector_free (state.stack);
+
+    return has_obj_get_attrib (get_default_mod (), "null");
+}
+
+struct has_obj * vm_resolve_access_chain (struct vm_state * vm, struct vector_state * chain) {
+    struct has_obj * top;
+    char           * link;
+
+    link = vector_get         (chain, 0);
+    top  = has_obj_get_attrib (vm->mod, link);
+
+    for (int i = 1; i < chain->length; i++) {
+        link = vector_get (chain, i);
+        top = has_obj_get_attrib (top, link);
+    }
+
+    return top;
 }
 
 static void bin_op (struct vm_state * vm, struct run_state * run_state, struct bin_op_inst * state) {
