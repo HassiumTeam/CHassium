@@ -60,7 +60,13 @@ static void import_args (struct vm_state * vm, struct has_func * state, struct v
 
                 break;
             case object_param:
-
+                for (int i = 0; i < param->ids->length; i++) {
+                    set_var (
+                        vm->stack_frame,
+                        int_vector_get (param->symbols, i),
+                        has_obj_get_attrib (arg_val, vector_get (param->ids, i))
+                    );
+                }
                 break;
             case regular_param:
                 set_var (vm->stack_frame, param->symbol, arg_val);

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unary_op_type.h>
+#include <util/int_vector.h>
 #include <util/vector.h>
 
 struct ast_node {

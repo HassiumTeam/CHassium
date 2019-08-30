@@ -726,6 +726,9 @@ void param_list_free (struct vector_state * args) {
             }
             vector_free (param->ids);
         }
+        if (param->symbols) {
+            int_vector_free (param->symbols);
+        }
         if (param->enforced_type) {
             access_chain_free (param->enforced_type);
         }

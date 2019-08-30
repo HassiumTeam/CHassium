@@ -1,7 +1,11 @@
-main (3);
-a = 2;
-func main (a) {
-    a = a + 1;
-    println (a);
+a = {
+    b: 5,
+    c: 10,
+};
+
+main (a);
+
+func main ( { b, c, }) {
+    println (b);
+    println (c);
 }
-println (a);
