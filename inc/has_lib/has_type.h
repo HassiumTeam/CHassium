@@ -1,6 +1,7 @@
 #ifndef _HAS_TYPE_H_
 #define _HAS_TYPE_H_
 
+#include <has_lib/modules/default/default_mod.h>
 #include <has_lib/has_method.h>
 #include <has_lib/has_obj.h>
 #include <stdio.h>

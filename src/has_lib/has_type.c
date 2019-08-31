@@ -1,5 +1,6 @@
 #include <has_lib/has_type.h>
 
+static struct has_obj * _equal    (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 static struct has_obj * to_string (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 
 struct has_obj * has_type_init (char * name) {
@@ -13,8 +14,10 @@ struct has_obj * has_type_init (char * name) {
     obj = has_obj_init (NULL, state, has_type_free);
 
     if (strcmp (name, "func") == 0) {
+        has_obj_set_attrib (obj, "_equal",   has_method_init (obj, _equal,    obj));
         has_obj_set_attrib (obj, "toString", has_method_init (obj, to_string, obj));
     } else {
+        has_obj_set_attrib (obj, "_equal",   has_method_init (obj, _equal,    NULL));
         has_obj_set_attrib (obj, "toString", has_method_init (obj, to_string, NULL));
     }
 
@@ -34,6 +37,31 @@ struct has_obj * get_type_type () {
     }
 
     return type_type;
+}
+
+static struct has_obj * _equal (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
+    struct has_type  * this;
+    struct has_obj   * right;
+    struct has_class * class;
+
+    this  = (struct has_type *)self->state;
+    right = vector_get (args, 0);
+    vector_free (args);
+
+    if (self == right) {
+        return HAS_TRUE;
+    }
+
+    if (typeof_has_obj (vm, right) == get_class_type ()) {
+        class = (struct has_class *)(right->state);
+        if (self == class->type) {
+            return HAS_TRUE;
+        } else {
+            return HAS_FALSE;
+        }
+    }
+
+    return HAS_FALSE;
 }
 
 static struct has_obj * to_string (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {

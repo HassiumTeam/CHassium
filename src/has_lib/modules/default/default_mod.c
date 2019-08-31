@@ -26,6 +26,7 @@ static struct has_obj * default_mod_init () {
 
     obj = has_obj_init (get_obj_type (), NULL, NULL);
 
+    has_obj_set_attrib (obj, "class",   get_class_type ());
     has_obj_set_attrib (obj, "false",   has_false);
     has_obj_set_attrib (obj, "func",    get_func_type ());
     has_obj_set_attrib (obj, "iter",    get_iter_type ());

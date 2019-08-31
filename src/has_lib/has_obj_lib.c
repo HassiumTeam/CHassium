@@ -8,12 +8,35 @@ struct has_obj * has_obj_add (struct vm_state * vm, struct has_obj * left, struc
     return has_obj_invoke (vm, _add, assemble_args (1, right));
 }
 
+struct has_obj * has_obj_equal (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj * _equal;
+
+    if (has_obj_has_attrib (left, "_equal")) {
+        _equal = has_obj_get_attrib (left, "_equal");
+        return has_obj_invoke (vm, _equal, assemble_args (1, right));
+    }
+
+    if (left == right) {
+        return HAS_TRUE;
+    } else {
+        return HAS_FALSE;
+    }
+}
+
 struct has_obj * has_obj_index (struct vm_state * vm, struct has_obj * obj, struct has_obj * index) {
     struct has_obj * _index;
 
     _index = has_obj_get_attrib (obj, "_index");
 
     return has_obj_invoke (vm, _index, assemble_args (1, index));
+}
+
+struct has_obj * has_obj_instanceof (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj * typeof_left;
+
+    typeof_left = typeof_has_obj (vm, left);
+
+    return has_obj_equal (vm, typeof_left, right);
 }
 
 struct has_obj * has_obj_iter (struct vm_state * vm, struct has_obj * obj) {

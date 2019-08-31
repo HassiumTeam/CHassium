@@ -228,12 +228,15 @@ static void bin_op (struct vm_state * vm, struct run_state * run_state, struct b
     struct has_obj * right;
     struct has_obj * left;
 
-    right = vector_pop (run_state->stack);
     left  = vector_pop (run_state->stack);
+    right = vector_pop (run_state->stack);
 
     switch (state->type) {
         case add_bin_op:
             vector_push (run_state->stack, gc_add_ref (has_obj_add (vm, left, right)));
+            break;
+        case instanceof_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_instanceof (vm, left, right)));
             break;
     }
 
