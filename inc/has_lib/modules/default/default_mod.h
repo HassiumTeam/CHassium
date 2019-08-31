@@ -1,6 +1,9 @@
 #ifndef _DEFAULT_MOD_H_
 #define _DEFAULT_MOD_H_
 
+#include <has_lib/modules/default/iter.h>
+#include <has_lib/modules/default/list.h>
+#include <has_lib/modules/default/number.h>
 #include <has_lib/modules/default/string.h>
 #include <has_lib/has_method.h>
 #include <has_lib/has_obj.h>

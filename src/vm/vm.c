@@ -437,7 +437,7 @@ static void obj_decl (struct vm_state * vm, struct run_state * run_state, struct
         vals [i] = vector_pop (run_state->stack);
     }
 
-    obj = has_obj_init (NULL, NULL);
+    obj = has_obj_init (get_obj_type (), NULL, NULL);
 
     for (int i = 0; i < state->ids->length; i++) {
         has_obj_set_attrib (

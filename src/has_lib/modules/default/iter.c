@@ -11,9 +11,9 @@ struct has_obj * has_iter_init (struct vector_state * vals) {
     state->vals = vals;
     state->pos  = 0;
 
-    obj = has_obj_init (state, has_iter_free);
-    has_obj_set_attrib (obj, "iter_full", has_method_init (obj, iter_full));
-    has_obj_set_attrib (obj, "iter_next", has_method_init (obj, iter_next));
+    obj = has_obj_init (get_iter_type (), state, has_iter_free);
+    has_obj_set_attrib (obj, "iter_full", has_method_init (obj, iter_full, NULL));
+    has_obj_set_attrib (obj, "iter_next", has_method_init (obj, iter_next, NULL));
 
     return obj;
 }
@@ -23,6 +23,15 @@ void has_iter_free (void * state) {
 
     vector_free (iter->vals);
     free        (iter);
+}
+
+static struct has_obj * iter_type = NULL;
+struct has_obj * get_iter_type () {
+    if (iter_type == NULL) {
+        iter_type = has_type_init ("iter");
+    }
+
+    return iter_type;
 }
 
 static struct has_obj * iter_full (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {

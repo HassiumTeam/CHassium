@@ -3,6 +3,7 @@
 
 #include <has_lib/has_method.h>
 #include <has_lib/has_obj.h>
+#include <has_lib/has_type.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <util/vector.h>
@@ -14,5 +15,7 @@ struct has_number {
 
 struct has_obj * has_number_init (float f);
 void             has_number_free (void * state);
+
+struct has_obj * get_number_type ();
 
 #endif

@@ -2,6 +2,7 @@
 #define _INST_H_
 
 #include <bin_op_type.h>
+#include <parser/ast.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unary_op_type.h>

@@ -1,12 +1,13 @@
 #include <has_lib/has_obj.h>
 
-struct has_obj * has_obj_init (void * state, void (* free_state) (void *)) {
+struct has_obj * has_obj_init (struct has_obj * type, void * state, void (* free_state) (void *)) {
     struct has_obj * obj;
-
+    
     obj               = (struct has_obj *)calloc (1, sizeof (struct has_obj));
     obj->attribs      = dict_init ();
     obj->instructions = vector_init ();
     obj->labels       = int_dict_init ();
+    obj->type         = type;
     obj->ref_count    = 0;
 
     obj->state        = state;
@@ -57,6 +58,15 @@ void has_obj_recursive_free (struct has_obj * obj) {
     int_dict_free (obj->labels);
 
     free (obj);
+}
+
+static struct has_obj * obj_type = NULL;
+struct has_obj * get_obj_type () {
+    if (obj_type == NULL) {
+        obj_type = has_type_init ("object");
+    }
+
+    return obj_type;
 }
 
 struct has_obj * has_obj_get_attrib (struct has_obj * obj, char * name) {

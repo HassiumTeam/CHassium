@@ -4,6 +4,7 @@
 #include <has_lib/modules/default/iter.h>
 #include <has_lib/has_method.h>
 #include <has_lib/has_obj.h>
+#include <has_lib/has_type.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <util/vector.h>
@@ -17,5 +18,6 @@ struct has_list {
 struct has_obj * has_list_init (struct vector_state * init);
 void             has_list_free (void * state);
 
+struct has_obj * get_list_type ();
 
 #endif

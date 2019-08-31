@@ -3,6 +3,7 @@
 
 #include <has_lib/has_method.h>
 #include <has_lib/has_obj.h>
+#include <has_lib/has_type.h>
 #include <stdlib.h>
 #include <string.h>
 #include <util/vector.h>
@@ -14,6 +15,8 @@ struct has_string {
 
 struct has_obj * has_string_init (char * val);
 void             has_string_free (void * state);
+
+struct has_obj * get_string_type ();
 
 
 #endif

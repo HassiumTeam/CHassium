@@ -1,7 +1,6 @@
 #ifndef _VM_H_
 #define _VM_H_
 
-#include <vm/stack_frame.h>
 #include <util/vector.h>
 
 struct vm_state {
@@ -17,6 +16,7 @@ struct vm_state {
 #include <has_lib/modules/default/list.h>
 #include <has_lib/modules/default/number.h>
 #include <has_lib/modules/default/string.h>
+#include <vm/stack_frame.h>
 
 struct vm_state * vm_init (struct has_obj  * mod);
 void              vm_free (struct vm_state * state);

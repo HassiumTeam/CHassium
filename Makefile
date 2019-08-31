@@ -29,6 +29,7 @@ OBJECTS += src/has_lib/has_func.o
 OBJECTS += src/has_lib/has_method.o
 OBJECTS += src/has_lib/has_obj.o
 OBJECTS += src/has_lib/has_obj_lib.o
+OBJECTS += src/has_lib/has_type.o
 
 OBJECTS += src/lexer/token.o
 OBJECTS += src/lexer/tokenizer.o
@@ -63,6 +64,7 @@ INCLUDES += inc/has_lib/has_func.h
 INCLUDES += inc/has_lib/has_method.h
 INCLUDES += inc/has_lib/has_obj.h
 INCLUDES += inc/has_lib/has_obj_lib.h
+INCLUDES == inc/has_lib/has_type.h
 
 INCLUDES += inc/lexer/token.h
 INCLUDES += inc/lexer/tokenizer.h

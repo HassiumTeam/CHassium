@@ -12,8 +12,8 @@ struct has_obj * has_func_init (char * name, struct vector_state * params, struc
     state->params       = params;
     state->enforced_ret = enforced_ret;
 
-    obj = has_obj_init (state, has_func_free);
-    has_obj_set_attrib (obj, "_invoke", has_method_init (obj, _invoke));
+    obj = has_obj_init (get_func_type (), state, has_func_free);
+    has_obj_set_attrib (obj, "_invoke", has_method_init (obj, _invoke, NULL));
 
     return obj;
 }

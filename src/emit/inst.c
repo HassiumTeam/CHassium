@@ -471,8 +471,6 @@ void inst_free (struct inst * inst) {
     free (inst);
 }
 
-static void access_chain_free (struct vector_state * chain);
-
 void build_closure_inst_free (struct build_closure_inst * inst) {
 }
 
@@ -532,12 +530,4 @@ void use_global_inst_free (struct use_global_inst * inst) {
 void use_local_inst_free (struct use_local_inst * inst) {
     access_chain_free (inst->ids);
     vector_free   (inst->indices);
-}
-
-static void access_chain_free (struct vector_state * chain) {
-    for (int i = 0; i < chain->length; i++) {
-        free (vector_get (chain, i));
-    }
-
-    vector_free (chain);
 }

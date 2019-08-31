@@ -11,7 +11,7 @@ struct emit_state * emit_init () {
     state->cont_labels     = int_vector_init ();
     state->next_label      = 0;
 
-    mod = has_obj_init (NULL, NULL);
+    mod = has_obj_init (get_obj_type (), NULL, NULL);
     gc_add_ref (mod);
 
     vector_push (state->emit_stack, mod);

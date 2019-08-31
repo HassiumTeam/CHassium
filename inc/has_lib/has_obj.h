@@ -20,10 +20,13 @@ struct has_obj {
 
 #include <vm/gc.h>
 #include <vm/vm.h>
+#include <has_lib/has_type.h>
 
-struct has_obj * has_obj_init           (void * state, void (* free_state) (void *));
+struct has_obj * has_obj_init           (struct has_obj * type, void * state, void (* free_state) (void *));
 void             has_obj_free           (struct has_obj * obj);
 void             has_obj_recursive_free (struct has_obj * obj);
+
+struct has_obj * get_obj_type ();
 
 struct has_obj * has_obj_get_attrib (struct has_obj * obj, char * name);
 int              has_obj_has_attrib (struct has_obj * obj, char * name);

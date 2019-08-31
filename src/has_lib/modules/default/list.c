@@ -16,10 +16,10 @@ struct has_obj * has_list_init (struct vector_state * init) {
         state->vals = init;
     }
 
-    obj = has_obj_init (state, has_list_free);
-    has_obj_set_attrib (obj, "_index",       has_method_init (obj, _index));
-    has_obj_set_attrib (obj, "_iter",        has_method_init (obj, _iter));
-    has_obj_set_attrib (obj, "_store_index", has_method_init (obj, _store_index));
+    obj = has_obj_init (get_list_type (), state, has_list_free);
+    has_obj_set_attrib (obj, "_index",       has_method_init (obj, _index,       NULL));
+    has_obj_set_attrib (obj, "_iter",        has_method_init (obj, _iter,        NULL));
+    has_obj_set_attrib (obj, "_store_index", has_method_init (obj, _store_index, NULL));
 
     return obj;
 }
@@ -35,6 +35,15 @@ void has_list_free (void * state) {
 
     vector_free (list->vals);
     free (list);
+}
+
+static struct has_obj * list_type = NULL;
+struct has_obj * get_list_type () {
+    if (list_type == NULL) {
+        list_type = has_type_init ("list");
+    }
+
+    return list_type;
 }
 
 static struct has_obj * _index (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {

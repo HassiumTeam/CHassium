@@ -8,7 +8,7 @@ struct has_obj * has_class_init (char * name, struct vector_state * extends) {
     state->name    = name;
     state->extends = extends;
 
-    obj = has_obj_init (state, has_class_free);
+    obj = has_obj_init (NULL, state, has_class_free);
 
     return obj;
 }
