@@ -24,6 +24,7 @@ OBJECTS += src/has_lib/modules/default/list.o
 OBJECTS += src/has_lib/modules/default/number.o
 OBJECTS += src/has_lib/modules/default/string.o
 
+OBJECTS += src/has_lib/has_bound_func.o
 OBJECTS += src/has_lib/has_class.o
 OBJECTS += src/has_lib/has_func.o
 OBJECTS += src/has_lib/has_method.o
@@ -59,6 +60,7 @@ INCLUDES += inc/has_lib/modules/default/list.h
 INCLUDES += inc/has_lib/modules/default/number.h
 INCLUDES += inc/has_lib/modules/default/string.h
 
+INCLUDES += inc/has_lib/has_bound_func.h
 INCLUDES += inc/has_lib/has_class.h
 INCLUDES += inc/has_lib/has_func.h
 INCLUDES += inc/has_lib/has_method.h

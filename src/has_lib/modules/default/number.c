@@ -40,8 +40,6 @@ static struct has_obj * _add (struct vm_state * vm, struct has_obj * self, struc
     num   = (struct has_number *)self                                    ->state;
     right = (struct has_number *)((struct has_obj *)vector_get (args, 0))->state;
 
-    vector_free (args);
-
     return has_number_init (num->val + right->val);
 }
 
@@ -57,10 +55,6 @@ static struct has_obj * to_string (struct vm_state * vm, struct has_obj * self, 
 
     buf = (char *)calloc (1, 100);
     sprintf (buf, "%f", num->val);
-
-    if (args != NULL) {
-        vector_free (args);
-    }
 
     return has_string_init (buf);
 }

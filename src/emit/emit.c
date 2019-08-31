@@ -386,6 +386,8 @@ static void accept_func_decl (struct emit_state * emit, struct func_decl_state *
     struct func_param * param;
 
     func = has_func_init (state->name, state->params, state->return_type);
+    func->user_defined = 1;
+    
     has_obj_set_attrib (emit_peek (emit), state->name, func);
 
     emit_push   (emit, func);

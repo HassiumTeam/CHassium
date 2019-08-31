@@ -88,6 +88,10 @@ struct has_obj * vm_run (struct vm_state * vm, struct has_obj * obj, struct has_
     state.stack = vector_init ();
     state.pos   = 0;
 
+    if (state.self != NULL) {
+        gc_add_ref (state.self);
+    }
+
     while (state.pos < obj->instructions->length) {
         state.inst = vector_get (obj->instructions, state.pos);
         printf("%d\n", state.inst->type);
@@ -206,6 +210,10 @@ struct has_obj * vm_run (struct vm_state * vm, struct has_obj * obj, struct has_
 
     vector_free (state.stack);
 
+    if (state.self != NULL) {
+        gc_remove_ref (state.self);
+    }
+
     return has_obj_get_attrib (get_default_mod (), "null");
 }
 
@@ -233,7 +241,7 @@ static void bin_op (struct vm_state * vm, struct run_state * run_state, struct b
 
     switch (state->type) {
         case add_bin_op:
-            vector_push (run_state->stack, gc_add_ref (has_obj_add (vm, left, right)));
+            vector_push (run_state->stack, gc_add_ref (has_obj_add        (vm, left, right)));
             break;
         case instanceof_bin_op:
             vector_push (run_state->stack, gc_add_ref (has_obj_instanceof (vm, left, right)));
@@ -522,7 +530,7 @@ static void store_subscript (struct vm_state * vm, struct run_state * run_state)
     val   = vector_pop (run_state->stack);
 
     has_obj_store_index (vm, obj, index, gc_add_ref (val));
-    vector_push (run_state->stack, val);
+    vector_push         (run_state->stack, val);
 
     gc_remove_ref (obj);
     gc_remove_ref (index);

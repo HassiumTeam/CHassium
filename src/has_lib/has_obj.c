@@ -2,13 +2,14 @@
 
 struct has_obj * has_obj_init (struct has_obj * type, void * state, void (* free_state) (void *)) {
     struct has_obj * obj;
-    
+
     obj               = (struct has_obj *)calloc (1, sizeof (struct has_obj));
     obj->attribs      = dict_init ();
     obj->instructions = vector_init ();
     obj->labels       = int_dict_init ();
     obj->type         = type;
     obj->ref_count    = 0;
+    obj->user_defined = 0;
 
     obj->state        = state;
     obj->free_state   = free_state;

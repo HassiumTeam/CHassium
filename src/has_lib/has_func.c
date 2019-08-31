@@ -1,7 +1,8 @@
 #include <has_lib/has_func.h>
 
-static struct has_obj * _invoke     (struct vm_state * vm, struct has_obj  * self, struct vector_state  * args);
-static        void      import_args (struct vm_state * vm, struct has_func * state, struct vector_state * args);
+static struct has_obj * _invoke       (struct vm_state * vm, struct has_obj  * self,  struct vector_state  * args);
+static struct has_obj * _invoke_bound (struct vm_state * vm, struct has_obj  * self,  struct vector_state  * args);
+static        void      import_args   (struct vm_state * vm, struct has_func * state, struct vector_state  * args, int start_index);
 
 struct has_obj * has_func_init (char * name, struct vector_state * params, struct vector_state * enforced_ret) {
     struct has_func * state;
@@ -13,8 +14,8 @@ struct has_obj * has_func_init (char * name, struct vector_state * params, struc
     state->enforced_ret = enforced_ret;
 
     obj = has_obj_init (get_func_type (), state, has_func_free);
-    has_obj_set_attrib (obj, "_invoke", has_method_init (obj, _invoke, NULL));
-
+    has_obj_set_attrib (obj, "_invoke",       has_method_init (obj, _invoke,       NULL));
+    has_obj_set_attrib (obj, "_invoke_bound", has_method_init (obj, _invoke_bound, NULL));
     return obj;
 }
 
@@ -40,7 +41,7 @@ static struct has_obj * _invoke (struct vm_state * vm, struct has_obj * self, st
 
     push_frame (vm->stack_frame, NULL);
 
-    import_args (vm, this, args);
+    import_args (vm, this, args, 0);
     ret = vm_run (vm, self, NULL);
 
     pop_frame  (vm->stack_frame);
@@ -48,13 +49,29 @@ static struct has_obj * _invoke (struct vm_state * vm, struct has_obj * self, st
     return ret;
 }
 
-static void import_args (struct vm_state * vm, struct has_func * state, struct vector_state * args) {
+static struct has_obj * _invoke_bound (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
+    struct has_func * this;
+    struct has_obj  * ret;
+
+    this = (struct has_func *)self->state;
+
+    push_frame (vm->stack_frame, NULL);
+
+    import_args (vm, this, args, 1);
+    ret = vm_run (vm, self, vector_get (args, 0));
+
+    pop_frame  (vm->stack_frame);
+
+    return ret;
+}
+
+static void import_args (struct vm_state * vm, struct has_func * state, struct vector_state * args, int start_index) {
     struct has_obj    * arg_val;
     struct func_param * param;
     struct has_obj    * enforced_type;
 
     for (int i = 0; i < state->params->length; i++) {
-        arg_val = vector_get (args, i);
+        arg_val = vector_get (args, i + start_index);
         param   = vector_get (state->params, i);
         switch (param->type) {
             case enforced_param:

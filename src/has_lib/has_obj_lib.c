@@ -1,19 +1,32 @@
 #include <has_lib/has_obj_lib.h>
 
 struct has_obj * has_obj_add (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
-    struct has_obj * _add;
+    struct has_obj      * _add;
+    struct vector_state * args;
+    struct has_obj      * ret;
 
     _add = has_obj_get_attrib (left, "_add");
 
-    return has_obj_invoke (vm, _add, assemble_args (1, right));
+    args = assemble_args (1, right);
+    ret  = has_obj_invoke (vm, _add, args);
+    vector_free (args);
+
+    return ret;
 }
 
 struct has_obj * has_obj_equal (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
-    struct has_obj * _equal;
+    struct has_obj      * _equal;
+    struct vector_state * args;
+    struct has_obj      * ret;
 
     if (has_obj_has_attrib (left, "_equal")) {
         _equal = has_obj_get_attrib (left, "_equal");
-        return has_obj_invoke (vm, _equal, assemble_args (1, right));
+
+        args   = assemble_args (1, right);
+        ret    = has_obj_invoke (vm, _equal, args);
+        vector_free (args);
+
+        return ret;
     }
 
     if (left == right) {
@@ -24,15 +37,29 @@ struct has_obj * has_obj_equal (struct vm_state * vm, struct has_obj * left, str
 }
 
 struct has_obj * has_obj_index (struct vm_state * vm, struct has_obj * obj, struct has_obj * index) {
-    struct has_obj * _index;
+    struct has_obj      * _index;
+    struct vector_state * args;
+    struct has_obj      * ret;
 
     _index = has_obj_get_attrib (obj, "_index");
 
-    return has_obj_invoke (vm, _index, assemble_args (1, index));
+    args = assemble_args (1, index);
+    ret  = has_obj_invoke (vm, _index, args);
+    vector_free (args);
+
+    return ret;
+}
+
+struct has_obj * has_obj_invoke (struct vm_state * vm, struct has_obj * obj, struct vector_state * args) {
+    struct has_method * invokable;
+
+    invokable = (struct has_method *)has_obj_get_attrib (obj, "_invoke")->state;
+    
+    return invokable->invoke (vm, invokable->self, args);
 }
 
 struct has_obj * has_obj_instanceof (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
-    struct has_obj * typeof_left;
+    struct has_obj      * typeof_left;
 
     typeof_left = typeof_has_obj (vm, left);
 
@@ -63,20 +90,18 @@ struct has_obj * has_obj_iter_next (struct vm_state * vm, struct has_obj * obj) 
     return has_obj_invoke (vm, _iter_next, NULL);
 }
 
-struct has_obj * has_obj_invoke (struct vm_state * vm, struct has_obj * obj, struct vector_state * args) {
-    struct has_method * invokable;
-
-    invokable = (struct has_method *)has_obj_get_attrib (obj, "_invoke")->state;
-
-    return invokable->invoke (vm, invokable->self, args);
-}
-
 struct has_obj * has_obj_store_index (struct vm_state * vm, struct has_obj * obj, struct has_obj * index, struct has_obj * val) {
-    struct has_obj * _store_index;
+    struct has_obj      * _store_index;
+    struct vector_state * args;
+    struct has_obj      * ret;
 
     _store_index = has_obj_get_attrib (obj, "_store_index");
 
-    return has_obj_invoke (vm, _store_index, assemble_args (2, index, val));
+    args = assemble_args (2, index, val);
+    ret = has_obj_invoke (vm, _store_index, args);
+    vector_free (args);
+
+    return ret;
 }
 
 struct has_obj * typeof_has_obj (struct vm_state * vm, struct has_obj * obj) {
@@ -91,8 +116,8 @@ float has_obj_to_cfloat (struct vm_state * vm, struct has_obj * obj) {
     struct has_obj * num_obj;
     struct has_obj * to_number;
 
-    to_number = has_obj_get_attrib (obj, "toNumber");
-    num_obj  = has_obj_invoke      (vm, to_number, NULL);
+    to_number = has_obj_get_attrib  (obj, "toNumber");
+    num_obj   = has_obj_invoke      (vm, to_number, NULL);
 
     if (num_obj != obj) {
         has_obj_free (num_obj);

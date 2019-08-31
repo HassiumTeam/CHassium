@@ -1,5 +1,12 @@
-test ("a")
+p = Person ("John");
+p.say_hello ();
 
-func test (a: string) {
-    println (a);
+class Person {
+    func new (name) {
+        this.name = name;
+    }
+
+    func say_hello () {
+        println (this.name);
+    }
 }

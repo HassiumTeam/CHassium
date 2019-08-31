@@ -53,8 +53,6 @@ static struct has_obj * _index (struct vm_state * vm, struct has_obj * self, str
     this  = (struct has_list *)self->state;
     index = (struct has_number *)((struct has_obj *)vector_get (args, 0))->state;
 
-    vector_free (args);
-
     return vector_get (this->vals, (int)index->val);
 }
 
@@ -87,8 +85,6 @@ static struct has_obj * _store_index (struct vm_state * vm, struct has_obj * sel
     }
 
     vector_set (this->vals, index, val);
-
-    vector_free (args);
 
     return val;
 }

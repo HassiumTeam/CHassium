@@ -46,7 +46,6 @@ static struct has_obj * _equal (struct vm_state * vm, struct has_obj * self, str
 
     this  = (struct has_type *)self->state;
     right = vector_get (args, 0);
-    vector_free (args);
 
     if (self == right) {
         return HAS_TRUE;
@@ -69,10 +68,6 @@ static struct has_obj * to_string (struct vm_state * vm, struct has_obj * self, 
     char            * name;
 
     this = (struct has_type *)self->state;
-
-    if (args != NULL) {
-        vector_free (args);
-    }
 
     name = (char *)calloc (strlen (this->name) + 1, sizeof (char));
     memcpy (name, this->name, strlen (this->name) + 1);

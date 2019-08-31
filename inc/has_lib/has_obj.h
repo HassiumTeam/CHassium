@@ -13,6 +13,7 @@ struct has_obj {
     struct vector_state   * instructions;
     struct int_dict_state * labels;
     int                     ref_count;
+    int                     user_defined;
 
     void                  * state;
     void                 (* free_state) (void *);

@@ -37,10 +37,6 @@ struct has_obj * get_iter_type () {
 static struct has_obj * iter_full (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
     struct has_iter * this;
 
-    if (args != NULL) {
-        vector_free (args);
-    }
-
     this = (struct has_iter *)(self->state);
 
     if (this->pos >= this->vals->length) {
@@ -52,10 +48,6 @@ static struct has_obj * iter_full (struct vm_state * vm, struct has_obj * self, 
 
 static struct has_obj * iter_next (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
     struct has_iter * this;
-
-    if (args != NULL) {
-        vector_free (args);
-    }
 
     this = (struct has_iter *)(self->state);
 
