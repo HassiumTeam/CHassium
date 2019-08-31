@@ -3,6 +3,7 @@
 
 #include <emit/inst.h>
 #include <has_lib/has_obj.h>
+#include <has_lib/has_obj_lib.h>
 #include <has_lib/has_type.h>
 #include <parser/ast.h>
 #include <util/vector.h>

@@ -51,13 +51,20 @@ static struct has_obj * _invoke (struct vm_state * vm, struct has_obj * self, st
 static void import_args (struct vm_state * vm, struct has_func * state, struct vector_state * args) {
     struct has_obj    * arg_val;
     struct func_param * param;
+    struct has_obj    * enforced_type;
 
     for (int i = 0; i < state->params->length; i++) {
         arg_val = vector_get (args, i);
         param   = vector_get (state->params, i);
         switch (param->type) {
             case enforced_param:
-
+                enforced_type = vm_resolve_access_chain (vm, param->enforced_type);
+                if (has_obj_instanceof (vm, arg_val, enforced_type) == HAS_TRUE) {
+                    set_var (vm->stack_frame, param->symbol, arg_val);
+                } else {
+                    printf ("TODO throw error here!\n");
+                    exit (EXIT_FAILURE);
+                }
                 break;
             case object_param:
                 for (int i = 0; i < param->ids->length; i++) {
