@@ -35,6 +35,7 @@ static struct has_obj * default_mod_init () {
     has_obj_set_attrib (obj, "object",  get_obj_type ());
     has_obj_set_attrib (obj, "string",  get_string_type ());
     has_obj_set_attrib (obj, "true",    has_true);
+    has_obj_set_attrib (obj, "type",    get_type_type ());
     has_obj_set_attrib (obj, "println", has_method_init (NULL, println, NULL));
 
     return obj;

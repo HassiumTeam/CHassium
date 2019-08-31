@@ -16,4 +16,6 @@ struct has_type {
 struct has_obj * has_type_init (char * name);
 void             has_type_free (void * state);
 
+struct has_obj * get_type_type ();
+
 #endif

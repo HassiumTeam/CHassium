@@ -530,7 +530,13 @@ static void super (struct vm_state * vm, struct run_state * run_state, struct su
 }
 
 static void typeof (struct vm_state * vm, struct run_state * run_state) {
+    struct has_obj * target;
 
+    target = vector_pop (run_state->stack);
+
+    vector_push (run_state->stack, gc_add_ref (typeof_has_obj (vm, target)));
+
+    gc_remove_ref (target);
 }
 
 static void unary_op (struct vm_state * vm, struct run_state * run_state, struct unary_op_inst * state) {

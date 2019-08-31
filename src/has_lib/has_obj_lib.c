@@ -56,6 +56,14 @@ struct has_obj * has_obj_store_index (struct vm_state * vm, struct has_obj * obj
     return has_obj_invoke (vm, _store_index, assemble_args (2, index, val));
 }
 
+struct has_obj * typeof_has_obj (struct vm_state * vm, struct has_obj * obj) {
+    if (obj->type == NULL) {
+        obj->type = get_type_type ();
+    }
+
+    return obj->type;
+}
+
 float has_obj_to_cfloat (struct vm_state * vm, struct has_obj * obj) {
     struct has_obj * num_obj;
     struct has_obj * to_number;
