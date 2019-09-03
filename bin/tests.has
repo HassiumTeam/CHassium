@@ -1,7 +1,7 @@
-class TestsStats {
+class TestStats {
     func new () {
-        this.passed = 0;
-        this.failed = 0;
+        this.passed       = 0;
+        this.failed       = 0;
         this.tests_failed = [];
     }
 
@@ -15,20 +15,15 @@ class TestsStats {
     }
 
     func toString () {
-        return "AA" + "BB";
+        return "Passed: " + this.passed;
     }
 }
 
-stats = TestsStats ();
+stats = TestStats ();
+main ();
 
 func main () {
-    assign_tests ();
-
+    stats.pass ();
+    stats.fail ("A thoughtful test");
     println (stats);
 }
-
-func assign_tests () {
-
-}
-
-main ();

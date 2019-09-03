@@ -1,18 +1,4 @@
-class TestStats {
-    func new () {
-        this.passed = 0;
-        this.failed = 0;
-    }
+a = [1, 2, ];
+b = [1, 2, ];
 
-    func toString () {
-        return "Passed: " + this.passed;
-    }
-}
-
-stats = TestStats ();
-main ();
-
-func main () {
-    println (stats.passed);
-    println (stats);
-}
+println (a == b);

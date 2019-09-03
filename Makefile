@@ -121,3 +121,7 @@ test:
 .PHONY: leakcheck
 leakcheck:
 	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium ./bin/test.has
+
+.PHONY: leakcheck_test
+leakcheck_test:
+	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium ./bin/tests.has

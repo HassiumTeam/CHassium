@@ -38,16 +38,18 @@ void dict_set (struct dict_state * state, char * key, void * val) {
     char * new_key;
     int    index;
 
+    index = get_key_index (state, key);
+
     new_key = (char *)calloc (strlen (key) + 1, strlen (key));
     memcpy (new_key, key, strlen (key) + 1);
 
-    index = get_key_index (state, key);
 
     if (index == -1) {
         vector_push (state->keys, new_key);
         vector_push (state->vals, val);
     } else {
         vector_set  (state->vals, index, val);
+        free (new_key);
     }
 
     state->count++;

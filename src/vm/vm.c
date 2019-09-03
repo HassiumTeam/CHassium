@@ -262,6 +262,9 @@ static void bin_op (struct vm_state * vm, struct run_state * run_state, struct b
         case instanceof_bin_op:
             vector_push (run_state->stack, gc_add_ref (has_obj_instanceof (vm, left, right)));
             break;
+        case equal_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_equal      (vm, left, right)));
+            break;
     }
 
     gc_remove_ref (left);
