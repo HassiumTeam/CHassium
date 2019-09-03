@@ -13,11 +13,11 @@ typedef enum {
     bin_op_inst, build_closure_inst, build_exception_handler_inst, call_inst,                    // 0-3
     compile_module_inst, import_inst, iter_inst, iter_next_inst, iter_full_inst, iter_free_inst, // 4-9
     jump_inst, jump_if_true_inst, jump_if_false_inst, list_decl_inst, load_attrib_inst,          // 10-14
-    load_id_inst, load_number_inst, load_string_inst, load_subscript_inst, obj_decl_inst,        // 15-19
-    obj_destructure_global_inst, obj_destructure_local_inst, pop_inst,                           // 20-22
-    pop_exception_handler_inst, push_inst, raise_inst, return_inst, self_reference_inst,         // 23-27
-    store_attrib_inst, store_global_inst, store_local_inst, store_subscript_inst,                // 28-31
-    super_inst, typeof_inst, unary_op_inst, use_global_inst, use_local_inst,                     // 32-36
+    load_global_inst, load_id_inst, load_local_inst, load_number_inst, load_string_inst, load_subscript_inst, obj_decl_inst,        // 15-21
+    obj_destructure_global_inst, obj_destructure_local_inst, pop_inst,                           // 22-24
+    pop_exception_handler_inst, push_inst, raise_inst, return_inst, self_reference_inst,         // 25-29
+    store_attrib_inst, store_global_inst, store_local_inst, store_subscript_inst,                // 30-33
+    super_inst, typeof_inst, unary_op_inst, use_global_inst, use_local_inst,                     // 34-36
 } inst_type_t;
 
 struct inst {
@@ -73,9 +73,16 @@ struct load_attrib_inst {
     char * attrib;
 };
 
+struct load_global_inst {
+    int symbol;
+};
+
 struct load_id_inst {
-    int    index;
     char * name;
+};
+
+struct load_local_inst {
+    int symbol;
 };
 
 struct load_number_inst {
@@ -145,7 +152,9 @@ struct inst * iter_full_inst_init               ();
 struct inst * iter_next_inst_init               ();
 struct inst * list_decl_inst_init               (int count);
 struct inst * load_attrib_inst_init             (char * attrib);
-struct inst * load_id_inst_init                 (int index, char * name);
+struct inst * load_global_inst_init             (int symbol);
+struct inst * load_id_inst_init                 (char * name);
+struct inst * load_local_inst_init              (int symbol);
 struct inst * load_number_inst_init             (float f);
 struct inst * load_string_inst_init             (char * str);
 struct inst * load_subscript_inst_init          ();

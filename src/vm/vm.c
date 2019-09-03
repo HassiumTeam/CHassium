@@ -59,7 +59,9 @@ static void jump_if_true            (struct vm_state * vm, struct run_state * ru
 static void jump_if_false           (struct vm_state * vm, struct run_state * run_state, struct jump_if_false_inst           * state);
 static void list_decl               (struct vm_state * vm, struct run_state * run_state, struct list_decl_inst               * state);
 static void load_attrib             (struct vm_state * vm, struct run_state * run_state, struct load_attrib_inst             * state);
+static void load_global             (struct vm_state * vm, struct run_state * run_state, struct load_global_inst             * state);
 static void load_id                 (struct vm_state * vm, struct run_state * run_state, struct load_id_inst                 * state);
+static void load_local              (struct vm_state * vm, struct run_state * run_state, struct load_local_inst              * state);
 static void load_number             (struct vm_state * vm, struct run_state * run_state, struct load_number_inst             * state);
 static void load_string             (struct vm_state * vm, struct run_state * run_state, struct load_string_inst             * state);
 static void load_subscript          (struct vm_state * vm, struct run_state * run_state);
@@ -82,6 +84,7 @@ static void use_local               (struct vm_state * vm, struct run_state * ru
 
 struct has_obj * vm_run (struct vm_state * vm, struct has_obj * obj, struct has_obj * self) {
     struct run_state state;
+    struct has_obj * ret;
 
     state.obj   = obj;
     state.self  = self;
@@ -141,8 +144,14 @@ struct has_obj * vm_run (struct vm_state * vm, struct has_obj * obj, struct has_
             case load_attrib_inst:
                 load_attrib                (vm, &state, (struct load_attrib_inst *)             state.inst->state);
                 break;
+            case load_global_inst:
+                load_global                (vm, &state, (struct load_global_inst *)             state.inst->state);
+                break;
             case load_id_inst:
                 load_id                    (vm, &state, (struct load_id_inst *)                 state.inst->state);
+                break;
+            case load_local_inst:
+                load_local                 (vm, &state, (struct load_local_inst *)              state.inst->state);
                 break;
             case load_number_inst:
                 load_number                (vm, &state, (struct load_number_inst *)             state.inst->state);
@@ -172,7 +181,14 @@ struct has_obj * vm_run (struct vm_state * vm, struct has_obj * obj, struct has_
                 raise                      (vm, &state);
                 break;
             case return_inst:
-                return vector_pop          (state.stack);
+                ret = vector_pop (state.stack);
+                vector_free (state.stack);
+
+                if (state.self != NULL) {
+                    gc_remove_ref (state.self);
+                }
+                ret->ref_count--;
+                return ret;
             case self_reference_inst:
                 self_reference             (vm, &state);
                 break;
@@ -376,42 +392,61 @@ static void load_attrib (struct vm_state * vm, struct run_state * run_state, str
     target = vector_pop (run_state->stack);
     val    = has_obj_get_attrib (target, state->attrib);
 
-    vector_push (run_state->stack, val);
+    if (has_obj_instanceof (vm, val, get_func_type ()) == HAS_TRUE) {
+        val = has_bound_method_init (val, target);
+        vector_push (run_state->stack, val);
+    } else {
+        vector_push (run_state->stack, val);
+        gc_remove_ref (target);
+    }
 
-    gc_remove_ref (target);
     gc_add_ref    (val);
+}
+
+static void load_global (struct vm_state * vm, struct run_state * run_state, struct load_global_inst * state) {
+    struct has_obj * obj;
+
+    obj = get_global (vm->stack_frame, state->symbol);
+
+    if (obj == NULL) {
+        printf ("Cannot load global %d\n", state->symbol);
+        exit (EXIT_FAILURE);
+    }
+
+    vector_push (run_state->stack, gc_add_ref (obj));
 }
 
 static void load_id (struct vm_state * vm, struct run_state * run_state, struct load_id_inst * state) {
     struct has_obj * obj;
 
-    if (state->name == NULL) {
-        obj = get_var (vm->stack_frame, state->index);
-        if (obj != NULL ){
-            vector_push (run_state->stack, gc_add_ref (obj));
-        } else {
-            obj = get_global (vm->stack_frame, state->index);
-            if (obj != NULL) {
-                vector_push (run_state->stack, gc_add_ref (obj));
-            } else {
-                printf ("Cannot load id %d\n", state->index);
-                exit   (EXIT_FAILURE);
-            }
-        }
+    obj = has_obj_get_attrib (run_state->obj, state->name);
+    if (obj != NULL) {
+        vector_push (run_state->stack, gc_add_ref (obj));
     } else {
-        obj = has_obj_get_attrib (run_state->obj, state->name);
+        obj = has_obj_get_attrib (vm->mod, state->name);
         if (obj != NULL) {
             vector_push (run_state->stack, gc_add_ref (obj));
         } else {
-            obj = has_obj_get_attrib (vm->mod, state->name);
-            if (obj != NULL) {
-                vector_push (run_state->stack, gc_add_ref (obj));
-            } else {
-                printf ("Cannot load id \"%s\"\n", state->name);
-                exit   (EXIT_FAILURE);
-            }
+            printf ("Cannot load id \"%s\"\n", state->name);
+            exit   (EXIT_FAILURE);
         }
     }
+}
+
+static void load_local (struct vm_state * vm, struct run_state * run_state, struct load_local_inst * state) {
+    struct has_obj * obj;
+
+    obj = get_var (vm->stack_frame, state->symbol);
+
+    if (obj == NULL) {
+        obj = get_global (vm->stack_frame, state->symbol);
+        if (obj == NULL) {
+            printf ("Cannot load local %d\n", state->symbol);
+            exit (EXIT_FAILURE);
+        }
+    }
+
+    vector_push (run_state->stack, gc_add_ref (obj));
 }
 
 static void load_number (struct vm_state * vm, struct run_state * run_state, struct load_number_inst * state) {

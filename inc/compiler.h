@@ -12,6 +12,6 @@
 #include <stdlib.h>
 #include <util/vector.h>
 
-struct has_obj * compile ();
+struct has_obj * compile (char * file);
 
 #endif

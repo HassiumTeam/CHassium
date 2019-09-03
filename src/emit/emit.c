@@ -219,7 +219,6 @@ static void accept_assign (struct emit_state * emit, struct assign_state * state
             break;
         case id_node:
             id_state = (struct id_state *)left->state;
-
             if (in_global_scope (emit->symbol_table)) {
                 emit_inst (emit, store_global_inst_init (
                     handle_symbol (emit->symbol_table, id_state->id)
@@ -341,15 +340,31 @@ static void accept_foreach (struct emit_state * emit, struct foreach_state * sta
 
     accept     (emit, state->target);
     emit_inst  (emit, iter_inst_init        ());
-    emit_inst  (emit, store_local_inst_init (tmp));
+    emit_inst  (emit,
+        in_global_scope (emit->symbol_table)
+        ? store_global_inst_init (tmp)
+        : store_local_inst_init (tmp)
+    );
 
     emit_label (emit, body_label);
-    emit_inst  (emit, load_id_inst_init      (tmp, NULL));
+    emit_inst  (emit,
+        in_global_scope (emit->symbol_table)
+        ? load_global_inst_init (tmp)
+        : load_local_inst_init (tmp)
+    );
     emit_inst  (emit, iter_full_inst_init    ());
     emit_inst  (emit, jump_if_true_inst_init (end_label));
-    emit_inst  (emit, load_id_inst_init      (tmp, NULL));
+    emit_inst  (emit,
+        in_global_scope (emit->symbol_table)
+        ? load_global_inst_init (tmp)
+        : load_local_inst_init (tmp)
+    );
     emit_inst  (emit, iter_next_inst_init    ());
-    emit_inst  (emit, store_local_inst_init  (handle_symbol (emit->symbol_table, state->id)));
+    if (in_global_scope (emit->symbol_table)) {
+        emit_inst (emit, store_global_inst_init  (handle_symbol (emit->symbol_table, state->id)));
+    } else {
+        emit_inst (emit, store_local_inst_init  (handle_symbol (emit->symbol_table, state->id)));
+    }
 
     break_count =    emit->break_labels->length;
     cont_count  =    emit->cont_labels ->length;
@@ -366,7 +381,11 @@ static void accept_foreach (struct emit_state * emit, struct foreach_state * sta
     emit_inst  (emit, jump_inst_init (body_label));
 
     emit_label (emit, end_label);
-    emit_inst  (emit, load_id_inst_init (tmp, NULL));
+    emit_inst  (emit,
+        in_global_scope (emit->symbol_table)
+        ? load_global_inst_init (tmp)
+        : load_local_inst_init (tmp)
+    );
     emit_inst  (emit, iter_free_inst_init ());
 
     leave_scope (emit->symbol_table);
@@ -387,7 +406,7 @@ static void accept_func_decl (struct emit_state * emit, struct func_decl_state *
 
     func = has_func_init (state->name, state->params, state->return_type);
     func->user_defined = 1;
-    
+
     has_obj_set_attrib (emit_peek (emit), state->name, func);
 
     emit_push   (emit, func);
@@ -423,9 +442,9 @@ static void accept_id (struct emit_state * emit, struct id_state * state) {
     if (strcmp (state->id, "this") == 0) {
         emit_inst (emit, self_reference_inst_init ());
     } else if (has_symbol (emit->symbol_table, state->id)) {
-        emit_inst (emit, load_id_inst_init (get_symbol (emit->symbol_table, state->id), NULL));
+        emit_inst (emit, load_local_inst_init  (get_symbol (emit->symbol_table, state->id)));
     } else {
-        emit_inst (emit, load_id_inst_init (0, state->id));
+        emit_inst (emit, load_id_inst_init (state->id));
     }
 }
 

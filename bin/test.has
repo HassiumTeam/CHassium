@@ -1,12 +1,18 @@
-p = Person ("John");
-p.say_hello ();
-
-class Person {
-    func new (name) {
-        this.name = name;
+class TestStats {
+    func new () {
+        this.passed = 0;
+        this.failed = 0;
     }
 
-    func say_hello () {
-        println (this.name);
+    func toString () {
+        return "Passed: " + this.passed;
     }
+}
+
+stats = TestStats ();
+main ();
+
+func main () {
+    println (stats.passed);
+    println (stats);
 }

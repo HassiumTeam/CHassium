@@ -1,6 +1,7 @@
 #ifndef _SYMBOL_TABLE_H_
 #define _SYMBOL_TABLE_H_
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <util/vector.h>

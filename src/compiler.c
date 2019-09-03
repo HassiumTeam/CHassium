@@ -1,21 +1,12 @@
 #include <compiler.h>
 
-struct has_obj * compile () {
-    struct tokenizer_state * lexer = tokenizer_init(fopen ("bin/test.has", "rb"));
+struct has_obj * compile (char * file) {
+    printf ("%s\n", file); // displays bin/test.has
+    struct tokenizer_state * lexer = tokenizer_init(fopen (file, "r"));
     struct parser_state * parser = parser_init (lexer);
     struct ast_node * ast = parser_parse (parser);
     tokenizer_free (lexer);
     parser_free (parser);
-
-
-    printf ("Type: %d\n", ast->type);
-
-    struct block_state * block = (struct block_state *)ast->state;
-    struct vector_state * stmts = block->stmts;
-
-    for (int i = 0; i < stmts->length; i++) {
-        printf ("Subtype: %d\n", ((struct ast_node *)vector_get (stmts, i))->type);
-    }
 
     struct emit_state * emit = emit_init ();
     accept (emit, ast);

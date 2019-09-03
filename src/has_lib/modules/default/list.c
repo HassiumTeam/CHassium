@@ -3,6 +3,7 @@
 static struct has_obj * _index       (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 static struct has_obj * _iter        (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 static struct has_obj * _store_index (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
+static struct has_obj * size         (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 
 struct has_obj * has_list_init (struct vector_state * init) {
     struct has_list * state;
@@ -20,6 +21,7 @@ struct has_obj * has_list_init (struct vector_state * init) {
     has_obj_set_attrib (obj, "_index",       has_method_init (obj, _index,       NULL));
     has_obj_set_attrib (obj, "_iter",        has_method_init (obj, _iter,        NULL));
     has_obj_set_attrib (obj, "_store_index", has_method_init (obj, _store_index, NULL));
+    has_obj_set_attrib (obj, "size",         has_method_init (obj, size,         NULL));
 
     return obj;
 }
@@ -87,4 +89,12 @@ static struct has_obj * _store_index (struct vm_state * vm, struct has_obj * sel
     vector_set (this->vals, index, val);
 
     return val;
+}
+
+static struct has_obj * size (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
+    struct has_list * this;
+
+    this = (struct has_list *)self->state;
+
+    return has_number_init (this->vals->length);
 }

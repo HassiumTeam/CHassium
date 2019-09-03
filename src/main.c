@@ -6,7 +6,7 @@ int main (int argc, char * argv[]) {
     struct has_obj  * mod;
     struct vm_state * vm;
 
-    mod = compile ();
+    mod = compile (argv [1]);
     vm  = vm_init (mod);
 
     vm_run (vm, mod, NULL);

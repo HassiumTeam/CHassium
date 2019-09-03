@@ -81,7 +81,7 @@ void tokenizer_next (struct tokenizer_state * state, struct token * token) {
         return;
     }
 
-    cur = (char)peekc (state);
+    cur  = (char)peekc (state);
     next = (char)nextc (state);
 
 
@@ -215,7 +215,7 @@ void tokenizer_next (struct tokenizer_state * state, struct token * token) {
                 token->type = colon;
                 break;
             default:
-                printf ("Unknown char \"%c\"\n", cur);
+                printf ("Unknown char \"%c\" %d\n", cur, cur);
                 exit (EXIT_FAILURE);
                 break;
         }

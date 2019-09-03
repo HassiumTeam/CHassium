@@ -22,8 +22,6 @@ struct symbol_table_state * symbol_table_init () {
     state->scopes     = vector_init ();
     state->next_index = 0;
 
-    vector_push (state->scopes, scope_init ());
-
     return state;
 }
 

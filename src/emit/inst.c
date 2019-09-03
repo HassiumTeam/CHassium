@@ -174,18 +174,39 @@ struct inst * load_attrib_inst_init (char * attrib) {
     return inst;
 }
 
-struct inst * load_id_inst_init (int index, char * name) {
+struct inst * load_global_inst_init (int symbol) {
+    struct load_global_inst * state;
+    struct inst             * inst;
+
+    state = (struct load_global_inst *)calloc (1, sizeof (struct load_global_inst));
+    state->symbol = symbol;
+
+    inst = inst_init (load_global_inst, state);
+
+    return inst;
+}
+
+struct inst * load_id_inst_init (char * name) {
     struct load_id_inst * state;
     struct inst         * inst;
 
     state        = (struct load_id_inst *)calloc (1, sizeof (struct load_id_inst));
-    state->index = index;
-    if (name) {
-        state->name = (char *)calloc (strlen (name) + 1, sizeof (char));
-        memcpy (state->name, name, strlen (name) + 1);
-    }
+    state->name = (char *)calloc (strlen (name) + 1, sizeof (char));
+    memcpy (state->name, name, strlen (name) + 1);
 
     inst = inst_init (load_id_inst, state);
+
+    return inst;
+}
+
+struct inst * load_local_inst_init (int symbol) {
+    struct load_local_inst * state;
+    struct inst             * inst;
+
+    state = (struct load_local_inst *)calloc (1, sizeof (struct load_local_inst));
+    state->symbol = symbol;
+
+    inst = inst_init (load_local_inst, state);
 
     return inst;
 }

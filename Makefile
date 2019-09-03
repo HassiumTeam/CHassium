@@ -25,6 +25,7 @@ OBJECTS += src/has_lib/modules/default/number.o
 OBJECTS += src/has_lib/modules/default/string.o
 
 OBJECTS += src/has_lib/has_bound_func.o
+OBJECTS += src/has_lib/has_bound_method.o
 OBJECTS += src/has_lib/has_class.o
 OBJECTS += src/has_lib/has_func.o
 OBJECTS += src/has_lib/has_method.o
@@ -61,6 +62,7 @@ INCLUDES += inc/has_lib/modules/default/number.h
 INCLUDES += inc/has_lib/modules/default/string.h
 
 INCLUDES += inc/has_lib/has_bound_func.h
+INCLUDES += inc/has_lib/has_bound_method.h
 INCLUDES += inc/has_lib/has_class.h
 INCLUDES += inc/has_lib/has_func.h
 INCLUDES += inc/has_lib/has_method.h
@@ -110,8 +112,12 @@ remove: clean
 
 .PHONY: run
 run:
-	@bin/hassium
+	@bin/hassium "./bin/test.has"
+
+.PHONY: test
+test:
+	@bin/hassium "./bin/tests.has"
 
 .PHONY: leakcheck
 leakcheck:
-	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium
+	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium ./bin/test.has

@@ -9,6 +9,7 @@
 #include <has_lib/has_obj.h>
 #include <parser/ast.h>
 #include <parser/node_type.h>
+#include <stdio.h>
 #include <unary_op_type.h>
 #include <util/int_vector.h>
 #include <util/vector.h>

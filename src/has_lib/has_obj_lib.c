@@ -52,10 +52,21 @@ struct has_obj * has_obj_index (struct vm_state * vm, struct has_obj * obj, stru
 
 struct has_obj * has_obj_invoke (struct vm_state * vm, struct has_obj * obj, struct vector_state * args) {
     struct has_method * invokable;
+    struct has_obj    * ret;
+    int                 null_args = 0;
 
     invokable = (struct has_method *)has_obj_get_attrib (obj, "_invoke")->state;
-    
-    return invokable->invoke (vm, invokable->self, args);
+    if (args == NULL) {
+        args = vector_init ();
+        null_args = 1;
+    }
+
+    ret = invokable->invoke (vm, invokable->self, args);
+    if (null_args) {
+        vector_free (args);
+    }
+
+    return ret;
 }
 
 struct has_obj * has_obj_instanceof (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
@@ -131,13 +142,14 @@ int has_obj_to_cint (struct vm_state * vm, struct has_obj * obj) {
 }
 
 char * has_obj_to_cstring (struct vm_state * vm, struct has_obj * obj) {
-    struct has_obj    * str_obj;
-    struct has_obj    * to_string;
-    char              * ret;
-    char              * str;
+    struct has_obj  * str_obj;
+    struct has_obj  * to_string;
+    char            * ret;
+    char            * str;
 
     to_string = has_obj_get_attrib (obj, "toString");
     str_obj   = has_obj_invoke (vm, to_string, NULL);
+
     str       = ((struct has_string *)(str_obj->state))->val;
     ret       = (char *)calloc (strlen (str) + 1, sizeof (char));
 
