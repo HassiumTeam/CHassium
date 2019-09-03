@@ -1,4 +1,1 @@
-a = [1, 2, ];
-b = [1, 2, ];
-
-println (a == b);
+println (true && true);
