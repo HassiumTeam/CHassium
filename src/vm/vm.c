@@ -257,13 +257,52 @@ static void bin_op (struct vm_state * vm, struct run_state * run_state, struct b
 
     switch (state->type) {
         case add_bin_op:
-            vector_push (run_state->stack, gc_add_ref (has_obj_add        (vm, left, right)));
+            vector_push (run_state->stack, gc_add_ref (has_obj_add              (vm, left, right)));
             break;
-        case instanceof_bin_op:
-            vector_push (run_state->stack, gc_add_ref (has_obj_instanceof (vm, left, right)));
+        case bitwise_and_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_bitwise_and      (vm, left, right)));
+            break;
+        case bitwise_or_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_bitwise_or       (vm, left, right)));
+            break;
+        case div_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_divide           (vm, left, right)));
             break;
         case equal_bin_op:
-            vector_push (run_state->stack, gc_add_ref (has_obj_equal      (vm, left, right)));
+            vector_push (run_state->stack, gc_add_ref (has_obj_equal            (vm, left, right)));
+            break;
+        case greater_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_greater          (vm, left, right)));
+            break;
+        case greater_or_equal_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_greater_or_equal (vm, left, right)));
+            break;
+        case instanceof_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_instanceof       (vm, left, right)));
+            break;
+        case lesser_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_lesser           (vm, left, right)));
+            break;
+        case lesser_or_equal_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_lesser_or_equal  (vm, left, right)));
+            break;
+        case logical_and_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_logical_and      (vm, left, right)));
+            break;
+        case logical_or_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_logical_or       (vm, left, right)));
+            break;
+        case mod_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_mod              (vm, left, right)));
+            break;
+        case mul_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_mul              (vm, left, right)));
+            break;
+        case sub_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_sub              (vm, left, right)));
+            break;
+        case xor_bin_op:
+            vector_push (run_state->stack, gc_add_ref (has_obj_xor              (vm, left, right)));
             break;
     }
 

@@ -7,8 +7,50 @@ struct has_obj * has_obj_add (struct vm_state * vm, struct has_obj * left, struc
 
     _add = has_obj_get_attrib (left, "_add");
 
-    args = assemble_args (1, right);
+    args = assemble_args  (1, right);
     ret  = has_obj_invoke (vm, _add, args);
+    vector_free (args);
+
+    return ret;
+}
+
+struct has_obj * has_obj_bitwise_and (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj      * _bitwise_and;
+    struct vector_state * args;
+    struct has_obj      * ret;
+
+    _bitwise_and = has_obj_get_attrib (left, "_bitwise_and");
+
+    args = assemble_args  (1, right);
+    ret  = has_obj_invoke (vm, _bitwise_and, args);
+    vector_free (args);
+
+    return ret;
+}
+
+struct has_obj * has_obj_bitwise_or (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj      * _bitwise_or;
+    struct vector_state * args;
+    struct has_obj      * ret;
+
+    _bitwise_or = has_obj_get_attrib (left, "_bitwise_or");
+
+    args = assemble_args  (1, right);
+    ret  = has_obj_invoke (vm, _bitwise_or, args);
+    vector_free (args);
+
+    return ret;
+}
+
+struct has_obj * has_obj_divide (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj      * _divide;
+    struct vector_state * args;
+    struct has_obj      * ret;
+
+    _divide = has_obj_get_attrib (left, "_divide");
+
+    args = assemble_args  (1, right);
+    ret  = has_obj_invoke (vm, _divide, args);
     vector_free (args);
 
     return ret;
@@ -36,6 +78,34 @@ struct has_obj * has_obj_equal (struct vm_state * vm, struct has_obj * left, str
     }
 }
 
+struct has_obj * has_obj_greater (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj      * _greater;
+    struct vector_state * args;
+    struct has_obj      * ret;
+
+    _greater = has_obj_get_attrib (left, "_greater");
+
+    args = assemble_args  (1, right);
+    ret  = has_obj_invoke (vm, _greater, args);
+    vector_free (args);
+
+    return ret;
+}
+
+struct has_obj * has_obj_greater_or_equal (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj      * _greater_or_equal;
+    struct vector_state * args;
+    struct has_obj      * ret;
+
+    _greater_or_equal = has_obj_get_attrib (left, "_greater_or_equal");
+
+    args = assemble_args  (1, right);
+    ret  = has_obj_invoke (vm, _greater_or_equal, args);
+    vector_free (args);
+
+    return ret;
+}
+
 struct has_obj * has_obj_index (struct vm_state * vm, struct has_obj * obj, struct has_obj * index) {
     struct has_obj      * _index;
     struct vector_state * args;
@@ -43,7 +113,7 @@ struct has_obj * has_obj_index (struct vm_state * vm, struct has_obj * obj, stru
 
     _index = has_obj_get_attrib (obj, "_index");
 
-    args = assemble_args (1, index);
+    args = assemble_args  (1, index);
     ret  = has_obj_invoke (vm, _index, args);
     vector_free (args);
 
@@ -101,6 +171,90 @@ struct has_obj * has_obj_iter_next (struct vm_state * vm, struct has_obj * obj) 
     return has_obj_invoke (vm, _iter_next, NULL);
 }
 
+struct has_obj * has_obj_lesser (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj      * _lesser;
+    struct vector_state * args;
+    struct has_obj      * ret;
+
+    _lesser = has_obj_get_attrib (left, "_lesser");
+
+    args = assemble_args  (1, right);
+    ret  = has_obj_invoke (vm, _lesser, args);
+    vector_free (args);
+
+    return ret;
+}
+
+struct has_obj * has_obj_lesser_or_equal (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj      * _lesser_or_equal;
+    struct vector_state * args;
+    struct has_obj      * ret;
+
+    _lesser_or_equal = has_obj_get_attrib (left, "_lesser_or_equal");
+
+    args = assemble_args  (1, right);
+    ret  = has_obj_invoke (vm, _lesser_or_equal, args);
+    vector_free (args);
+
+    return ret;
+}
+
+struct has_obj * has_obj_logical_and (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj      * _logical_and;
+    struct vector_state * args;
+    struct has_obj      * ret;
+
+    _logical_and = has_obj_get_attrib (left, "_logical_and");
+
+    args = assemble_args  (1, right);
+    ret  = has_obj_invoke (vm, _logical_and, args);
+    vector_free (args);
+
+    return ret;
+}
+
+struct has_obj * has_obj_logical_or (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj      * _logical_or;
+    struct vector_state * args;
+    struct has_obj      * ret;
+
+    _logical_or = has_obj_get_attrib (left, "_logical_or");
+
+    args = assemble_args  (1, right);
+    ret  = has_obj_invoke (vm, _logical_or, args);
+    vector_free (args);
+
+    return ret;
+}
+
+struct has_obj * has_obj_mod (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj      * _mod;
+    struct vector_state * args;
+    struct has_obj      * ret;
+
+    _mod = has_obj_get_attrib (left, "_mod");
+
+    args = assemble_args  (1, right);
+    ret  = has_obj_invoke (vm, _mod, args);
+    vector_free (args);
+
+    return ret;
+}
+
+struct has_obj * has_obj_mul (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj      * _mul;
+    struct vector_state * args;
+    struct has_obj      * ret;
+
+    _mul = has_obj_get_attrib (left, "_mul");
+
+    args = assemble_args  (1, right);
+    ret  = has_obj_invoke (vm, _mul, args);
+    vector_free (args);
+
+    return ret;
+}
+
 struct has_obj * has_obj_store_index (struct vm_state * vm, struct has_obj * obj, struct has_obj * index, struct has_obj * val) {
     struct has_obj      * _store_index;
     struct vector_state * args;
@@ -110,6 +264,34 @@ struct has_obj * has_obj_store_index (struct vm_state * vm, struct has_obj * obj
 
     args = assemble_args (2, index, val);
     ret = has_obj_invoke (vm, _store_index, args);
+    vector_free (args);
+
+    return ret;
+}
+
+struct has_obj * has_obj_sub (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj      * _sub;
+    struct vector_state * args;
+    struct has_obj      * ret;
+
+    _sub = has_obj_get_attrib (left, "_sub");
+
+    args = assemble_args  (1, right);
+    ret  = has_obj_invoke (vm, _sub, args);
+    vector_free (args);
+
+    return ret;
+}
+
+struct has_obj * has_obj_xor (struct vm_state * vm, struct has_obj * left, struct has_obj * right) {
+    struct has_obj      * _xor;
+    struct vector_state * args;
+    struct has_obj      * ret;
+
+    _xor = has_obj_get_attrib (left, "_xor");
+
+    args = assemble_args  (1, right);
+    ret  = has_obj_invoke (vm, _xor, args);
     vector_free (args);
 
     return ret;

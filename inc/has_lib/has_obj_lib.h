@@ -6,15 +6,28 @@
 #include <has_lib/modules/default/string.h>
 #include <has_lib/has_obj.h>
 
-struct has_obj * has_obj_add         (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
-struct has_obj * has_obj_equal       (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
-struct has_obj * has_obj_index       (struct vm_state * vm, struct has_obj * obj,  struct has_obj      * index);
-struct has_obj * has_obj_instanceof  (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
-struct has_obj * has_obj_iter        (struct vm_state * vm, struct has_obj * obj);
-struct has_obj * has_obj_iter_full   (struct vm_state * vm, struct has_obj * obj);
-struct has_obj * has_obj_iter_next   (struct vm_state * vm, struct has_obj * obj);
-struct has_obj * has_obj_invoke      (struct vm_state * vm, struct has_obj * obj,  struct vector_state * args);
-struct has_obj * has_obj_store_index (struct vm_state * vm, struct has_obj * obj,  struct has_obj      * index, struct has_obj * val);
+struct has_obj * has_obj_add              (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_bitwise_and      (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_bitwise_or       (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_divide           (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_equal            (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_greater          (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_greater_or_equal (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_index            (struct vm_state * vm, struct has_obj * obj,  struct has_obj      * index);
+struct has_obj * has_obj_instanceof       (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_invoke           (struct vm_state * vm, struct has_obj * obj,  struct vector_state * args);
+struct has_obj * has_obj_iter             (struct vm_state * vm, struct has_obj * obj);
+struct has_obj * has_obj_iter_full        (struct vm_state * vm, struct has_obj * obj);
+struct has_obj * has_obj_iter_next        (struct vm_state * vm, struct has_obj * obj);
+struct has_obj * has_obj_lesser           (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_lesser_or_equal  (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_logical_and      (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_logical_or       (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_mod              (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_mul              (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_store_index      (struct vm_state * vm, struct has_obj * obj,  struct has_obj      * index, struct has_obj * val);
+struct has_obj * has_obj_sub              (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
+struct has_obj * has_obj_xor              (struct vm_state * vm, struct has_obj * left, struct has_obj      * right);
 
 struct has_obj * typeof_has_obj      (struct vm_state * vm, struct has_obj * obj);
 
