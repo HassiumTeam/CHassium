@@ -1,1 +1,11 @@
-println (1 | 2);
+c = 2;
+
+a = func (b) {
+    println (b + c);
+}
+
+a ("hi!");
+
+c = 3;
+
+a ("Hello ");

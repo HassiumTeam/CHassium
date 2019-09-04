@@ -313,7 +313,7 @@ float has_obj_to_cfloat (struct vm_state * vm, struct has_obj * obj) {
     num_obj   = has_obj_invoke      (vm, to_number, NULL);
 
     if (num_obj != obj) {
-        has_obj_free (num_obj);
+        gc_remove_ref (num_obj);
     }
 
     return ((struct has_number *)num_obj->state)->val;

@@ -311,7 +311,7 @@ static void bin_op (struct vm_state * vm, struct run_state * run_state, struct b
 }
 
 static void build_closure (struct vm_state * vm, struct run_state * run_state, struct build_closure_inst * state) {
-
+    vector_push (run_state->stack, gc_add_ref (has_closure_init (state->func, peek_frame (vm->stack_frame))));
 }
 
 static void build_exception_handler (struct vm_state * vm, struct run_state * run_state, struct build_exception_handler_inst * state) {
@@ -584,7 +584,7 @@ static void store_global (struct vm_state * vm, struct run_state * run_state, st
 
     val = vector_pop (run_state->stack);
     set_global (vm->stack_frame, state->symbol, val);
-
+    
     vector_push (run_state->stack, val);
 }
 

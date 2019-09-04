@@ -11,6 +11,7 @@ struct vm_state {
 };
 
 #include <has_lib/has_bound_method.h>
+#include <has_lib/has_closure.h>
 #include <has_lib/has_obj.h>
 #include <has_lib/has_obj_lib.h>
 #include <has_lib/modules/default/default_mod.h>

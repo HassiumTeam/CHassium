@@ -12,6 +12,7 @@ struct has_obj * has_func_init (char * name, struct vector_state * params, struc
     state->name         = name;
     state->params       = params;
     state->enforced_ret = enforced_ret;
+    state->is_closure   = 0;
 
     obj = has_obj_init (get_func_type (), state, has_func_free);
     has_obj_set_attrib (obj, "_invoke",       has_method_init (obj, _invoke,       NULL));
@@ -39,12 +40,16 @@ static struct has_obj * _invoke (struct vm_state * vm, struct has_obj * self, st
 
     this = (struct has_func *)self->state;
 
-    push_frame (vm->stack_frame, NULL);
+    if (!this->is_closure) {
+        push_frame (vm->stack_frame, NULL);
+    }
 
     import_args (vm, this, args, 0);
     ret = vm_run (vm, self, NULL);
 
-    pop_frame  (vm->stack_frame);
+    if (!this->is_closure) {
+        pop_frame (vm->stack_frame);
+    }
 
     return ret;
 }
