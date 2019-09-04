@@ -543,11 +543,59 @@ static void obj_decl (struct vm_state * vm, struct run_state * run_state, struct
 }
 
 static void obj_destructure_global (struct vm_state * vm, struct run_state * run_state, struct obj_destructure_global_inst  * state) {
+    struct has_obj  * target;
+    struct has_list * list;
+    char            * var;
+    int               indice;
 
+    target = vector_pop (run_state->stack);
+
+    if (has_obj_instanceof (vm, target, get_list_type ()) == HAS_TRUE) {
+        list = (struct has_list *)target->state;
+
+        for (int i = 0; i < state->vars->length; i++) {
+            indice = int_vector_get (state->indices, i);
+
+            set_global (vm->stack_frame, indice, vector_get (list->vals, i));
+        }
+    } else {
+        for (int i = 0; i < state->vars->length; i++) {
+            indice = int_vector_get (state->indices, i);
+            var    = vector_get     (state->vars,    i);
+
+            set_global (vm->stack_frame, indice, has_obj_get_attrib (target, var));
+        }
+    }
+
+    vector_push (run_state->stack, target);
 }
 
 static void obj_destructure_local (struct vm_state * vm, struct run_state * run_state, struct obj_destructure_local_inst   * state) {
+    struct has_obj  * target;
+    struct has_list * list;
+    char            * var;
+    int               indice;
 
+    target = vector_pop (run_state->stack);
+
+    if (has_obj_instanceof (vm, target, get_list_type ()) == HAS_TRUE) {
+        list = (struct has_list *)target->state;
+
+        for (int i = 0; i < state->vars->length; i++) {
+            indice = int_vector_get (state->indices, i);
+
+            set_var (vm->stack_frame, indice, vector_get (list->vals, i));
+        }
+    } else {
+        for (int i = 0; i < state->vars->length; i++) {
+            indice = int_vector_get (state->indices, i);
+            var    = vector_get     (state->vars,    i);
+
+            set_var (vm->stack_frame, indice, has_obj_get_attrib (target, var));
+        }
+    }
+
+    vector_push (run_state->stack, target);
 }
 
 static void pop_ (struct vm_state * vm, struct run_state * run_state) {
@@ -584,7 +632,7 @@ static void store_global (struct vm_state * vm, struct run_state * run_state, st
 
     val = vector_pop (run_state->stack);
     set_global (vm->stack_frame, state->symbol, val);
-    
+
     vector_push (run_state->stack, val);
 }
 
@@ -628,7 +676,17 @@ static void typeof (struct vm_state * vm, struct run_state * run_state) {
 }
 
 static void unary_op (struct vm_state * vm, struct run_state * run_state, struct unary_op_inst * state) {
+    struct has_obj * target;
 
+    target = vector_pop (run_state->stack);
+
+    switch (state->type) {
+        case logical_not_unary_op:
+            vector_push (run_state->stack, target == HAS_TRUE ? HAS_FALSE : HAS_TRUE);
+            break;
+    }
+
+    gc_remove_ref (target);
 }
 
 static void use_global (struct vm_state * vm, struct run_state * run_state, struct use_global_inst * state) {

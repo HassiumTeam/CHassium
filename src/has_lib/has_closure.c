@@ -31,7 +31,7 @@ static struct has_obj * _invoke (struct vm_state * vm, struct has_obj * self, st
 
     push_frame (vm->stack_frame, this->frame);
     ret = has_obj_invoke (vm, this->func, args);
-    vector_pop (vm->stack_frame->frames);
+    vector_pop (vm->stack_frame->frames); // We don't want to call pop_frame as to not free variables in the frame.
 
     return ret;
 }

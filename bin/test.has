@@ -1,11 +1,13 @@
-c = 2;
+[ a, b, c ] = {
+    a: 10,
+    b: 55,
+    c: 22,
+};
 
-a = func (b) {
-    println (b + c);
+func call () {
+    return 2;
 }
 
-a ("hi!");
-
-c = 3;
-
-a ("Hello ");
+println (a);
+println (b);
+println (c);
