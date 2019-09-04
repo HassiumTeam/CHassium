@@ -45,22 +45,25 @@ static struct vector_state * parse_object_params (struct parser_state * state);
 // ----------------------------------------------------------------------------
 // Function for parsing expressions.
 // ----------------------------------------------------------------------------
-static struct ast_node * parse_expr_stmt  (struct parser_state * state);
-static struct ast_node * parse_expr       (struct parser_state * state);
-static struct ast_node * parse_assign     (struct parser_state * state);
-static struct ast_node * parse_or         (struct parser_state * state);
-static struct ast_node * parse_and        (struct parser_state * state);
-static struct ast_node * parse_eq         (struct parser_state * state);
-static struct ast_node * parse_instanceof (struct parser_state * state);
-static struct ast_node * parse_comp       (struct parser_state * state);
-static struct ast_node * parse_add        (struct parser_state * state);
-static struct ast_node * parse_mult       (struct parser_state * state);
-static struct ast_node * parse_unary      (struct parser_state * state);
-static struct ast_node * parse_access     (struct parser_state * state, struct ast_node * left);
-static struct ast_node * parse_term       (struct parser_state * state);
-static struct ast_node * parse_closure    (struct parser_state * state);
-static struct ast_node * parse_obj_decl   (struct parser_state * state);
-static struct ast_node * parse_typeof     (struct parser_state * state);
+static struct ast_node * parse_expr_stmt   (struct parser_state * state);
+static struct ast_node * parse_expr        (struct parser_state * state);
+static struct ast_node * parse_assign      (struct parser_state * state);
+static struct ast_node * parse_or          (struct parser_state * state);
+static struct ast_node * parse_and         (struct parser_state * state);
+static struct ast_node * parse_bitwise_or  (struct parser_state * state);
+static struct ast_node * parse_xor         (struct parser_state * state);
+static struct ast_node * parse_bitwise_and (struct parser_state * state);
+static struct ast_node * parse_eq          (struct parser_state * state);
+static struct ast_node * parse_instanceof  (struct parser_state * state);
+static struct ast_node * parse_comp        (struct parser_state * state);
+static struct ast_node * parse_add         (struct parser_state * state);
+static struct ast_node * parse_mult        (struct parser_state * state);
+static struct ast_node * parse_unary       (struct parser_state * state);
+static struct ast_node * parse_access      (struct parser_state * state, struct ast_node * left);
+static struct ast_node * parse_term        (struct parser_state * state);
+static struct ast_node * parse_closure     (struct parser_state * state);
+static struct ast_node * parse_obj_decl    (struct parser_state * state);
+static struct ast_node * parse_typeof      (struct parser_state * state);
 
 // ----------------------------------------------------------------------------
 // Functions for navigating the tokens.
@@ -418,13 +421,61 @@ static struct ast_node * parse_or (struct parser_state * state) {
 static struct ast_node * parse_and (struct parser_state * state) {
     struct ast_node * left;
 
-    left = parse_eq (state);
+    left = parse_bitwise_or (state);
 
     while (acceptv (state, op, "&&")) {
         left = bin_op_node_init (
             logical_and_bin_op,
             left,
             parse_and (state)
+        );
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_bitwise_or (struct parser_state * state) {
+    struct ast_node * left;
+
+    left = parse_xor (state);
+
+    while (acceptv (state, op, "|")) {
+        left = bin_op_node_init (
+            bitwise_or_bin_op,
+            left,
+            parse_bitwise_or (state)
+        );
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_xor (struct parser_state * state) {
+    struct ast_node * left;
+
+    left = parse_bitwise_and (state);
+
+    while (acceptv (state, op, "^")) {
+        left = bin_op_node_init (
+            xor_bin_op,
+            left,
+            parse_xor (state)
+        );
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_bitwise_and (struct parser_state * state) {
+    struct ast_node * left;
+
+    left = parse_eq (state);
+
+    while (acceptv (state, op, "&")) {
+        left = bin_op_node_init (
+            bitwise_and_bin_op,
+            left,
+            parse_bitwise_and (state)
         );
     }
 

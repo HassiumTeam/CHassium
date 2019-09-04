@@ -1,6 +1,8 @@
 #include <has_lib/modules/default/number.h>
 
 static struct has_obj * _add               (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
+static struct has_obj * _bitwise_and       (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
+static struct has_obj * _bitwise_or        (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 static struct has_obj * _divide            (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 static struct has_obj * _equal             (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 static struct has_obj * _greater           (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
@@ -21,6 +23,8 @@ struct has_obj * has_number_init (float f) {
 
     obj = has_obj_init (get_number_type (), state, has_number_free);
     has_obj_set_attrib (obj, "_add",              has_method_init (obj, _add,         NULL));
+    has_obj_set_attrib (obj, "_bitwise_and",      has_method_init (obj, _bitwise_and, NULL));
+    has_obj_set_attrib (obj, "_bitwise_or",       has_method_init (obj, _bitwise_or,  NULL));
     has_obj_set_attrib (obj, "_divide",           has_method_init (obj, _divide,      NULL));
     has_obj_set_attrib (obj, "_equal",            has_method_init (obj, _equal,       NULL));
     has_obj_set_attrib (obj, "_greater",          has_method_init (obj, _greater,     NULL));
@@ -57,6 +61,26 @@ static struct has_obj * _add (struct vm_state * vm, struct has_obj * self, struc
     right = (struct has_number *)((struct has_obj *)vector_get (args, 0))->state;
 
     return has_number_init (num->val + right->val);
+}
+
+static struct has_obj * _bitwise_and (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
+    struct has_number * num;
+    struct has_number * right;
+
+    num   = (struct has_number *)self->state;
+    right = (struct has_number *)((struct has_obj *)vector_get (args, 0))->state;
+    
+    return has_number_init ((int)num->val & (int)right->val);
+}
+
+static struct has_obj * _bitwise_or (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
+    struct has_number * num;
+    struct has_number * right;
+
+    num   = (struct has_number *)self->state;
+    right = (struct has_number *)((struct has_obj *)vector_get (args, 0))->state;
+
+    return has_number_init ((int)num->val | (int)right->val);
 }
 
 static struct has_obj * _divide (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
