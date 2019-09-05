@@ -1,13 +1,15 @@
-[ a, b, c ] = {
-    a: 10,
-    b: 55,
-    c: 22,
-};
+class TestStats {
+    func new () {
+        this.passed = 0;
+        this.failed = 0;
+    }
 
-func call () {
-    return 2;
+    func toString () {
+        return "Passed: " + this.passed + "Failed: " + this.failed;
+    }
 }
 
-println (a);
-println (b);
-println (c);
+
+t = TestStats ();
+
+println (t);

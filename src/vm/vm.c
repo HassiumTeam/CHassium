@@ -338,11 +338,18 @@ static void call (struct vm_state * vm, struct run_state * run_state, struct cal
 }
 
 static void compile_module (struct vm_state * vm, struct run_state * run_state, struct compile_module_inst * state) {
-
+    vector_push (run_state->stack, gc_add_ref (compile (state->file)));
 }
 
-static void import (struct vm_state * vm, struct run_state * run_state, struct import_inst                  * state) {
+static void import (struct vm_state * vm, struct run_state * run_state, struct import_inst * state) {
+    struct has_obj * mod;
 
+    if (state->name != NULL) {
+        mod = vm_resolve_access_chain (vm, state->name);
+    } else {
+        mod = compile (state->file);
+    }
+    import_module (vm, mod);
 }
 
 static void iter (struct vm_state * vm, struct run_state * run_state) {

@@ -10,6 +10,7 @@ struct vm_state {
     struct vector_state * exception_returns;
 };
 
+#include <compiler.h>
 #include <has_lib/has_bound_method.h>
 #include <has_lib/has_closure.h>
 #include <has_lib/has_obj.h>
