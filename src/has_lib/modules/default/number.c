@@ -58,13 +58,28 @@ struct has_obj * get_number_type () {
 }
 
 static struct has_obj * _add (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
-    struct has_number * num;
-    struct has_number * right;
+    struct has_number * this;
+    struct has_obj    * arg;
+    struct has_number * arg_as_num;
+    char              * arg_as_str;
+    char              * this_as_str;
+    char              * res_str;
 
-    num   = (struct has_number *)self->state;
-    right = (struct has_number *)((struct has_obj *)vector_get (args, 0))->state;
+    this = (struct has_number *)self->state;
+    arg = vector_get (args, 0);
 
-    return has_number_init (num->val + right->val);
+    if (has_obj_instanceof (vm, arg, get_number_type ()) == HAS_TRUE) {
+        arg_as_num = (struct has_number *)((struct has_obj *)vector_get (args, 0))->state;
+        return has_number_init (this->val + arg_as_num->val);
+    } else {
+        arg_as_str  = has_obj_to_cstring (vm, arg);
+        this_as_str = has_obj_to_cstring (vm, self);
+        this_as_str = (char *)realloc (this_as_str, (strlen (arg_as_str) + strlen (this_as_str) + 1) * sizeof (char));
+        memcpy (this_as_str + strlen (this_as_str), arg_as_str, strlen (arg_as_str) + 1);
+        free (arg_as_str);
+
+        return has_string_init (this_as_str);
+    }
 }
 
 static struct has_obj * _bitwise_and (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {

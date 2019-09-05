@@ -6,7 +6,7 @@ static struct has_obj * _iter        (struct vm_state * vm, struct has_obj * sel
 static struct has_obj * _store_index (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 static struct has_obj * pop          (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 static struct has_obj * push         (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
-static struct has_obj * size         (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
+static struct has_obj * toString     (struct vm_state * vm, struct has_obj * self, struct vector_state * args);
 
 struct has_obj * has_list_init (struct vector_state * init) {
     struct has_list * state;
@@ -27,7 +27,7 @@ struct has_obj * has_list_init (struct vector_state * init) {
     has_obj_set_attrib (obj, "_store_index", has_method_init (obj, _store_index, NULL));
     has_obj_set_attrib (obj, "pop",          has_method_init (obj, pop,          NULL));
     has_obj_set_attrib (obj, "push",         has_method_init (obj, push,         NULL));
-    has_obj_set_attrib (obj, "size",         has_method_init (obj, size,         NULL));
+    has_obj_set_attrib (obj, "toString",     has_method_init (obj, toString,     NULL));
 
     return obj;
 }
@@ -146,10 +146,6 @@ static struct has_obj * push (struct vm_state * vm, struct has_obj * self, struc
     return obj;
 }
 
-static struct has_obj * size (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
-    struct has_list * this;
-
-    this = (struct has_list *)self->state;
-
-    return has_number_init (this->vals->length);
+static struct has_obj * toString (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
+    return has_string_init (malloc (2));
 }

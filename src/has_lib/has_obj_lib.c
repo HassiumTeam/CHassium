@@ -330,7 +330,7 @@ char * has_obj_to_cstring (struct vm_state * vm, struct has_obj * obj) {
     char            * str;
 
     to_string = has_obj_get_attrib (obj, "toString");
-    str_obj   = has_obj_invoke (vm, to_string, NULL);
+    str_obj   = has_obj_invoke     (vm, to_string, NULL);
 
     str       = ((struct has_string *)(str_obj->state))->val;
     ret       = (char *)calloc (strlen (str) + 1, sizeof (char));

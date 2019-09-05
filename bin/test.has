@@ -1,15 +1,5 @@
-class TestStats {
-    func new () {
-        this.passed = 0;
-        this.failed = 0;
-    }
+import "./bin/test_stats.has";
 
-    func toString () {
-        return "Passed: " + this.passed + "Failed: " + this.failed;
-    }
-}
-
-
-t = TestStats ();
+t = TestsStats ();
 
 println (t);

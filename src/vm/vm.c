@@ -187,7 +187,7 @@ struct has_obj * vm_run (struct vm_state * vm, struct has_obj * obj, struct has_
                 if (state.self != NULL) {
                     gc_remove_ref (state.self);
                 }
-                ret->ref_count--;
+                //ret->ref_count--;
                 return ret;
             case self_reference_inst:
                 self_reference             (vm, &state);
@@ -350,6 +350,8 @@ static void import (struct vm_state * vm, struct run_state * run_state, struct i
         mod = compile (state->file);
     }
     import_module (vm, mod);
+
+    gc_remove_ref (mod);
 }
 
 static void iter (struct vm_state * vm, struct run_state * run_state) {

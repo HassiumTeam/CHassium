@@ -36,10 +36,9 @@ static struct has_obj * _add (struct vm_state * vm, struct has_obj * self, struc
     char * res;
     char * right;
 
-    res = has_obj_to_cstring (vm, self);
+    res   = has_obj_to_cstring (vm, self);
     right = has_obj_to_cstring (vm, vector_get (args, 0));
-
-    res = realloc (res, strlen (res) + strlen (right) + 1);
+    res   = realloc (res, strlen (res) + strlen (right) + 1);
     strcat (res, right);
 
     free (right);
