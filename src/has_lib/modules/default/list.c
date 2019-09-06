@@ -147,5 +147,33 @@ static struct has_obj * push (struct vm_state * vm, struct has_obj * self, struc
 }
 
 static struct has_obj * toString (struct vm_state * vm, struct has_obj * self, struct vector_state * args) {
-    return has_string_init (malloc (2));
+    struct has_list * this;
+    char            * res;
+    char            * str;
+    int               size;
+
+    this    = (struct has_list *)self->state;
+    size    = 3;
+    res     = (char *)malloc (size * sizeof (char));
+    res [0] = '[';
+    res [1] = ' ';
+
+    for (int i = 0; i < this->vals->length; i++) {
+        str = has_obj_to_cstring (vm, vector_get (this->vals, i));
+
+        res = (char *)realloc (res, size + strlen (str) + 2);
+        memcpy (res + size - 1, str, strlen (str));
+
+        size += strlen (str);
+        res [(size++) - 1] = ',';
+        res [(size++) - 1] = ' ';
+
+        free (str);
+    }
+
+    res = (char *)realloc (res, size + 2);
+    res [(size++) - 1] = ' ';
+    res [(size++) - 2] = ']';
+
+    return has_string_init (res);
 }
