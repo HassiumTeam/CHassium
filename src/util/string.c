@@ -9,7 +9,6 @@ char * create_empty_str () {
 }
 
 char * append_str (char * str, char * s) {
-    int new_length;
     int str_length;
     int   s_length;
 
