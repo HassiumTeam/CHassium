@@ -1,7 +1,0 @@
-import "./bin/test_stats.has";
-
-t = TestsStats ();
-t.tests_failed.push (3);
-t.tests_failed.push (4);
-
-println (t);
