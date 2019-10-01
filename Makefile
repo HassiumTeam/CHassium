@@ -11,6 +11,8 @@ LFLAGS   = -Wall -I. -lm
 OBJECTS += src/lexer/lexer.o
 OBJECTS += src/lexer/token.o
 
+OBJECTS += src/parser/ast.o
+
 OBJECTS += src/main.o
 
 OBJECTS += src/util/string.o
