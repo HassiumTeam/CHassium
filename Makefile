@@ -12,6 +12,7 @@ OBJECTS += src/lexer/lexer.o
 OBJECTS += src/lexer/token.o
 
 OBJECTS += src/parser/ast.o
+OBJECTS += src/parser/parser.o
 
 OBJECTS += src/main.o
 
