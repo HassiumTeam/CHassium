@@ -35,3 +35,12 @@ char * append_char (char * str, char c) {
 
     return str;
 }
+
+char * string_copy (char * str) {
+    char * res;
+
+    res = (char *)calloc (strlen (str) + 1, sizeof (str));
+    memcpy (res, str, strlen (str) + 1);
+
+    return res;
+}

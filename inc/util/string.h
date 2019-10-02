@@ -7,5 +7,6 @@
 char * create_empty_str ();
 char * append_str       (char * str, char * s);
 char * append_char      (char * str, char   c);
+char * string_copy      (char * str);
 
 #endif
