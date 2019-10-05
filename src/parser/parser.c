@@ -81,7 +81,7 @@ struct ast_node * parser_run (struct parser * parser) {
         vector_push (stmts, parse_stmt (parser));
     }
 
-    return ast_node_init (BLOCK_NODE, 1, stmts);
+    return ast_node_init (BLOCK_NODE, 0, 0, 1, stmts);
 }
 
 static struct ast_node * parse_stmt (struct parser * parser) {
@@ -135,13 +135,13 @@ static struct ast_node * parse_block (struct parser * parser) {
         vector_push (stmts, parse_stmt (parser));
     }
 
-    return ast_node_init (BLOCK_NODE, 1, stmts);
+    return ast_node_init (BLOCK_NODE, 0, 0, 1, stmts);
 }
 
 static struct ast_node * parse_break (struct parser * parser) {
     expect_tok_val (parser, ID_TOK, "break");
 
-    return ast_node_init (BREAK_NODE, 0);
+    return ast_node_init (BREAK_NODE, 0, 0, 0);
 }
 
 static struct ast_node * parse_class (struct parser * parser) {
@@ -158,13 +158,13 @@ static struct ast_node * parse_class (struct parser * parser) {
 
     body = parse_block (parser);
 
-    return ast_node_init (CLASS_NODE, 3, name, extends, body);
+    return ast_node_init (CLASS_NODE, 0, 0, 3, name, extends, body);
 }
 
 static struct ast_node * parse_continue (struct parser * parser) {
     expect_tok_val (parser, ID_TOK, "continue");
 
-    return ast_node_init (CONTINUE_NODE, 0);
+    return ast_node_init (CONTINUE_NODE, 0, 0, 0);
 }
 
 static struct ast_node * parse_for (struct parser * parser) {
@@ -186,7 +186,7 @@ static struct ast_node * parse_for (struct parser * parser) {
 
     body = parse_stmt (parser);
 
-    return ast_node_init (FOR_NODE, 4, init_stmt, expr, rep_stmt, body);
+    return ast_node_init (FOR_NODE, 0, 0, 4, init_stmt, expr, rep_stmt, body);
 }
 
 static struct ast_node * parse_foreach (struct parser * parser) {
@@ -205,7 +205,7 @@ static struct ast_node * parse_foreach (struct parser * parser) {
 
     body = parse_stmt (parser);
 
-    return ast_node_init (FOREACH_NODE, 3, var, expr, body);
+    return ast_node_init (FOREACH_NODE, 0, 0, 3, var, expr, body);
 }
 
 static struct ast_node * parse_func (struct parser * parser) {
@@ -224,7 +224,7 @@ static struct ast_node * parse_func (struct parser * parser) {
 
     body = parse_stmt (parser);
 
-    return ast_node_init (FUNC_DECL_NODE, 4, name, params, ret_type, body);
+    return ast_node_init (FUNC_DECL_NODE, 0, 0, 4, name, params, ret_type, body);
 }
 
 static struct ast_node * parse_if (struct parser * parser) {
@@ -243,29 +243,29 @@ static struct ast_node * parse_if (struct parser * parser) {
         else_body = parse_stmt (parser);
     }
 
-    return ast_node_init (IF_NODE, 3, expr, if_body, else_body);
+    return ast_node_init (IF_NODE, 0, 0, 3, expr, if_body, else_body);
 }
 
 static struct ast_node * parse_import (struct parser * parser) {
     expect_tok_val (parser, ID_TOK, "import");
 
     if (match_tok (parser, STRINGC_TOK)) {
-        return ast_node_init (IMPORT_NODE, 2, NULL, string_copy (expect_tok (parser, STRINGC_TOK)->val));
+        return ast_node_init (IMPORT_NODE, 0, 0, 2, 0, string_copy (expect_tok (parser, STRINGC_TOK)->val));
     } else {
-        return ast_node_init (IMPORT_NODE, 2, parse_access_chain (parser), NULL);
+        return ast_node_init (IMPORT_NODE, 0, 0, 2, parse_access_chain (parser), 0);
     }
 }
 
 static struct ast_node * parse_raise (struct parser * parser) {
     expect_tok_val (parser, ID_TOK, "raise");
 
-    return ast_node_init (RAISE_NODE, 1, parse_expr (parser));
+    return ast_node_init (RAISE_NODE, 0, 0, 1, parse_expr (parser));
 }
 
 static struct ast_node * parse_return (struct parser * parser) {
     expect_tok_val (parser, ID_TOK, "return");
 
-    return ast_node_init (RETURN_NODE, 1, parse_expr (parser));
+    return ast_node_init (RETURN_NODE, 0, 0, 1, parse_expr (parser));
 }
 
 static struct ast_node * parse_super (struct parser * parser) {
@@ -274,7 +274,7 @@ static struct ast_node * parse_super (struct parser * parser) {
     expect_tok_val (parser, ID_TOK, "super");
     args = parse_arg_list (parser);
 
-    return ast_node_init (SUPER_NODE, 1, args);
+    return ast_node_init (SUPER_NODE, 0, 0, 1, args);
 }
 
 static struct ast_node * parse_try_catch (struct parser * parser) {
@@ -287,7 +287,7 @@ static struct ast_node * parse_try_catch (struct parser * parser) {
     expect_tok_val (parser, ID_TOK, "catch");
     catch_body = parse_stmt (parser);
 
-    return ast_node_init (TRY_CATCH_NODE, 2, try_body, catch_body);
+    return ast_node_init (TRY_CATCH_NODE, 0, 0, 2, try_body, catch_body);
 }
 
 static struct ast_node * parse_use (struct parser * parser) {
@@ -302,7 +302,7 @@ static struct ast_node * parse_use (struct parser * parser) {
     expect_tok_val (parser, ID_TOK, "from");
     expr = parse_expr (parser);
 
-    return ast_node_init (USE_NODE, 2, imports, expr);
+    return ast_node_init (USE_NODE, 0, 0, 2, imports, expr);
 }
 
 static struct ast_node * parse_while (struct parser * parser) {
@@ -317,7 +317,7 @@ static struct ast_node * parse_while (struct parser * parser) {
 
     body = parse_stmt (parser);
 
-    return ast_node_init (WHILE_NODE, 2, expr, body);
+    return ast_node_init (WHILE_NODE, 0, 0, 2, expr, body);
 }
 
 static struct ast_node * parse_expr_stmt (struct parser * parser) {
@@ -326,18 +326,182 @@ static struct ast_node * parse_expr_stmt (struct parser * parser) {
     expr = parse_expr (parser);
     accept_tok (parser, SEMICOL_TOK);
 
-    return ast_node_init (EXPR_STMT_NODE, 1, expr);
-}
-
-static struct vector * parse_arg_list (struct parser * parser) {
-
+    return ast_node_init (EXPR_STMT_NODE, 0, 0, 1, expr);
 }
 
 static struct ast_node * parse_expr (struct parser * parser) {
+    return parse_assign (parser);
+}
+
+static struct ast_node * parse_assign (struct parser * parser) {
+    struct ast_node * left;
+    char            * op;
+    bin_op_type_t     op_type;
+
+    left = parse_or (parser);
+
+    if (match_tok (parser, ASSIGN_TOK)) {
+        op = expect_tok (parser, ASSIGN_TOK)->val;
+
+        if (strcmp (op, "=") == 0) {
+            return ast_node_init (ASSIGN_NODE, 0, 0, 2, left, parse_assign (parser));
+        } else {
+            op_type = 0;
+            if (strcmp (op, "+=") == 0) {
+                op_type = ADD_BIN_OP;
+            } else if (strcmp (op, "&=") == 0) {
+                op_type = BITWISE_AND_BIN_OP;
+            } else if (strcmp (op, "|=") == 0) {
+                op_type = BITWISE_OR_BIN_OP;
+            } else if (strcmp (op, "/=") == 0) {
+                op_type = DIV_BIN_OP;
+            } else if (strcmp (op, "%=") == 0) {
+                op_type = MOD_BIN_OP;
+            } else if (strcmp (op, "*=") == 0) {
+                op_type = MUL_BIN_OP;
+            } else if (strcmp (op, "-=") == 0) {
+                op_type = SUB_BIN_OP;
+            } else if (strcmp (op, "^=") == 0) {
+                op_type = XOR_BIN_OP;
+            }
+
+            return ast_node_init (ASSIGN_NODE, 0, 0, 2,
+                left,
+                ast_node_init (BIN_OP_NODE, op_type, 0, 2,
+                    left,
+                    parse_assign (parser))
+            );
+        }
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_or (struct parser * parser) {
+    struct ast_node * left;
+
+    left = parse_and (parser);
+
+    while (accept_tok_val (parser, OP_TOK, "||")) {
+        left = ast_node_init (BIN_OP_NODE, LOGICAL_OR_BIN_OP, 0, 2,
+            left,
+            parse_or (parser)
+        );
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_and (struct parser * parser) {
+    struct ast_node * left;
+
+    left = parse_bitwise_or (parser);
+
+    while (accept_tok_val (parser, OP_TOK, "&&")) {
+        left = ast_node_init (BIN_OP_NODE, LOGICAL_AND_BIN_OP, 0, 2,
+            left,
+            parse_or (parser)
+        );
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_bitwise_or (struct parser * parser) {
+    struct ast_node * left;
+
+    left = parse_xor (parser);
+
+    while (accept_tok_val (parser, OP_TOK, "|")) {
+        left = ast_node_init (BIN_OP_NODE, BITWISE_OR_BIN_OP, 0, 2,
+            left,
+            parse_or (parser)
+        );
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_xor (struct parser * parser) {
+    struct ast_node * left;
+
+    left = parse_bitwise_and (parser);
+
+    while (accept_tok_val (parser, OP_TOK, "^")) {
+        left = ast_node_init (BIN_OP_NODE, XOR_BIN_OP, 0, 2,
+            left,
+            parse_or (parser)
+        );
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_bitwise_and (struct parser * parser) {
+    struct ast_node * left;
+
+    left = parse_eq (parser);
+
+    while (accept_tok_val (parser, OP_TOK, "&")) {
+        left = ast_node_init (BIN_OP_NODE, BITWISE_AND_BIN_OP, 0, 2,
+            left,
+            parse_or (parser)
+        );
+    }
+
+    return left;
+}
+
+static struct ast_node * parse_eq (struct parser * parser) {
 
 }
 
+static struct ast_node * parse_instanceof  (struct parser * parser) {
+
+}
+
+static struct ast_node * parse_comp        (struct parser * parser) {
+
+}
+
+static struct ast_node * parse_add         (struct parser * parser) {
+
+}
+
+static struct ast_node * parse_mult        (struct parser * parser) {
+
+}
+
+static struct ast_node * parse_unary       (struct parser * parser) {
+
+}
+
+static struct ast_node * parse_access      (struct parser * parser, struct ast_node * left) {
+
+}
+
+static struct ast_node * parse_term        (struct parser * parser) {
+
+}
+
+static struct ast_node * parse_closure     (struct parser * parser) {
+
+}
+
+static struct ast_node * parse_obj_decl    (struct parser * parser) {
+
+}
+
+static struct ast_node * parse_typeof      (struct parser * parser) {
+
+}
+
+
 static struct vector * parse_access_chain (struct parser * parser) {
+
+}
+
+static struct vector * parse_arg_list (struct parser * parser) {
 
 }
 

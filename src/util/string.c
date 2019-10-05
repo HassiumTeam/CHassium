@@ -44,3 +44,12 @@ char * string_copy (char * str) {
 
     return res;
 }
+
+void * stack_to_heap (void * ptr, size_t len) {
+    void * ret;
+
+    ret = calloc (len, 1);
+    memcpy (ret, ptr, len);
+
+    return ret;
+}

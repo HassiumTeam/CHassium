@@ -1,6 +1,6 @@
 #include <parser/ast.h>
 
-struct ast_node * ast_node_init (node_type_t type, int count, ...) {
+struct ast_node * ast_node_init (node_type_t type, int flag1, int flag2, int count, ...) {
     struct vector   * children;
     struct ast_node * node;
     va_list           ap;
@@ -14,6 +14,8 @@ struct ast_node * ast_node_init (node_type_t type, int count, ...) {
 
     node           = (struct ast_node *)calloc (1, sizeof (struct ast_node));
     node->children = children;
+    node->flag1    = flag1;
+    node->flag2    = flag2;
     node->type     = type;
 
     return node;
