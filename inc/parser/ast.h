@@ -26,14 +26,25 @@ typedef enum {
     PRE_INC_UNARY_OP,
 } unary_op_type_t;
 
+typedef enum {
+    ENFORCED_PARAM, OBJECT_PARAM, REGULAR_PARAM,
+} func_param_type_t;
+
+struct func_param {
+    func_param_type_t   type;
+    struct vector     * enforced_type;
+    struct vector     * ids;
+    char              * id;
+};
+
 struct ast_node {
     node_type_t     type;
     struct vector * children;
-    int             flag1;
-    int             flag2;
+    float           flag1;
+    float           flag2;
 };
 
-struct ast_node * ast_node_init (node_type_t type, int flag1, int flag2, int count, ...);
+struct ast_node * ast_node_init (node_type_t type, float flag1, float flag2, int count, ...);
 void              free_ast_node (struct ast_node * node);
 
 #endif
