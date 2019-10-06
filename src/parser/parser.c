@@ -62,7 +62,7 @@ static struct ast_node * parse_typeof      (struct parser * parser);
 // ----------------------------------------------------------------------------
 static struct vector * parse_access_chain  (struct parser * parser);
 static struct vector * parse_arg_list      (struct parser * parser);
-static struct vector * parse_func_params     (struct parser * parser);
+static struct vector * parse_func_params   (struct parser * parser);
 static struct vector * parse_object_params (struct parser * parser);
 
 static int eof                       (struct parser * parser);
@@ -574,7 +574,7 @@ static struct ast_node * parse_unary (struct parser * parser) {
     return parse_access (parser, NULL);
 }
 
-static struct ast_node * parse_access      (struct parser * parser, struct ast_node * left) {
+static struct ast_node * parse_access (struct parser * parser, struct ast_node * left) {
     struct ast_node * key;
 
     if (left == NULL) {
@@ -777,7 +777,7 @@ static int match_tok (struct parser * parser, tok_type_t type) {
     struct token * cur;
 
     if (eof (parser)) {
-        return -1;
+        return 0;
     }
 
     cur = (struct token *)vector_get (parser->tokens, parser->pos);
@@ -789,7 +789,7 @@ static int match_tok_val (struct parser * parser, tok_type_t type, char * val) {
     struct token * cur;
 
     if (eof (parser)) {
-        return -1;
+        return 0;
     }
 
     cur = (struct token *)vector_get (parser->tokens, parser->pos);
@@ -804,7 +804,7 @@ static int accept_tok (struct parser * parser, tok_type_t type) {
         return 1;
     }
 
-    return -1;
+    return 0;
 }
 
 static int accept_tok_val (struct parser * parser, tok_type_t type, char * val) {
@@ -814,7 +814,7 @@ static int accept_tok_val (struct parser * parser, tok_type_t type, char * val) 
         return 1;
     }
 
-    return -1;
+    return 0;
 }
 
 static struct token * expect_tok (struct parser * parser, tok_type_t type) {

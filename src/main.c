@@ -1,5 +1,7 @@
 #include <lexer/lexer.h>
 #include <lexer/token.h>
+#include <parser/ast.h>
+#include <parser/parser.h>
 #include <stdio.h>
 #include <util/vector.h>
 
@@ -13,8 +15,13 @@ int main (int argc, char * argv []) {
         token = vector_get (tokens, i);
 
         printf ("Type: %d, Value \"%s\"\n", token->type, token->val);
-        free_token (token);
     }
+
+    struct ast_node * ast;
+    struct parser   * parser;
+
+    parser = parser_init (tokens);
+    ast    = parser_run  (parser);
 
     free_lexer (lexer);
 }

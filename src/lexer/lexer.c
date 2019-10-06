@@ -13,6 +13,10 @@ struct lexer * lexer_init_from_src (char * code) {
 
 void free_lexer (struct lexer * lexer) {
     if (lexer->toks) {
+        for (int i = 0; i < lexer->toks->length; i++) {
+            free_token (vector_get (lexer->toks, i));
+        }
+
         free_vector (lexer->toks);
     }
     free (lexer);
