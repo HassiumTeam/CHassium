@@ -6,7 +6,7 @@
 #include <util/vector.h>
 
 int main (int argc, char * argv []) {
-    struct lexer * lexer = lexer_init_from_src ("\"Hello, World!\"");
+    struct lexer * lexer = lexer_init_from_src ("func main () { println (\"Hello World!\"); } ");
     struct token * token;
     struct vector * tokens = lexer_run (lexer);
 

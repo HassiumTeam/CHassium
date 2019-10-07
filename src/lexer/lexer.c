@@ -163,8 +163,6 @@ static void read_str (struct lexer * lexer) {
         str = append_char (str, (char)read_char (lexer));
     }
 
-    read_char (lexer); // "
-
     add_tok (lexer, STRINGC_TOK, str);
 }
 

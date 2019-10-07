@@ -594,7 +594,7 @@ static struct ast_node * parse_access (struct parser * parser, struct ast_node *
                 string_copy (expect_tok (parser, ID_TOK)->val)
             )
         );
-    } else if (accept_tok (parser, OPAREN_TOK)) {
+    } else if (match_tok (parser, OPAREN_TOK)) {
         return parse_access (parser,
             ast_node_init (FUNC_CALL_NODE, 0, 0, 2,
                 left,
@@ -771,6 +771,8 @@ static struct vector * parse_object_params (struct parser * parser) {
     do {
         vector_push (ids, string_copy (expect_tok (parser, ID_TOK)->val));
     } while (accept_tok (parser, COMMA_TOK));
+
+    expect_tok (parser, CBRACE_TOK);
 
     return ids;
 }
