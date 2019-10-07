@@ -24,4 +24,6 @@ int main (int argc, char * argv []) {
     ast    = parser_run  (parser);
 
     free_lexer (lexer);
+    free_ast_node (ast);
+    free_parser (parser);
 }

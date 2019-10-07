@@ -280,14 +280,20 @@ static struct ast_node * parse_super (struct parser * parser) {
 static struct ast_node * parse_try_catch (struct parser * parser) {
     struct ast_node * try_body;
     struct ast_node * catch_body;
+    char            * id;
 
     expect_tok_val (parser, ID_TOK, "try");
     try_body   = parse_stmt (parser);
 
     expect_tok_val (parser, ID_TOK, "catch");
+
+    expect_tok (parser, OPAREN_TOK);
+    id = string_copy (expect_tok (parser, ID_TOK)->val);
+    expect_tok (parser, CPAREN_TOK);
+
     catch_body = parse_stmt (parser);
 
-    return ast_node_init (TRY_CATCH_NODE, 0, 0, 2, try_body, catch_body);
+    return ast_node_init (TRY_CATCH_NODE, 0, 0, 3, try_body, catch_body, id);
 }
 
 static struct ast_node * parse_use (struct parser * parser) {
