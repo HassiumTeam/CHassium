@@ -21,33 +21,34 @@ struct ast_node * ast_node_init (node_type_t type, float flag1, float flag2, int
     return node;
 }
 
-static void free_assign_node        (struct ast_node * node);
-static void free_attrib_access_node (struct ast_node * node);
-static void free_bin_op_node        (struct ast_node * node);
-static void free_block_node         (struct ast_node * node);
-static void free_class_node         (struct ast_node * node);
-static void free_closure_node       (struct ast_node * node);
-static void free_expr_stmt_node     (struct ast_node * node);
-static void free_for_node           (struct ast_node * node);
-static void free_foreach_node       (struct ast_node * node);
-static void free_func_call_node     (struct ast_node * node);
-static void free_func_decl_node     (struct ast_node * node);
-static void free_id_node            (struct ast_node * node);
-static void free_if_node            (struct ast_node * node);
-static void free_import_node        (struct ast_node * node);
-static void free_list_decl_node     (struct ast_node * node);
-static void free_number_node        (struct ast_node * node);
-static void free_obj_decl_node      (struct ast_node * node);
-static void free_raise_node         (struct ast_node * node);
-static void free_return_node        (struct ast_node * node);
-static void free_string_node        (struct ast_node * node);
-static void free_subscript_node     (struct ast_node * node);
-static void free_super_node         (struct ast_node * node);
-static void free_try_catch_node     (struct ast_node * node);
-static void free_typeof_node        (struct ast_node * node);
-static void free_unary_op_node      (struct ast_node * node);
-static void free_use_node           (struct ast_node * node);
-static void free_while_node         (struct ast_node * node);
+static void free_assign_node        (struct ast_node   * node);
+static void free_attrib_access_node (struct ast_node   * node);
+static void free_bin_op_node        (struct ast_node   * node);
+static void free_block_node         (struct ast_node   * node);
+static void free_class_node         (struct ast_node   * node);
+static void free_closure_node       (struct ast_node   * node);
+static void free_expr_stmt_node     (struct ast_node   * node);
+static void free_for_node           (struct ast_node   * node);
+static void free_foreach_node       (struct ast_node   * node);
+static void free_func_call_node     (struct ast_node   * node);
+static void free_func_decl_node     (struct ast_node   * node);
+static void free_func_param         (struct func_param * param);
+static void free_id_node            (struct ast_node   * node);
+static void free_if_node            (struct ast_node   * node);
+static void free_import_node        (struct ast_node   * node);
+static void free_list_decl_node     (struct ast_node   * node);
+static void free_number_node        (struct ast_node   * node);
+static void free_obj_decl_node      (struct ast_node   * node);
+static void free_raise_node         (struct ast_node   * node);
+static void free_return_node        (struct ast_node   * node);
+static void free_string_node        (struct ast_node   * node);
+static void free_subscript_node     (struct ast_node   * node);
+static void free_super_node         (struct ast_node   * node);
+static void free_try_catch_node     (struct ast_node   * node);
+static void free_typeof_node        (struct ast_node   * node);
+static void free_unary_op_node      (struct ast_node   * node);
+static void free_use_node           (struct ast_node   * node);
+static void free_while_node         (struct ast_node   * node);
 
 void free_ast_node (struct ast_node * node) {
     switch (node->type) {
@@ -135,30 +136,129 @@ void free_ast_node (struct ast_node * node) {
     free        (node);
 }
 
-static void free_assign_node        (struct ast_node * node) {}
-static void free_attrib_access_node (struct ast_node * node) {}
-static void free_bin_op_node        (struct ast_node * node) {}
-static void free_block_node         (struct ast_node * node) {}
-static void free_class_node         (struct ast_node * node) {}
-static void free_closure_node       (struct ast_node * node) {}
-static void free_expr_stmt_node     (struct ast_node * node) {}
-static void free_for_node           (struct ast_node * node) {}
-static void free_foreach_node       (struct ast_node * node) {}
+static void free_assign_node (struct ast_node * node) {
+    free_ast_node (vector_get (node->children, 0));
+    free_ast_node (vector_get (node->children, 1));
+}
+
+static void free_attrib_access_node (struct ast_node * node) {
+    free_ast_node (vector_get (node->children, 0));
+    free          (vector_get (node->children, 1));
+}
+
+static void free_bin_op_node (struct ast_node * node) {
+    free_ast_node (vector_get (node->children, 0));
+    free_ast_node (vector_get (node->children, 1));
+}
+
+static void free_block_node (struct ast_node * node) {
+    struct vector * stmts;
+
+    stmts = vector_get (node->children, 0);
+
+    for (int i = 0; i < stmts->length; i++) {
+        free_ast_node (vector_get (stmts, i));
+    }
+
+    free_vector (stmts);
+}
+
+static void free_class_node (struct ast_node * node) {
+    struct vector * extends;
+
+    free (vector_get (node->children, 0));
+
+    extends = vector_get (node->children, 1);
+    if (extends) {
+        free_string_vector (extends);
+    }
+
+    free_ast_node (vector_get (node->children, 2));
+}
+
+static void free_closure_node (struct ast_node * node) {
+    struct vector * params;
+    struct vector * return_type;
+
+    params      = vector_get (node->children, 0);
+    for (int i = 0; i < params->length; i++) {
+        free_func_param (vector_get (params, i));
+    }
+    free_vector (params);
+
+    return_type = vector_get (node->children, 1);
+    if (return_type) {
+        free_string_vector (return_type);
+    }
+
+    free_ast_node (vector_get (node->children, 2));
+}
+
+static void free_expr_stmt_node (struct ast_node * node) {
+    free_ast_node (vector_get (node->children, 0));
+}
+
+static void free_for_node (struct ast_node * node) {
+    free_ast_node (vector_get (node->children, 0));
+    free_ast_node (vector_get (node->children, 1));
+    free_ast_node (vector_get (node->children, 2));
+    free_ast_node (vector_get (node->children, 3));
+}
+
+static void free_foreach_node (struct ast_node * node) {
+    free          (vector_get (node->children, 0));
+    free_ast_node (vector_get (node->children, 1));
+    free_ast_node (vector_get (node->children, 2));
+}
+
 static void free_func_call_node     (struct ast_node * node) {}
+
 static void free_func_decl_node     (struct ast_node * node) {}
+
+static void free_func_param (struct func_param * param) {
+    if (param->ids) {
+        free_string_vector (param->ids);
+    }
+
+    if (param->id) {
+        free (param->id);
+    }
+
+    if (param->enforced_type) {
+        free_string_vector (param->enforced_type);
+    }
+
+    free (param);
+}
+
 static void free_id_node            (struct ast_node * node) {}
+
 static void free_if_node            (struct ast_node * node) {}
+
 static void free_import_node        (struct ast_node * node) {}
+
 static void free_list_decl_node     (struct ast_node * node) {}
+
 static void free_number_node        (struct ast_node * node) {}
+
 static void free_obj_decl_node      (struct ast_node * node) {}
+
 static void free_raise_node         (struct ast_node * node) {}
+
 static void free_return_node        (struct ast_node * node) {}
+
 static void free_string_node        (struct ast_node * node) {}
+
 static void free_subscript_node     (struct ast_node * node) {}
+
 static void free_super_node         (struct ast_node * node) {}
+
 static void free_try_catch_node     (struct ast_node * node) {}
+
 static void free_typeof_node        (struct ast_node * node) {}
+
 static void free_unary_op_node      (struct ast_node * node) {}
+
 static void free_use_node           (struct ast_node * node) {}
+
 static void free_while_node         (struct ast_node * node) {}

@@ -13,6 +13,14 @@ struct vector * vector_init () {
     return vector;
 }
 
+void free_string_vector (struct vector * vector) {
+    for (int i = 0; i < vector->length; i++) {
+        free (vector_get (vector, i));
+    }
+
+    free_vector (vector);
+}
+
 void free_vector (struct vector * vector) {
     free (vector->data);
     free (vector);
