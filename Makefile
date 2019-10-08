@@ -8,6 +8,7 @@ LINKER   = gcc
 # linking flags here
 LFLAGS   = -Wall -I. -lm
 
+OBJECTS += src/emit/emit.o
 OBJECTS += src/emit/symbol_table.o
 
 OBJECTS += src/lexer/lexer.o
@@ -22,7 +23,6 @@ OBJECTS += src/util/string.o
 OBJECTS += src/util/vector.o
 
 rm       = rm -f
-
 
 $(TARGET): $(OBJECTS)
 	$(LINKER) -o $@ $(LFLAGS) $^ -lgcc
