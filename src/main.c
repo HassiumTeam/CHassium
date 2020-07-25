@@ -1,29 +1,23 @@
-#include <lexer/lexer.h>
-#include <lexer/token.h>
-#include <parser/ast.h>
-#include <parser/parser.h>
 #include <stdio.h>
 #include <util/vector.h>
 
 int main (int argc, char * argv []) {
-    struct lexer * lexer = lexer_init_from_src ("func main () { println (\"Hello World!\"); } ");
-    struct token * token;
-    struct vector * tokens = lexer_run (lexer);
+  vector_t * v = vector_init ();
 
+  int a = 4;
+  int b = 7;
+  int c = 19;
 
-    for (int i = 0; i < tokens->length; i++) {
-        token = vector_get (tokens, i);
+  vector_push (v, &a);
+  vector_push (v, &b);
+  vector_push (v, &c);
+  vector_set (v, 5, &b);
 
-        printf ("Type: %d, Value \"%s\"\n", token->type, token->val);
-    }
+  for (int i = 0; i < 3 ;i++) {
+    printf ("%d \n", *(int *)vector_get (v, i));
+  }
 
-    struct ast_node * ast;
-    struct parser   * parser;
+  printf ("%d\n", *(int *)vector_get (v, 5));
 
-    parser = parser_init (tokens);
-    ast    = parser_run  (parser);
-
-    free_lexer (lexer);
-    free_ast_node (ast);
-    free_parser (parser);
+  vector_free (v);
 }

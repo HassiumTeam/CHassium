@@ -8,21 +8,9 @@ LINKER   = gcc
 # linking flags here
 LFLAGS   = -Wall -I. -lm
 
-OBJECTS += src/emit/emit.o
-OBJECTS += src/emit/inst.o
-OBJECTS += src/emit/symbol_table.o
-
-OBJECTS += src/lexer/lexer.o
-OBJECTS += src/lexer/token.o
-
-OBJECTS += src/parser/ast.o
-OBJECTS += src/parser/parser.o
-
-OBJECTS += src/runtime/has_obj.o
 
 OBJECTS += src/main.o
 
-OBJECTS += src/util/string.o
 OBJECTS += src/util/vector.o
 
 rm       = rm -f

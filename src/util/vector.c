@@ -1,69 +1,69 @@
 #include <util/vector.h>
 
-static void reallocate (struct vector * vector);
+static void vector_realloc (vector_t * v);
 
-struct vector * vector_init () {
-    struct vector * vector;
+vector_t * vector_init () {
+  vector_t * v = (vector_t *)calloc (1, sizeof (vector_t));
 
-    vector         = (struct vector *)calloc (1, sizeof (struct vector));
-    vector->data   = calloc (VECTOR_SIZE_INC, sizeof (void *));
-    vector->length = 0;
-    vector->size   = VECTOR_SIZE_INC;
+  v->data = calloc (VECTOR_BUF_INC_SIZE, sizeof (void *));
+  v->len  = 0;
+  v->size = VECTOR_BUF_INC_SIZE;
 
-    return vector;
+  return v;
 }
 
-void free_string_vector (struct vector * vector) {
-    for (int i = 0; i < vector->length; i++) {
-        free (vector_get (vector, i));
+void vector_free (vector_t * v) {
+  if (v->data) {
+    free (v->data);
+  }
+
+  free (v);
+}
+
+void vector_deep_free (vector_t * v) {
+  if (v->data) {
+    for (int i = 0; i < v->len; i++) {
+      if (v->data [i]) free (v->data [i]);
     }
 
-    free_vector (vector);
+    free (v->data);
+  }
+
+  free (v);
 }
 
-void free_vector (struct vector * vector) {
-    free (vector->data);
-    free (vector);
+void * vector_pop (vector_t * v) {
+  if (v->len <= 0) return NULL;
+  else return v->data [--v->len];
 }
 
-void * vector_get (struct vector * vector, int i) {
-    if (i < 0 || i >= vector->length) {
-        return NULL;
-    }
+void vector_push (vector_t * v, void * ptr) {
+  if (v->len >= v->size) {
+    vector_realloc (v);
+  }
 
-    return vector->data [i];
+  v->data [v->len++] = ptr;
 }
 
-void * vector_peek (struct vector * vector) {
-    return vector->data [vector->length - 1];
+void * vector_get (vector_t * v, int i) {
+  if (i < 0 || i >= v->size) {
+    return NULL;
+  }
+
+  return v->data [i];
 }
 
-void * vector_pop (struct vector * vector) {
-    if (vector->length == 0) {
-        return NULL;
-    }
+void vector_set (vector_t * v, int i, void * ptr) {
+  if (i <= 0) return;
+  while (i >= v->size) {
+    vector_realloc (v);
+    v->len = i;
+  }
 
-    return vector->data [--vector->length];
+  v->data [i] = ptr;
 }
 
-void vector_push (struct vector * vector, void * ptr) {
-    vector->data [vector->length++] = ptr;
-
-    while (vector->length >= vector->size) {
-        reallocate (vector);
-    }
-}
-
-void vector_set (struct vector * vector, int i, void * ptr) {
-    while (vector->size <= i) {
-        reallocate (vector);
-    }
-
-    vector->data [i] = ptr;
-}
-
-static void reallocate (struct vector * vector) {
-    vector->size += VECTOR_SIZE_INC;
-
-    vector->data = realloc (vector->data, sizeof (void *) * vector->size);
+static void vector_realloc (vector_t * v) {
+  v->size += VECTOR_BUF_INC_SIZE;
+  v->data = (void **)realloc (v->data, v->size);
 }
