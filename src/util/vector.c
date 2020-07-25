@@ -3,8 +3,9 @@
 static void vector_realloc (vector_t * v);
 
 vector_t * vector_init () {
-  vector_t * v = (vector_t *)calloc (1, sizeof (vector_t));
+  vector_t * v;
 
+  v       = (vector_t *)calloc (1, sizeof (vector_t));
   v->data = calloc (VECTOR_BUF_INC_SIZE, sizeof (void *));
   v->len  = 0;
   v->size = VECTOR_BUF_INC_SIZE;
@@ -20,10 +21,10 @@ void vector_free (vector_t * v) {
   free (v);
 }
 
-void vector_deep_free (vector_t * v) {
+void vector_deep_free (vector_t * v, void (*free_fn)(void *)) {
   if (v->data) {
-    for (int i = 0; i < v->len; i++) {
-      if (v->data [i]) free (v->data [i]);
+    for (int i = 0; i < v->len; i ++) {
+      if (v->data [i]) free_fn (v->data [i]);
     }
 
     free (v->data);

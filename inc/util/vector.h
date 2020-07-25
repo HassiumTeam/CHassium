@@ -14,7 +14,7 @@ typedef struct {
 
 vector_t * vector_init      ();
 void       vector_free      (vector_t * v);
-void       vector_deep_free (vector_t * v);
+void       vector_deep_free (vector_t * v, void (*free_fn)(void *));
 
 void * vector_pop  (vector_t * v);
 void   vector_push (vector_t * v, void * ptr);

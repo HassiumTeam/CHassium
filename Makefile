@@ -11,6 +11,9 @@ LFLAGS   = -Wall -I. -lm
 
 OBJECTS += src/main.o
 
+OBJECTS += src/compiler/lexer.o
+OBJECTS += src/compiler/token.o
+
 OBJECTS += src/util/vector.o
 
 rm       = rm -f
