@@ -7,6 +7,25 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+struct code_obj
+{
+    char *name;
+    struct vec *instructions;
+    struct intdict *labels;
+};
+
+struct code_obj *code_obj_new(char *);
+
+struct vm
+{
+    struct vec *frames;
+};
+
+struct vm *vm_new();
+void vm_free(struct vm *);
+
+void vm_run(struct vm *, struct code_obj *);
+
 typedef enum
 {
     INST_BIN_OP,
@@ -33,7 +52,6 @@ typedef enum
     INST_STORE_SUBSCRIPT,
     INST_SUPER,
     INST_UNARY_OP,
-
 } vm_inst_t;
 
 struct vm_inst
@@ -109,14 +127,5 @@ struct unary_op_inst
 {
     unary_op_type_t type;
 };
-
-struct code_obj
-{
-    char *name;
-    struct vec *instructions;
-    struct intdict *labels;
-};
-
-struct code_obj *code_obj_new(char *);
 
 #endif

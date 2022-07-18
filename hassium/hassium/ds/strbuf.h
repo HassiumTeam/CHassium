@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define STRBUF_EXPAND_AT 100
+#define STRBUF_EXPAND_AT 8
 
 struct strbuf
 {

@@ -2,7 +2,7 @@
 #define _VEC_H_
 
 #include <stdlib.h>
-#define VEC_EXPAND_AT 100
+#define VEC_EXPAND_AT 8
 
 struct vec
 {

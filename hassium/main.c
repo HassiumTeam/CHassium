@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
     struct vec *toks = lexer_tokenize("println('Hello, World!' + (2 + 8) * 9);");
     debug_toks(toks);
     struct ast_node *ast = parser_parse(toks);
+    struct code_obj *module = compile_ast(ast);
     ast_node_free(ast);
     free_toks(toks);
 }

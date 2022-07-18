@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-#define DICT_SIZE 100
+#define DICT_SIZE 8
 
 struct intdict
 {
