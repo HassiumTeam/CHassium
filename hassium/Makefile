@@ -11,12 +11,14 @@ LFLAGS   = -Wall -I. -lm
 
 OBJECTS += ast.o
 OBJECTS += emit.o
-OBJECTS += main.o
 OBJECTS += lexer.o
+OBJECTS += main.o
+OBJECTS += object.o
 OBJECTS += parser.o
 OBJECTS += util.o
 OBJECTS += vm.o
-OBJECTS += ds/intdict.o
+OBJECTS += ds/hashmap.o
+OBJECTS += ds/intmap.o
 OBJECTS += ds/strbuf.o
 OBJECTS += ds/vec.o
 rm       = rm -f

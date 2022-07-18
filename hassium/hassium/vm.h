@@ -1,8 +1,9 @@
 #ifndef _VM_H_
 #define _VM_H_
 
-#include <ds/intdict.h>
+#include <ds/intmap.h>
 #include <ds/vec.h>
+#include <object.h>
 #include <parser.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -11,15 +12,11 @@ struct code_obj
 {
     char *name;
     struct vec *instructions;
-    struct intdict *labels;
+    struct intmap *labels;
 };
 
 struct code_obj *code_obj_new(char *);
-
-struct vm
-{
-    struct vec *frames;
-};
+void code_obj_free(struct code_obj *);
 
 struct vm *vm_new();
 void vm_free(struct vm *);

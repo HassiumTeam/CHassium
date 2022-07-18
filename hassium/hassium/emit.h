@@ -2,7 +2,7 @@
 #define _EMIT_H_
 
 #include <ast.h>
-#include <ds/intdict.h>
+#include <ds/intmap.h>
 #include <ds/vec.h>
 #include <stdio.h>
 #include <stdlib.h>

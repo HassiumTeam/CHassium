@@ -248,7 +248,7 @@ static void visit_return_node(struct emit *emit, struct return_node *node)
 
 static void visit_string_node(struct emit *emit, struct string_node *node)
 {
-    add_inst(emit, vm_inst_new(INST_LOAD_STR, clone_str(node->value)));
+    add_inst(emit, load_str_inst_new(clone_str(node->value)));
 }
 
 static void visit_subscript_node(struct emit *emit, struct subscript_node *node)
@@ -306,7 +306,7 @@ static int new_label()
 
 static void place_label(struct emit *emit, int label)
 {
-    intdict_insert(emit->code_obj->labels, label, emit->code_obj->instructions->len - 1);
+    intmap_insert(emit->code_obj->labels, label, emit->code_obj->instructions->len - 1);
 }
 
 static struct vm_inst *vm_inst_new(vm_inst_t type, void *inner)

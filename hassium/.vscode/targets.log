@@ -149,7 +149,7 @@ SUFFIXES :=
 # default
 .RECIPEPREFIX := 
 # makefile (from 'Makefile', line 21)
-OBJECTS = ast.o emit.o main.o lexer.o parser.o util.o vm.o ds/intdict.o ds/strbuf.o ds/vec.o
+OBJECTS = ast.o emit.o main.o lexer.o parser.o util.o vm.o ds/intmap.o ds/strbuf.o ds/vec.o
 # environment
 LANG = C
 # environment
@@ -230,7 +230,7 @@ remove: clean
 	@echo "Executable removed!"
 
 # Not a target:
-ds/intdict.o:
+ds/intmap.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -263,7 +263,7 @@ ds/strbuf.o:
 #  Modification time never checked.
 #  File has not been updated.
 
-bin/hassium: ast.o emit.o main.o lexer.o parser.o util.o vm.o ds/intdict.o ds/strbuf.o ds/vec.o
+bin/hassium: ast.o emit.o main.o lexer.o parser.o util.o vm.o ds/intmap.o ds/strbuf.o ds/vec.o
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
