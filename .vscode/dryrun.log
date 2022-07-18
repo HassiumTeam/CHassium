@@ -1,0 +1,16 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/reagan/CHassium'
+gcc -c -std=c99 -I inc src/emit/emit.c -o src/emit/emit.o
+gcc -c -std=c99 -I inc src/emit/inst.c -o src/emit/inst.o
+gcc -c -std=c99 -I inc src/emit/symbol_table.c -o src/emit/symbol_table.o
+gcc -c -std=c99 -I inc src/lexer/lexer.c -o src/lexer/lexer.o
+gcc -c -std=c99 -I inc src/lexer/token.c -o src/lexer/token.o
+gcc -c -std=c99 -I inc src/parser/ast.c -o src/parser/ast.o
+gcc -c -std=c99 -I inc src/parser/parser.c -o src/parser/parser.o
+gcc -c -std=c99 -I inc src/runtime/has_obj.c -o src/runtime/has_obj.o
+gcc -c -std=c99 -I inc src/main.c -o src/main.o
+gcc -c -std=c99 -I inc src/util/string.c -o src/util/string.o
+gcc -c -std=c99 -I inc src/util/vector.c -o src/util/vector.o
+gcc -o bin/hassium -Wall -I. -lm src/emit/emit.o src/emit/inst.o src/emit/symbol_table.o src/lexer/lexer.o src/lexer/token.o src/parser/ast.o src/parser/parser.o src/runtime/has_obj.o src/main.o src/util/string.o src/util/vector.o -lgcc
+make: Leaving directory '/home/reagan/CHassium'
+ 
