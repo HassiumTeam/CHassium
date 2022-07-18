@@ -1,0 +1,7 @@
+{
+    "makefile.extensionOutputFolder": "./.vscode",
+    "files.associations": {
+        "strbuf.h": "c",
+        "parser.h": "c"
+    }
+}
