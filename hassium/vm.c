@@ -15,10 +15,12 @@ void vm_free(struct vm *vm)
 
 void vm_run(struct vm *vm, struct code_obj *code_obj)
 {
-    vec_push(vm->frames, obj_hashmap_new());
+    vec_push(vm->frames, get_defaults());
     struct vec *stack = vec_new();
 
     struct vm_inst *inst;
+    struct obj *obj;
+    int arg_count = 0;
     int pos = 0;
     while (pos < code_obj->instructions->len)
     {
@@ -27,6 +29,23 @@ void vm_run(struct vm *vm, struct code_obj *code_obj)
 
         switch (inst->type)
         {
+        case INST_INVOKE:
+            arg_count = ((struct invoke_inst *)inst->inner)->arg_count;
+            struct vec *args = vec_new();
+            for (int i = 0; i < arg_count; i++)
+                vec_push(args, vec_pop(stack));
+            obj = vec_pop(stack);
+            obj_invoke(obj, vm, args);
+            break;
+        case INST_LOAD_ID:
+            for (int i = 0; i < vm->frames->len; i++)
+            {
+                if ((obj = obj_hashmap_get(vec_get(vm->frames, i), ((struct load_id_inst *)inst->inner)->id)))
+                {
+                    vec_push(stack, obj);
+                }
+            }
+            break;
         case INST_LOAD_NUM:
             vec_push(stack, num_obj_new(((struct load_num_inst *)inst->inner)->value));
             break;

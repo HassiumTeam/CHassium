@@ -35,7 +35,20 @@ void obj_setattrib(struct obj *obj, char *key, struct obj *val)
     obj_hashmap_set(obj->attribs, key, val);
 }
 
-struct obj *func_obj_new(struct obj *(*func)(struct vm *, struct obj *, struct vec *))
+struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args)
+{
+    if (obj->type == OBJ_FUNC)
+    {
+        struct func_obj_ctx *ctx = obj->ctx;
+        return ctx->func(obj, vm, args);
+    }
+    else
+    {
+        printf("not implemented yet?\n");
+    }
+}
+
+struct obj *func_obj_new(struct obj *(*func)(struct obj *, struct vm *, struct vec *))
 {
     struct func_obj_ctx *ctx = (struct func_obj_ctx *)calloc(1, sizeof(struct func_obj_ctx));
     ctx->func = func;

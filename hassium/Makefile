@@ -17,6 +17,7 @@ OBJECTS += object.o
 OBJECTS += parser.o
 OBJECTS += util.o
 OBJECTS += vm.o
+OBJECTS += builtins/global.o
 OBJECTS += ds/hashmap.o
 OBJECTS += ds/intmap.o
 OBJECTS += ds/strbuf.o

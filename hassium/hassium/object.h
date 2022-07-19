@@ -32,7 +32,7 @@ struct obj
 
 struct func_obj_ctx
 {
-    struct obj *(*func)(struct vm *, struct obj *, struct vec *);
+    struct obj *(*func)(struct obj *, struct vm *, struct vec *);
 };
 
 struct num_obj_ctx
@@ -51,8 +51,9 @@ void obj_free(struct obj *);
 struct obj *obj_inc_ref(struct obj *);
 struct obj *obj_dec_ref(struct obj *);
 void obj_setattrib(struct obj *, char *key, struct obj *val);
+struct obj *obj_invoke(struct obj *, struct vm *, struct vec *);
 
-struct obj *func_obj_new(struct obj *(*func)(struct vm *, struct obj *, struct vec *));
+struct obj *func_obj_new(struct obj *(*func)(struct obj *, struct vm *, struct vec *));
 struct obj *num_obj_new(float);
 struct obj *str_obj_new(char *);
 

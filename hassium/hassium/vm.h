@@ -1,6 +1,7 @@
 #ifndef _VM_H_
 #define _VM_H_
 
+#include <builtins.h>
 #include <ds/intmap.h>
 #include <ds/vec.h>
 #include <object.h>

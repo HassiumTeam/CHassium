@@ -224,6 +224,7 @@ static void visit_invoke_node(struct emit *emit, struct invoke_node *node)
 {
     for (int i = 0; i < node->args->len; i++)
         visit_ast_node(emit, vec_get(node->args, i));
+    visit_ast_node(emit, node->target);
     add_inst(emit, invoke_inst_new(node->args->len));
 }
 
@@ -380,7 +381,7 @@ static struct vm_inst *load_id_inst_new(char *id)
 {
     struct load_id_inst *inner = (struct load_id_inst *)calloc(1, sizeof(struct load_id_inst));
     inner->id = id;
-    return vm_inst_new(INST_LOAD_ATTRIB, inner);
+    return vm_inst_new(INST_LOAD_ID, inner);
 }
 
 static struct vm_inst *load_num_inst_new(float value)
