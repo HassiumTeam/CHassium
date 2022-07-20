@@ -33,7 +33,9 @@ void vm_run(struct vm *vm, struct code_obj *code_obj)
             arg_count = ((struct invoke_inst *)inst->inner)->arg_count;
             struct vec *args = vec_new();
             for (int i = 0; i < arg_count; i++)
+            {
                 vec_push(args, vec_pop(stack));
+            }
             obj = vec_pop(stack);
             obj_invoke(obj, vm, args);
             break;
@@ -72,7 +74,7 @@ void code_obj_free(struct code_obj *code_obj)
 {
     for (int i = 0; i < code_obj->instructions->len; i++)
     {
-        printf("inst %d\n", ((struct vm_inst *)vec_get(code_obj->instructions, i))->type);
+        // printf("freeing inst %d\n", ((struct vm_inst *)vec_get(code_obj->instructions, i))->type);
         vm_inst_free(vec_get(code_obj->instructions, i));
     }
     vec_free(code_obj->instructions);

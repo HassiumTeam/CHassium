@@ -14,7 +14,7 @@ static struct obj *println(struct obj *obj, struct vm *vm, struct vec *args)
     for (int i = 0; i < args->len; i++)
     {
         struct obj *arg = vec_get(args, i);
-        switch (obj->type)
+        switch (arg->type)
         {
         case OBJ_STRING:
             printf("%s\n", ((struct string_obj_ctx *)arg->ctx)->value);

@@ -2,6 +2,8 @@
     "makefile.extensionOutputFolder": "./.vscode",
     "files.associations": {
         "strbuf.h": "c",
-        "parser.h": "c"
+        "parser.h": "c",
+        "typeinfo": "c",
+        "hashmap.h": "c"
     }
 }

@@ -82,6 +82,12 @@ static int compare(const void *a, const void *b, void *data)
     return strcmp(ea->name, ea->name);
 }
 
+static bool iter(const void *item, void *udata)
+{
+    const struct obj_hashmap_entry *entry = item;
+    return true;
+}
+
 static uint64_t hash(const void *ptr, uint64_t seed0, uint64_t seed1)
 {
     const struct obj_hashmap_entry *item = ptr;
@@ -90,13 +96,16 @@ static uint64_t hash(const void *ptr, uint64_t seed0, uint64_t seed1)
 
 struct hashmap *obj_hashmap_new()
 {
-    return hashmap_new(sizeof(struct obj_hashmap_entry), 0, 0, 0, hash, NULL, NULL, NULL);
+    return hashmap_new(sizeof(struct obj_hashmap_entry), 0, 0, 0, hash, compare, NULL, NULL);
 }
 
 struct obj *obj_hashmap_get(struct hashmap *map, char *key)
 {
-    struct obj_hashmap_entry *entry = hashmap_get(map, key);
-    return entry->obj;
+    struct obj_hashmap_entry *entry = hashmap_get(map, &(struct obj_hashmap_entry){.name = key});
+    if (entry != NULL)
+        return entry->obj;
+    else
+        return NULL;
 }
 
 void obj_hashmap_set(struct hashmap *map, char *key, struct obj *val)

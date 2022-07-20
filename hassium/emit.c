@@ -222,9 +222,9 @@ static void visit_import_node(struct emit *emit, struct import_node *node)
 
 static void visit_invoke_node(struct emit *emit, struct invoke_node *node)
 {
+    visit_ast_node(emit, node->target);
     for (int i = 0; i < node->args->len; i++)
         visit_ast_node(emit, vec_get(node->args, i));
-    visit_ast_node(emit, node->target);
     add_inst(emit, invoke_inst_new(node->args->len));
 }
 

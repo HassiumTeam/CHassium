@@ -13,8 +13,8 @@ struct strbuf *strbuf_new()
 
 char *strbuf_done(struct strbuf *strbuf)
 {
-    char *ret = (char *)calloc(strlen(strbuf->buf) + 1, sizeof(char));
-    memcpy(ret, strbuf->buf, strlen(strbuf->buf) + 1);
+    char *ret = (char *)calloc(strbuf->len + 1, sizeof(char));
+    memcpy(ret, strbuf->buf, strbuf->len);
     free(strbuf->buf);
     free(strbuf);
     return ret;
@@ -32,6 +32,5 @@ static void expand_if_needed(struct strbuf *strbuf)
     {
         strbuf->size += STRBUF_EXPAND_AT;
         strbuf->buf = (char *)realloc(strbuf->buf, sizeof(char) * strbuf->size);
-        strbuf->buf[strbuf->len] = 0;
     }
 }
