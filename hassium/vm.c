@@ -1,5 +1,7 @@
 #include <vm.h>
 
+static struct obj *handle_bin_op(struct vm *, bin_op_type_t, struct obj *, struct obj *);
+
 struct vm *vm_new()
 {
     struct vm *vm = (struct vm *)calloc(1, sizeof(struct vm));
@@ -19,7 +21,7 @@ void vm_run(struct vm *vm, struct code_obj *code_obj)
     struct vec *stack = vec_new();
 
     struct vm_inst *inst;
-    struct obj *obj;
+    struct obj *obj, *left, *right;
     int arg_count = 0;
     int pos = 0;
     while (pos < code_obj->instructions->len)
@@ -29,6 +31,11 @@ void vm_run(struct vm *vm, struct code_obj *code_obj)
 
         switch (inst->type)
         {
+        case INST_BIN_OP:
+            right = vec_pop(stack);
+            left = vec_pop(stack);
+            vec_push(stack, handle_bin_op(vm, ((struct bin_op_inst *)inst->inner)->type, left, right));
+            break;
         case INST_INVOKE:
             arg_count = ((struct invoke_inst *)inst->inner)->arg_count;
             struct vec *args = vec_new();
@@ -37,7 +44,11 @@ void vm_run(struct vm *vm, struct code_obj *code_obj)
                 vec_push(args, vec_pop(stack));
             }
             obj = vec_pop(stack);
-            obj_invoke(obj, vm, args);
+            vec_push(stack, obj_invoke(obj, vm, args));
+            break;
+        case INST_LOAD_ATTRIB:
+            obj = vec_pop(stack);
+            vec_push(stack, obj_hashmap_get(obj->attribs, ((struct load_attrib_inst *)inst->inner)->attrib));
             break;
         case INST_LOAD_ID:
             for (int i = 0; i < vm->frames->len; i++)
@@ -58,6 +69,18 @@ void vm_run(struct vm *vm, struct code_obj *code_obj)
         pos++;
     }
     vec_free(stack);
+}
+
+static struct obj *handle_bin_op(struct vm *vm, bin_op_type_t type, struct obj *left, struct obj *right)
+{
+    struct vec *args = vec_new();
+    switch (type)
+    {
+    case BIN_OP_ADD:
+        vec_push(args, right);
+        return obj_invoke_attrib(left, vm, "__add__", args);
+        break;
+    }
 }
 
 struct code_obj *code_obj_new(char *name)

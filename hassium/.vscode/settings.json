@@ -4,6 +4,8 @@
         "strbuf.h": "c",
         "parser.h": "c",
         "typeinfo": "c",
-        "hashmap.h": "c"
+        "hashmap.h": "c",
+        "builtins.h": "c",
+        "object.h": "c"
     }
 }

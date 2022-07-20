@@ -5,7 +5,7 @@ static struct obj *println(struct obj *obj, struct vm *vm, struct vec *args);
 struct hashmap *get_defaults()
 {
     struct hashmap *map = obj_hashmap_new();
-    obj_hashmap_set(map, "println", func_obj_new(println));
+    obj_hashmap_set(map, "println", func_obj_new(NULL, println));
     return map;
 };
 
@@ -19,8 +19,11 @@ static struct obj *println(struct obj *obj, struct vm *vm, struct vec *args)
         case OBJ_STRING:
             printf("%s\n", ((struct string_obj_ctx *)arg->ctx)->value);
             break;
+        default:
+            printf("%s\n", ((struct string_obj_ctx *)obj_invoke_attrib(arg, vm, "toString", NULL)->ctx)->value);
+            break;
         }
     }
 
-    return obj_new(OBJ_ANON, NULL);
+    return obj_new(NULL, OBJ_ANON, NULL);
 }

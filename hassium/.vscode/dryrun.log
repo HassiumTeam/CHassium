@@ -1,15 +1,22 @@
 make --dry-run --always-make --keep-going --print-directory
-make: Entering directory '/home/reagan/CHassium/hassium'
+make: Entering directory '/home/jacob/CHassium/hassium'
 gcc -c -std=c99 -I hassium ast.c -o ast.o
 gcc -c -std=c99 -I hassium emit.c -o emit.o
-gcc -c -std=c99 -I hassium main.c -o main.o
 gcc -c -std=c99 -I hassium lexer.c -o lexer.o
+gcc -c -std=c99 -I hassium main.c -o main.o
+gcc -c -std=c99 -I hassium object.c -o object.o
 gcc -c -std=c99 -I hassium parser.c -o parser.o
 gcc -c -std=c99 -I hassium util.c -o util.o
 gcc -c -std=c99 -I hassium vm.c -o vm.o
+gcc -c -std=c99 -I hassium builtins/func.c -o builtins/func.o
+gcc -c -std=c99 -I hassium builtins/global.c -o builtins/global.o
+gcc -c -std=c99 -I hassium builtins/number.c -o builtins/number.o
+gcc -c -std=c99 -I hassium builtins/string.c -o builtins/string.o
+gcc -c -std=c99 -I hassium ds/hashmap.c -o ds/hashmap.o
 gcc -c -std=c99 -I hassium ds/intmap.c -o ds/intmap.o
 gcc -c -std=c99 -I hassium ds/strbuf.c -o ds/strbuf.o
 gcc -c -std=c99 -I hassium ds/vec.c -o ds/vec.o
-gcc -o bin/hassium -Wall -I. -lm ast.o emit.o main.o lexer.o parser.o util.o vm.o ds/intmap.o ds/strbuf.o ds/vec.o -lgcc
-make: Leaving directory '/home/reagan/CHassium/hassium'
+ 
+gcc -o bin/hassium -Wall -I. -lm ast.o emit.o lexer.o main.o object.o parser.o util.o vm.o builtins/func.o builtins/global.o builtins/number.o builtins/string.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o -lgcc
+make: Leaving directory '/home/jacob/CHassium/hassium'
  

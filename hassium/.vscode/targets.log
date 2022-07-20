@@ -8,114 +8,200 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sun Jul 17 22:49:10 2022
+# Make data base, printed on Tue Jul 19 18:38:29 2022
 
 # Variables
 
+# 'override' directive
+GNUMAKEFLAGS := 
 # automatic
 <D = $(patsubst %/,%,$(dir $<))
 # automatic
 ?F = $(notdir $?)
 # environment
-WSLENV = ELECTRON_RUN_AS_NODE/w:WT_SESSION::WT_PROFILE_ID
+DESKTOP_SESSION = ubuntu
 # default
 .SHELLFLAGS := -c
+# environment
+XDG_SESSION_CLASS = user
+# environment
+XDG_SESSION_TYPE = x11
+# environment
+VSCODE_LOG_NATIVE = false
 # makefile (from 'Makefile', line 2)
 TARGET = bin/hassium
+# environment
+NVM_INC = /home/jacob/.nvm/versions/node/v17.2.0/include/node
 # automatic
 ?D = $(patsubst %/,%,$(dir $?))
+# environment
+GRADLE_HOME = /home/jacob/.sdkman/candidates/gradle/current
 # automatic
 @D = $(patsubst %/,%,$(dir $@))
-# automatic
-@F = $(notdir $@)
+# environment
+XAUTHORITY = /run/user/1001/gdm/Xauthority
+# environment
+GDMSESSION = ubuntu
+# environment
+XMODIFIERS = @im=ibus
 # makefile
-CURDIR := /home/reagan/CHassium/hassium
+CURDIR := /home/jacob/CHassium/hassium
 # makefile
 SHELL = /bin/sh
 # environment
-VSCODE_NLS_CONFIG = {"locale":"en","availableLanguages":{}}
+VTE_VERSION = 6003
 # environment
-_ = /mnt/c/Users/misir/AppData/Local/Programs/Microsoft VS Code/bin/code
+VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
+# environment
+JOURNAL_STREAM = 8:65906
 # makefile (from 'Makefile', line 6)
 CFLAGS = -c -std=c99 -I hassium
-# makefile (from 'Makefile', line 22)
+# makefile (from 'Makefile', line 28)
 rm = rm -f
+# environment
+XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
 # makefile (from 'Makefile', line 1)
 MAKEFILE_LIST :=  Makefile
-# 'override' directive
-GNUMAKEFLAGS := 
 # environment
-XDG_DATA_DIRS = /usr/local/share:/usr/share:/var/lib/snapd/desktop
+JAVA_HOME = /home/jacob/.sdkman/candidates/java/current
+# automatic
+@F = $(notdir $@)
+# environment
+IM_CONFIG_PHASE = 1
+# environment
+USERNAME = jacob
+# environment
+MANDATORY_PATH = /usr/share/gconf/ubuntu.mandatory.path
+# environment
+XDG_DATA_DIRS = /usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
+# environment
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1001/bus
+# environment
+VSCODE_VERBOSE_LOGGING = true
+# environment
+_ = /usr/bin/code
+# environment
+MANAGERPID = 2621
 # environment
 LESSOPEN = | /usr/bin/lesspipe %s
 # environment
-VSCODE_CWD = /mnt/c/Users/misir/AppData/Local/Programs/Microsoft VS Code
+VSCODE_CWD = /home/jacob/CHassium/hassium
 # default
 MAKE_HOST := x86_64-pc-linux-gnu
 # environment
-PATH = /home/reagan/.vscode-server/bin/b06ae3b2d2dbfe28bca3134cc6be65935cdfea6a/bin/remote-cli:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files (x86)/VMware/VMware Workstation/bin/:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Windows/System32/OpenSSH/:/mnt/c/Program Files/NVIDIA Corporation/NVIDIA NvDLISR:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/WireGuard/:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/nodejs/:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Users/misir/.cargo/bin:/mnt/c/Users/misir/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/misir/.dotnet/tools:/mnt/c/Users/misir/AppData/Roaming/npm:/mnt/c/Users/misir/AppData/Local/Programs/Microsoft VS Code/bin:/snap/bin
+PATH = /home/jacob/.sdkman/candidates/java/current/bin:/home/jacob/.sdkman/candidates/gradle/current/bin:/home/jacob/.nvm/versions/node/v17.2.0/bin:/home/jacob/.cargo/bin:/home/jacob/.local/bin:/home/jacob/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+# environment
+GPG_AGENT_INFO = /run/user/1001/gnupg/S.gpg-agent:0:1
+# environment
+SESSION_MANAGER = local/jmisirian:@/tmp/.ICE-unix/3726,unix/jmisirian:/tmp/.ICE-unix/3726
+# environment
+XDG_RUNTIME_DIR = /run/user/1001
+# environment
+SDKMAN_DIR = /home/jacob/.sdkman
+# environment
+SDKMAN_CANDIDATES_API = https://api.sdkman.io/2
+# environment
+NVM_BIN = /home/jacob/.nvm/versions/node/v17.2.0/bin
+# environment
+XDG_MENU_PREFIX = gnome-
+# environment
+SDKMAN_PLATFORM = linuxx64
+# environment
+VSCODE_LOG_STACK = false
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
-VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-83e2c003-405c-4c93-bd8e-cc8ab41b8507.sock
+INVOCATION_ID = 7898b0c0d1324e8c84849dfeef86bbd5
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # environment
 LS_COLORS = rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+# environment
+XDG_SESSION_DESKTOP = ubuntu
+# environment
+SSH_AUTH_SOCK = /run/user/1001/keyring/ssh
 # automatic
 %F = $(notdir $%)
 # environment
-PWD = /home/reagan/CHassium/hassium
+DISPLAY = :0
+# environment
+VSCODE_PIPE_LOGGING = true
+# environment
+PWD = /home/jacob/CHassium/hassium
 # default
 .LOADED := 
 # environment
-WSL_INTEROP = /run/WSL/8_interop
+SSH_AGENT_PID = 3053
 # environment
-WT_SESSION = db79c699-6529-4c5a-a59d-6c6aaa8555ba
+ORIGINAL_XDG_CURRENT_DESKTOP = ubuntu:GNOME
+# environment
+GTK_MODULES = gail:atk-bridge
 # environment
 VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
-HOME = /home/reagan
+HOME = /home/jacob
 # environment
 LESSCLOSE = /usr/bin/lesspipe %s %s
 # environment
-LOGNAME = reagan
+VSCODE_CLI = 1
 # environment
-APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+VSCODE_CODE_CACHE_PATH = /home/jacob/.config/Code/CachedData/30d9c6cd9483b2cc586687151bcbcd635f373630
+# environment
+LOGNAME = jacob
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+# environment
+NVM_CD_FLAGS = 
+# environment
+ELECTRON_NO_ATTACH_CONSOLE = 1
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# environment
+GNOME_DESKTOP_SESSION_ID = this-is-deprecated
 # automatic
 ^D = $(patsubst %/,%,$(dir $^))
 # environment
 MAKELEVEL := 0
+# environment
+SDKMAN_VERSION = 5.13.2
+# environment
+COLORTERM = truecolor
 # default
 MAKE = $(MAKE_COMMAND)
 # default
 MAKECMDGOALS := all
 # environment
+QT_IM_MODULE = ibus
+# environment
 SHLVL = 1
 # makefile (from 'Makefile', line 4)
 CC = gcc
+# environment
+GNOME_SHELL_SESSION_MODE = ubuntu
+# environment
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1001/vscode-ipc-00e17aaf-5584-4ccf-9802-fc383d6ba4e7.sock
 # default
 MAKE_VERSION := 4.2.1
 # environment
-USER = reagan
+USER = jacob
 # makefile
 .DEFAULT_GOAL := bin/hassium
 # environment
-NAME = Code
+XDG_CURRENT_DESKTOP = Unity
 # automatic
 %D = $(patsubst %/,%,$(dir $%))
 # makefile (from 'Makefile', line 10)
 LFLAGS = -Wall -I. -lm
-# environment
-VSCODE_WSL_EXT_LOCATION = /mnt/c/Users/misir/.vscode/extensions/ms-vscode-remote.remote-wsl-0.66.3
 # default
 MAKE_COMMAND := make
+# environment
+OLDPWD = /home/jacob/CHassium
 # default
 .VARIABLES := 
 # automatic
 *F = $(notdir $*)
+# environment
+VSCODE_IPC_HOOK = /run/user/1001/vscode-55a48178-1.68.1-main.sock
 # makefile (from 'Makefile', line 8)
 LINKER = gcc
 # makefile
@@ -124,42 +210,58 @@ MAKEFLAGS = pqrR
 MFLAGS = -pqrR
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
+# environment
+NVM_DIR = /home/jacob/.nvm
 # automatic
 +D = $(patsubst %/,%,$(dir $+))
+# environment
+GDK_BACKEND = x11
 # automatic
 +F = $(notdir $+)
 # environment
-VSCODE_HANDLES_SIGPIPE = true
+NO_AT_BRIDGE = 1
 # environment
-WT_PROFILE_ID = {2c4de342-38b7-51cf-b940-2309a097f518}
+QT_ACCESSIBILITY = 1
+# environment
+DEFAULTS_PATH = /usr/share/gconf/ubuntu.default.path
 # default
 MAKEFILES := 
 # automatic
 <F = $(notdir $<)
 # environment
+SDKMAN_CANDIDATES_DIR = /home/jacob/.sdkman/candidates
+# environment
 LC_ALL = C
 # environment
-HOSTTYPE = x86_64
+GJS_DEBUG_TOPICS = JS ERROR;JS LOG
+# environment
+GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/19c00b87_cb50_4357_9e43_ec2749c6a28b
 # automatic
 ^F = $(notdir $^)
+# environment
+GNOME_TERMINAL_SERVICE = :1.89
 # default
 SUFFIXES := 
+# environment
+CHROME_DESKTOP = code-url-handler.desktop
+# environment
+WINDOWPATH = 2
 # default
 .INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
+# environment
+GJS_DEBUG_OUTPUT = stderr
 # default
 .RECIPEPREFIX := 
-# makefile (from 'Makefile', line 21)
-OBJECTS = ast.o emit.o main.o lexer.o parser.o util.o vm.o ds/intmap.o ds/strbuf.o ds/vec.o
+# makefile (from 'Makefile', line 27)
+OBJECTS = ast.o emit.o lexer.o main.o object.o parser.o util.o vm.o builtins/func.o builtins/global.o builtins/number.o builtins/string.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o
 # environment
 LANG = C
 # environment
 TERM = xterm-256color
 # environment
-WSL_DISTRO_NAME = Ubuntu
-# environment
-MOTD_SHOWN = update-motd
+VSCODE_PID = 412303
 # variable set hash-table stats:
-# Load=73/1024=7%, Rehash=0, Collisions=5/119=4%
+# Load=124/1024=12%, Rehash=0, Collisions=16/182=9%
 
 # Pattern-specific Variable Values
 
@@ -167,15 +269,16 @@ MOTD_SHOWN = update-motd
 
 # Directories
 
-# . (device 2064, inode 52601): 21 files, no impossibilities.
+# . (device 66307, inode 31206378): 16 files, no impossibilities.
 
-# 21 files, no impossibilities in 1 directories.
+# 16 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
 %.o: %.c
-#  recipe to execute (from 'Makefile', line 27):
+#  recipe to execute (from 'Makefile', line 33):
 	$(CC) $(CFLAGS) $^ -o $@
+ 
 
 # 1 implicit rules, 0 (0.0%) terminal.
 
@@ -186,7 +289,7 @@ leakcheck_test:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 53):
+#  recipe to execute (from 'Makefile', line 59):
 	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium ./bin/tests.has
 
 # Not a target:
@@ -208,6 +311,18 @@ vm.o:
 #  File has not been updated.
 
 # Not a target:
+object.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+builtins/func.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
 emit.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -216,7 +331,7 @@ emit.o:
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-17 19:17:46.4339251
+#  Last modified 2022-07-19 18:38:16.213381376
 #  File has been updated.
 #  Successfully updated.
 
@@ -225,22 +340,16 @@ remove: clean
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 36):
+#  recipe to execute (from 'Makefile', line 42):
 	@$(rm) $(BINDIR)/$(TARGET)
 	@echo "Executable removed!"
-
-# Not a target:
-ds/intmap.o:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
 
 leakcheck:
 #  Phony target (prerequisite of .PHONY).
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 49):
+#  recipe to execute (from 'Makefile', line 55):
 	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium ./bin/test.has
 
 # Not a target:
@@ -254,7 +363,7 @@ test:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 45):
+#  recipe to execute (from 'Makefile', line 51):
 	@bin/hassium "./bin/tests.has"
 
 # Not a target:
@@ -263,12 +372,24 @@ ds/strbuf.o:
 #  Modification time never checked.
 #  File has not been updated.
 
-bin/hassium: ast.o emit.o main.o lexer.o parser.o util.o vm.o ds/intmap.o ds/strbuf.o ds/vec.o
+# Not a target:
+ds/intmap.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 25):
+
+bin/hassium: ast.o emit.o lexer.o main.o object.o parser.o util.o vm.o builtins/func.o builtins/global.o builtins/number.o builtins/string.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 31):
 	$(LINKER) -o $@ $(LFLAGS) $^ -lgcc
+
+# Not a target:
+builtins/number.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
 
 # Not a target:
 parser.o:
@@ -278,7 +399,12 @@ parser.o:
 
 # Not a target:
 .DEFAULT:
- 
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+ds/hashmap.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -294,17 +420,29 @@ run:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 41):
+#  recipe to execute (from 'Makefile', line 47):
 	@bin/hassium "./bin/test.has"
+
+# Not a target:
+builtins/string.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
 
 clean:
 #  Phony target (prerequisite of .PHONY).
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 31):
+#  recipe to execute (from 'Makefile', line 37):
 	@$(rm) $(OBJECTS)
 	@echo "Cleanup complete!"
+
+# Not a target:
+builtins/global.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
 
 # Not a target:
 main.o:
@@ -325,19 +463,19 @@ util.o:
 #  File has not been updated.
 
 # files hash-table stats:
-# Load=22/1024=2%, Rehash=0, Collisions=0/60=0%
+# Load=28/1024=3%, Rehash=0, Collisions=2/72=3%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 39 / storage = 298 B / avg = 7 B
-# current buf: size = 8162 B / used = 298 B / count = 39 / avg = 7 B
+# strcache buffers: 1 (0) / strings = 47 / storage = 407 B / avg = 8 B
+# current buf: size = 8162 B / used = 407 B / count = 47 / avg = 8 B
 
-# strcache performance: lookups = 75 / hit rate = 48%
+# strcache performance: lookups = 76 / hit rate = 38%
 # hash-table stats:
-# Load=39/8192=0%, Rehash=0, Collisions=3/75=4%
-# Finished Make data base on Sun Jul 17 22:49:10 2022
+# Load=47/8192=1%, Rehash=0, Collisions=3/76=4%
+# Finished Make data base on Tue Jul 19 18:38:29 2022
 
  

@@ -128,7 +128,7 @@ static void readid(struct lexer *lexer)
 static void readnum(struct lexer *lexer)
 {
     struct strbuf *strbuf = strbuf_new();
-    while (peekc(lexer) != -1 && isdigit((char)peekc(lexer)) || (char)peekc(lexer) == '.')
+    while (peekc(lexer) != -1 && isdigit((char)peekc(lexer)))
         strbuf_append(strbuf, (char)readc(lexer));
     char *val = strbuf_done(strbuf);
     vec_push(lexer->toks, tok_new(TOK_NUM, val));

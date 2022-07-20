@@ -345,6 +345,7 @@ static struct ast_node *parse_access(struct parser *parser, struct ast_node *lef
             attrib_node_new(
                 left,
                 clone_str(expecttok(parser, TOK_ID)->val)));
+
     else if (accepttok(parser, TOK_OPAREN))
         return parse_access(parser, invoke_node_new(left, parse_arg_list(parser)));
     else if (accepttok(parser, TOK_OSQUARE))

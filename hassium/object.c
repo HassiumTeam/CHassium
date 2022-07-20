@@ -1,13 +1,14 @@
 #include <object.h>
 
 static long next_obj_id = 0;
-struct obj *obj_new(obj_ctx_type_t type, void *ctx)
+struct obj *obj_new(struct obj *parent, obj_ctx_type_t type, void *ctx)
 {
     struct obj *obj = (struct obj *)calloc(1, sizeof(struct obj));
     obj->id = next_obj_id++;
     obj->refs = 0;
     obj->type = type;
     obj->ctx = ctx;
+    obj->parent = parent;
     obj->attribs = obj_hashmap_new();
     return obj;
 }
@@ -39,34 +40,28 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args)
 {
     if (obj->type == OBJ_FUNC)
     {
-        struct func_obj_ctx *ctx = obj->ctx;
+        return ((struct func_obj_ctx *)obj->ctx)->func(obj->parent, vm, args);
+    }
+    else
+    {
+        printf("Invoked something that wasn't a func\n");
+        exit(-1);
+    }
+}
+
+struct obj *obj_invoke_attrib(struct obj *obj, struct vm *vm, char *attrib, struct vec *args)
+{
+    struct obj *func = obj_hashmap_get(obj->attribs, attrib);
+    if (func->type == OBJ_FUNC)
+    {
+        struct func_obj_ctx *ctx = func->ctx;
         return ctx->func(obj, vm, args);
     }
     else
     {
-        printf("not implemented yet?\n");
+        printf("Attrib was not a func!\n");
+        exit(-1);
     }
-}
-
-struct obj *func_obj_new(struct obj *(*func)(struct obj *, struct vm *, struct vec *))
-{
-    struct func_obj_ctx *ctx = (struct func_obj_ctx *)calloc(1, sizeof(struct func_obj_ctx));
-    ctx->func = func;
-    return obj_new(OBJ_FUNC, ctx);
-}
-
-struct obj *num_obj_new(float value)
-{
-    struct num_obj_ctx *ctx = (struct num_obj_ctx *)calloc(1, sizeof(struct num_obj_ctx));
-    ctx->value = value;
-    return obj_new(OBJ_NUM, ctx);
-}
-
-struct obj *str_obj_new(char *value)
-{
-    struct string_obj_ctx *ctx = (struct string_obj_ctx *)calloc(1, sizeof(struct string_obj_ctx));
-    ctx->value = value;
-    return obj_new(OBJ_STRING, ctx);
 }
 
 struct obj_hashmap_entry
