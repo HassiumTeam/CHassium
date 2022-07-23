@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sun Jul 17 22:48:59 2022
+# Make data base, printed on Sat Jul 23 12:31:15 2022
 
 # Variables
 
@@ -51,7 +51,7 @@ PATH = /home/reagan/.vscode-server/bin/b06ae3b2d2dbfe28bca3134cc6be65935cdfea6a/
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
-VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-f7ecfd75-4e67-4fc6-8fff-5958ea3a021b.sock
+VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-ac493066-69f3-49a5-ac42-bd376d68f12e.sock
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # environment
@@ -65,7 +65,7 @@ PWD = /home/reagan/CHassium
 # environment
 WSL_INTEROP = /run/WSL/8_interop
 # environment
-WT_SESSION = db79c699-6529-4c5a-a59d-6c6aaa8555ba
+WT_SESSION = 2f5602bd-0332-418e-9091-e368de90baa2
 # environment
 VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
@@ -211,6 +211,6 @@ GNUmakefile:
 # strcache performance: lookups = 19 / hit rate = 15%
 # hash-table stats:
 # Load=16/8192=0%, Rehash=0, Collisions=1/19=5%
-# Finished Make data base on Sun Jul 17 22:48:59 2022
+# Finished Make data base on Sat Jul 23 12:31:15 2022
 
  

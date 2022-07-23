@@ -1,20 +1,53 @@
 #include <object.h>
 
-static long next_obj_id = 0;
-struct obj *obj_new(struct obj *parent, obj_ctx_type_t type, void *ctx)
+static long next_obj_id = 1;
+struct obj none_obj = {
+    .id = 0,
+    .refs = 1,
+    .type = OBJ_NONE,
+    .parent = NULL,
+};
+
+struct obj *obj_new(obj_ctx_type_t type, void *ctx)
 {
     struct obj *obj = (struct obj *)calloc(1, sizeof(struct obj));
     obj->id = next_obj_id++;
     obj->refs = 0;
     obj->type = type;
     obj->ctx = ctx;
-    obj->parent = parent;
+    obj->parent = NULL;
     obj->attribs = obj_hashmap_new();
+    obj->weak_refs = NULL;
     return obj;
 }
 
 void obj_free(struct obj *obj)
 {
+    if (obj->weak_refs != NULL)
+    {
+        struct obj **ref;
+        for (int i = 0; i < obj->weak_refs->len; i++)
+        {
+            ref = vec_get(obj->weak_refs, i);
+            *ref = &none_obj;
+        }
+        vec_free(obj->weak_refs);
+    }
+
+    if (obj->attribs != NULL)
+    {
+        size_t iter = 0;
+        void *item;
+        while (hashmap_iter(obj->attribs, &iter, &item))
+        {
+            struct obj_hashmap_entry *entry = item;
+            obj_dec_ref(entry->obj);
+        }
+        hashmap_free(obj->attribs);
+    }
+
+    if (obj->parent != NULL)
+        obj_dec_ref(obj->parent);
     free(obj);
 }
 
@@ -29,39 +62,6 @@ struct obj *obj_dec_ref(struct obj *obj)
     obj->refs--;
     if (obj->refs <= 0)
         obj_free(obj);
-}
-
-void obj_setattrib(struct obj *obj, char *key, struct obj *val)
-{
-    obj_hashmap_set(obj->attribs, key, val);
-}
-
-struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args)
-{
-    if (obj->type == OBJ_FUNC)
-    {
-        return ((struct func_obj_ctx *)obj->ctx)->func(obj->parent, vm, args);
-    }
-    else
-    {
-        printf("Invoked something that wasn't a func\n");
-        exit(-1);
-    }
-}
-
-struct obj *obj_invoke_attrib(struct obj *obj, struct vm *vm, char *attrib, struct vec *args)
-{
-    struct obj *func = obj_hashmap_get(obj->attribs, attrib);
-    if (func->type == OBJ_FUNC)
-    {
-        struct func_obj_ctx *ctx = func->ctx;
-        return ctx->func(obj, vm, args);
-    }
-    else
-    {
-        printf("Attrib was not a func!\n");
-        exit(-1);
-    }
 }
 
 struct obj_hashmap_entry

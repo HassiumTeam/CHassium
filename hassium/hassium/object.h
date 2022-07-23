@@ -29,6 +29,7 @@ struct obj
     void *ctx;
     struct obj *parent;
     struct hashmap *attribs;
+    struct vec *weak_refs;
 };
 
 struct func_obj_ctx
@@ -46,18 +47,13 @@ struct string_obj_ctx
     char *value;
 };
 
-struct obj *obj_new(struct obj *, obj_ctx_type_t, void *);
+extern struct obj none_obj;
+
+struct obj *obj_new(obj_ctx_type_t, void *);
 void obj_free(struct obj *);
 
 struct obj *obj_inc_ref(struct obj *);
 struct obj *obj_dec_ref(struct obj *);
-void obj_setattrib(struct obj *, char *key, struct obj *val);
-struct obj *obj_invoke(struct obj *, struct vm *, struct vec *);
-struct obj *obj_invoke_attrib(struct obj *, struct vm *, char *, struct vec *);
-
-struct obj *func_obj_new(struct obj *, struct obj *(*func)(struct obj *, struct vm *, struct vec *));
-struct obj *num_obj_new(float);
-struct obj *str_obj_new(char *);
 
 struct hashmap *obj_hashmap_new();
 struct obj *obj_hashmap_get(struct hashmap *, char *);
