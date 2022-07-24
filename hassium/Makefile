@@ -9,6 +9,13 @@ LINKER   = gcc
 # linking flags here
 LFLAGS   = -Wall -I. -lm
 
+OBJECTS += builtins/builtin.o
+OBJECTS += builtins/number.o
+OBJECTS += builtins/weakref.o
+OBJECTS += ds/hashmap.o
+OBJECTS += ds/intmap.o
+OBJECTS += ds/strbuf.o
+OBJECTS += ds/vec.o
 OBJECTS += ast.o
 OBJECTS += emit.o
 OBJECTS += lexer.o
@@ -17,10 +24,6 @@ OBJECTS += object.o
 OBJECTS += parser.o
 OBJECTS += util.o
 OBJECTS += vm.o
-OBJECTS += ds/hashmap.o
-OBJECTS += ds/intmap.o
-OBJECTS += ds/strbuf.o
-OBJECTS += ds/vec.o
 rm       = rm -f
 
 $(TARGET): $(OBJECTS)

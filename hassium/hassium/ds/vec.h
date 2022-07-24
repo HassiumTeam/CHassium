@@ -20,5 +20,6 @@ void *vec_pop(struct vec *);
 void vec_push(struct vec *, void *);
 void *vec_get(struct vec *, int);
 void vec_set(struct vec *, int, void *);
+void *vec_remove(struct vec *, void *);
 
 #endif

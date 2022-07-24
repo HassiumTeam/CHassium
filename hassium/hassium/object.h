@@ -4,21 +4,26 @@
 #include <ds/hashmap.h>
 #include <stdlib.h>
 #include <util.h>
-#include <vm.h>
 
 struct vm
 {
     struct vec *frames;
 };
 
+#include <vm.h>
+
+typedef struct obj *(*builtin_func_t)(struct obj *, struct vm *, struct vec *);
+
 typedef enum
 {
     OBJ_ANON,
+    OBJ_BUILTIN,
     OBJ_CLASS,
     OBJ_FUNC,
     OBJ_NONE,
     OBJ_NUM,
     OBJ_STRING,
+    OBJ_WEAKREF,
 } obj_ctx_type_t;
 
 struct obj
@@ -32,9 +37,16 @@ struct obj
     struct vec *weak_refs;
 };
 
-struct func_obj_ctx
+struct obj_hashmap_entry
 {
-    struct obj *(*func)(struct obj *, struct vm *, struct vec *);
+    char *name;
+    struct obj *obj;
+};
+
+struct builtin_obj_ctx
+{
+    builtin_func_t func;
+    struct obj *self;
 };
 
 struct num_obj_ctx
@@ -47,6 +59,11 @@ struct string_obj_ctx
     char *value;
 };
 
+struct weakref_obj_ctx
+{
+    struct obj *ref;
+};
+
 extern struct obj none_obj;
 
 struct obj *obj_new(obj_ctx_type_t, void *);
@@ -54,6 +71,8 @@ void obj_free(struct obj *);
 
 struct obj *obj_inc_ref(struct obj *);
 struct obj *obj_dec_ref(struct obj *);
+
+void obj_setattr(struct obj *, char *, struct obj *);
 
 struct hashmap *obj_hashmap_new();
 struct obj *obj_hashmap_get(struct hashmap *, char *);

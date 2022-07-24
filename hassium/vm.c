@@ -6,13 +6,56 @@ struct vm *vm_new()
 {
     struct vm *vm = (struct vm *)calloc(1, sizeof(struct vm));
     vm->frames = vec_new();
+    vec_push(vm->frames, obj_hashmap_new());
     return vm;
 }
 
 void vm_free(struct vm *vm)
 {
+    for (int i = 0; i < vm->frames->len; i++)
+    {
+
+        struct hashmap *map = vec_get(vm->frames, i);
+        size_t iter = 0;
+        void *item;
+        while (hashmap_iter(map, &iter, &item))
+        {
+            struct obj_hashmap_entry *entry = item;
+            obj_dec_ref(entry->obj);
+        }
+        hashmap_free(map);
+    }
     vec_free(vm->frames);
     free(vm);
+}
+
+void vm_run(struct vm *vm, struct code_obj *code_obj)
+{
+    struct vec *stack = vec_new();
+    struct vm_inst *inst;
+    int pos = 0;
+
+    while (pos < code_obj->instructions->len)
+    {
+        inst = vec_get(code_obj->instructions, pos);
+        printf("Inst %d\n", inst->type);
+
+        switch (inst->type)
+        {
+        case INST_LOAD_NUM:
+            vec_push(stack, obj_inc_ref(obj_num_new(
+                                ((struct load_num_inst *)inst->inner)->value)));
+            break;
+        case INST_POP:
+            obj_dec_ref(vec_pop(stack));
+        default:
+            break;
+        }
+
+        pos++;
+    }
+
+    vec_free(stack);
 }
 
 struct code_obj *code_obj_new(char *name)

@@ -2,6 +2,7 @@
 #define _VM_H_
 
 #include <ast.h>
+#include <builtins.h>
 #include <ds/intmap.h>
 #include <ds/vec.h>
 #include <object.h>

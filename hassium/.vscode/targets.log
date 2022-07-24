@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sat Jul 23 12:33:45 2022
+# Make data base, printed on Sat Jul 23 18:46:18 2022
 
 # Variables
 
@@ -38,7 +38,7 @@ VSCODE_NLS_CONFIG = {"locale":"en","availableLanguages":{}}
 _ = /mnt/c/Users/misir/AppData/Local/Programs/Microsoft VS Code/bin/code
 # makefile (from 'Makefile', line 6)
 CFLAGS = -c -std=c99 -I hassium
-# makefile (from 'Makefile', line 24)
+# makefile (from 'Makefile', line 27)
 rm = rm -f
 # makefile (from 'Makefile', line 1)
 MAKEFILE_LIST :=  Makefile
@@ -57,7 +57,7 @@ PATH = /home/reagan/.vscode-server/bin/b06ae3b2d2dbfe28bca3134cc6be65935cdfea6a/
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
-VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-b63b5b0d-5ac5-4725-a916-3c274464a268.sock
+VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-6bebdb27-de22-46b3-bf83-1965a2cef281.sock
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # environment
@@ -81,7 +81,7 @@ LESSCLOSE = /usr/bin/lesspipe %s %s
 # environment
 LOGNAME = reagan
 # environment
-APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # automatic
@@ -148,8 +148,8 @@ SUFFIXES :=
 .INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
 # default
 .RECIPEPREFIX := 
-# makefile (from 'Makefile', line 23)
-OBJECTS = ast.o emit.o lexer.o main.o object.o parser.o util.o vm.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o
+# makefile (from 'Makefile', line 26)
+OBJECTS = builtins/builtin.o builtins/number.o builtins/weakref.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o ast.o emit.o lexer.o main.o object.o parser.o util.o vm.o
 # environment
 LANG = C
 # environment
@@ -159,7 +159,7 @@ WSL_DISTRO_NAME = Ubuntu
 # environment
 MOTD_SHOWN = update-motd
 # variable set hash-table stats:
-# Load=73/1024=7%, Rehash=0, Collisions=5/123=4%
+# Load=73/1024=7%, Rehash=0, Collisions=5/129=4%
 
 # Pattern-specific Variable Values
 
@@ -167,14 +167,14 @@ MOTD_SHOWN = update-motd
 
 # Directories
 
-# . (device 2064, inode 52601): 15 files, no impossibilities.
+# . (device 2064, inode 52601): 24 files, no impossibilities.
 
-# 15 files, no impossibilities in 1 directories.
+# 24 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
 %.o: %.c
-#  recipe to execute (from 'Makefile', line 29):
+#  recipe to execute (from 'Makefile', line 32):
 	$(CC) $(CFLAGS) $^ -o $@
 
 # 1 implicit rules, 0 (0.0%) terminal.
@@ -186,7 +186,7 @@ leakcheck_test:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 55):
+#  recipe to execute (from 'Makefile', line 58):
 	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium ./bin/tests.has
 
 # Not a target:
@@ -222,7 +222,7 @@ emit.o:
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-23 12:33:44.7225668
+#  Last modified 2022-07-23 18:34:16.2325668
 #  File has been updated.
 #  Successfully updated.
 
@@ -231,17 +231,15 @@ remove: clean
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 38):
+#  recipe to execute (from 'Makefile', line 41):
 	@$(rm) $(BINDIR)/$(TARGET)
 	@echo "Executable removed!"
 
-leakcheck:
-#  Phony target (prerequisite of .PHONY).
+# Not a target:
+builtins/weakref.o:
 #  Implicit rule search has not been done.
-#  File does not exist.
+#  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 51):
-	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium ./bin/test.has
 
 # Not a target:
 ds/vec.o:
@@ -254,7 +252,7 @@ test:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 47):
+#  recipe to execute (from 'Makefile', line 50):
 	@bin/hassium "./bin/tests.has"
 
 # Not a target:
@@ -269,22 +267,42 @@ ds/intmap.o:
 #  Modification time never checked.
 #  File has not been updated.
 
-bin/hassium: ast.o emit.o lexer.o main.o object.o parser.o util.o vm.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o
+leakcheck:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 54):
+	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium ./bin/test.has
+
+bin/hassium: builtins/builtin.o builtins/number.o builtins/weakref.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o ast.o emit.o lexer.o main.o object.o parser.o util.o vm.o
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+ 
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 30):
+	$(LINKER) -o $@ $(LFLAGS) $^ -lgcc
+
+# Not a target:
+builtins/number.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 27):
-	$(LINKER) -o $@ $(LFLAGS) $^ -lgcc
 
 # Not a target:
 parser.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
- 
 
 # Not a target:
 .DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+builtins/builtin.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -306,7 +324,7 @@ run:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 43):
+#  recipe to execute (from 'Makefile', line 46):
 	@bin/hassium "./bin/test.has"
 
 clean:
@@ -314,7 +332,7 @@ clean:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 33):
+#  recipe to execute (from 'Makefile', line 36):
 	@$(rm) $(OBJECTS)
 	@echo "Cleanup complete!"
 
@@ -337,19 +355,19 @@ util.o:
 #  File has not been updated.
 
 # files hash-table stats:
-# Load=24/1024=2%, Rehash=0, Collisions=0/64=0%
+# Load=27/1024=3%, Rehash=0, Collisions=3/70=4%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 42 / storage = 328 B / avg = 7 B
-# current buf: size = 8162 B / used = 328 B / count = 42 / avg = 7 B
+# strcache buffers: 1 (0) / strings = 46 / storage = 393 B / avg = 8 B
+# current buf: size = 8162 B / used = 393 B / count = 46 / avg = 8 B
 
-# strcache performance: lookups = 71 / hit rate = 40%
+# strcache performance: lookups = 83 / hit rate = 44%
 # hash-table stats:
-# Load=42/8192=1%, Rehash=0, Collisions=3/71=4%
-# Finished Make data base on Sat Jul 23 12:33:45 2022
+# Load=46/8192=1%, Rehash=0, Collisions=3/83=4%
+# Finished Make data base on Sat Jul 23 18:46:18 2022
 
  

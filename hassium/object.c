@@ -34,6 +34,16 @@ void obj_free(struct obj *obj)
         vec_free(obj->weak_refs);
     }
 
+    struct weakref_obj_ctx *weakref;
+    switch (obj->type)
+    {
+    case OBJ_WEAKREF:
+        weakref = obj->ctx;
+        if (weakref->ref != &none_obj)
+            vec_remove(weakref->ref->weak_refs, &obj);
+        break;
+    }
+
     if (obj->attribs != NULL)
     {
         size_t iter = 0;
@@ -48,6 +58,10 @@ void obj_free(struct obj *obj)
 
     if (obj->parent != NULL)
         obj_dec_ref(obj->parent);
+    if (obj->ctx != NULL)
+    {
+        free(obj->ctx);
+    }
     free(obj);
 }
 
@@ -64,11 +78,10 @@ struct obj *obj_dec_ref(struct obj *obj)
         obj_free(obj);
 }
 
-struct obj_hashmap_entry
+void obj_setattr(struct obj *obj, char *name, struct obj *val)
 {
-    char *name;
-    struct obj *obj;
-};
+    obj_hashmap_set(obj->attribs, name, obj_inc_ref(val));
+}
 
 static int compare(const void *a, const void *b, void *data)
 {

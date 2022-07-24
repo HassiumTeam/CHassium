@@ -7,6 +7,8 @@
         "hashmap.h": "c",
         "builtins.h": "c",
         "object.h": "c",
-        "intmap.h": "c"
+        "intmap.h": "c",
+        "util.h": "c",
+        "stdlib.h": "c"
     }
 }
