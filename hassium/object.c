@@ -23,6 +23,7 @@ struct obj *obj_new(obj_ctx_type_t type, void *ctx)
 
 void obj_free(struct obj *obj)
 {
+    printf("Called obj_free on a %d at %p\n", obj->type, obj);
     if (obj->weak_refs != NULL)
     {
         struct obj **ref;
@@ -40,7 +41,10 @@ void obj_free(struct obj *obj)
     case OBJ_WEAKREF:
         weakref = obj->ctx;
         if (weakref->ref != &none_obj)
+        {
+            printf("trying to remove weakrefs of object %d at %p\n", weakref->ref->type, weakref->ref);
             vec_remove(weakref->ref->weak_refs, &obj);
+        }
         break;
     }
 

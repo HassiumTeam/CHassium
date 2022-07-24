@@ -6,6 +6,7 @@ struct obj *obj_weakref_new(struct obj *ref)
         ref->weak_refs = vec_new();
     struct weakref_obj_ctx *ctx = (struct weakref_obj_ctx *)malloc(sizeof(struct weakref_obj_ctx));
     ctx->ref = ref;
+    printf("ref is a %d at %p\n", ref->type, ref);
     struct obj *weakref = obj_new(OBJ_WEAKREF, ctx);
     vec_push(ref->weak_refs, &weakref);
     return weakref;
