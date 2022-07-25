@@ -276,6 +276,8 @@ void ast_node_free(struct ast_node *node)
     case WHILE_NODE:
         while_node_free(node->inner);
         break;
+    default:
+        break;
     }
     free(node->inner);
     free(node);

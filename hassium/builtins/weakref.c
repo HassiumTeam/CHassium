@@ -4,11 +4,10 @@ struct obj *obj_weakref_new(struct obj *ref)
 {
     if (ref->weak_refs == NULL)
         ref->weak_refs = vec_new();
-    struct weakref_obj_ctx *ctx = (struct weakref_obj_ctx *)malloc(sizeof(struct weakref_obj_ctx));
-    ctx->ref = ref;
-    printf("ref is a %d at %p\n", ref->type, ref);
-    struct obj *weakref = obj_new(OBJ_WEAKREF, ctx);
-    vec_push(ref->weak_refs, &weakref);
+    struct obj *weakref = obj_new(OBJ_WEAKREF, NULL);
+    weakref->ctx = ref;
+    vec_push(ref->weak_refs, &weakref->ctx);
+    printf("&weakref->ctx == %p\n", &weakref->ctx);
     return weakref;
 }
 

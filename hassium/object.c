@@ -23,28 +23,35 @@ struct obj *obj_new(obj_ctx_type_t type, void *ctx)
 
 void obj_free(struct obj *obj)
 {
-    printf("Called obj_free on a %d at %p\n", obj->type, obj);
+    printf("freeing a %d at %p\n", obj->type, obj);
     if (obj->weak_refs != NULL)
     {
+        printf("weakrefs is not null\n");
         struct obj **ref;
         for (int i = 0; i < obj->weak_refs->len; i++)
         {
             ref = vec_get(obj->weak_refs, i);
+            printf("obj->weakrefs[0] is %p\n", ref);
             *ref = &none_obj;
         }
+        printf("freed the vec at %p\n", obj->weak_refs);
         vec_free(obj->weak_refs);
     }
 
-    struct weakref_obj_ctx *weakref;
     switch (obj->type)
     {
     case OBJ_WEAKREF:
-        weakref = obj->ctx;
-        if (weakref->ref != &none_obj)
+        if (obj->ctx != &none_obj)
         {
-            printf("trying to remove weakrefs of object %d at %p\n", weakref->ref->type, weakref->ref);
-            vec_remove(weakref->ref->weak_refs, &obj);
+            printf("obj->ctx != &none_obj\n");
+            struct obj *ref = obj->ctx;
+            printf("trying to remove weakrefs %p of object %d at %p\n", ref->weak_refs, ref->type, ref);
+            vec_remove(ref->weak_refs, &obj->ctx);
         }
+        break;
+    default:
+        if (obj->ctx != NULL)
+            free(obj->ctx);
         break;
     }
 
@@ -62,10 +69,7 @@ void obj_free(struct obj *obj)
 
     if (obj->parent != NULL)
         obj_dec_ref(obj->parent);
-    if (obj->ctx != NULL)
-    {
-        free(obj->ctx);
-    }
+    printf("done freeing a %d\n", obj->type);
     free(obj);
 }
 
