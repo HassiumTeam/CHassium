@@ -7,7 +7,6 @@ struct obj *obj_weakref_new(struct obj *ref)
     struct obj *weakref = obj_new(OBJ_WEAKREF, NULL);
     weakref->ctx = ref;
     vec_push(ref->weak_refs, &weakref->ctx);
-    printf("&weakref->ctx == %p\n", &weakref->ctx);
     return weakref;
 }
 

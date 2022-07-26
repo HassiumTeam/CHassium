@@ -6,6 +6,6 @@ struct obj *obj_builtin_new(builtin_func_t func, struct obj *self)
     ctx->func = func;
     if (self != NULL)
         ctx->self = obj_inc_ref(obj_weakref_new(self));
-    struct obj *builtin = obj_new(OBJ_WEAKREF, ctx);
+    struct obj *builtin = obj_new(OBJ_BUILTIN, ctx);
     return builtin;
 }
