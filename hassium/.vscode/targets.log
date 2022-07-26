@@ -1,6 +1,4 @@
 make all --print-data-base --no-builtin-variables --no-builtin-rules --question
-make: *** No rule to make target 'all'.  Stop.
-
 # GNU Make 4.2.1
 # Built for x86_64-pc-linux-gnu
 # Copyright (C) 1988-2016 Free Software Foundation, Inc.
@@ -8,7 +6,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Mon Jul 25 16:01:00 2022
+# Make data base, printed on Tue Jul 26 14:57:49 2022
 
 # Variables
 
@@ -53,10 +51,10 @@ VTE_VERSION = 6003
 # environment
 VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
 # environment
-JOURNAL_STREAM = 8:73861
+JOURNAL_STREAM = 8:71182
 # makefile (from 'Makefile', line 6)
 CFLAGS = -c -std=c99 -I hassium
-# makefile (from 'Makefile', line 27)
+# makefile (from 'Makefile', line 29)
 rm = rm -f
 # environment
 XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
@@ -81,7 +79,7 @@ VSCODE_VERBOSE_LOGGING = true
 # environment
 _ = /usr/bin/code
 # environment
-MANAGERPID = 3850
+MANAGERPID = 3621
 # environment
 LESSOPEN = | /usr/bin/lesspipe %s
 # environment
@@ -93,7 +91,7 @@ PATH = /home/jacob/.sdkman/candidates/java/current/bin:/home/jacob/.sdkman/candi
 # environment
 GPG_AGENT_INFO = /run/user/1001/gnupg/S.gpg-agent:0:1
 # environment
-SESSION_MANAGER = local/jmisirian:@/tmp/.ICE-unix/4267,unix/jmisirian:/tmp/.ICE-unix/4267
+SESSION_MANAGER = local/jmisirian:@/tmp/.ICE-unix/4042,unix/jmisirian:/tmp/.ICE-unix/4042
 # environment
 XDG_RUNTIME_DIR = /run/user/1001
 # environment
@@ -111,7 +109,7 @@ VSCODE_LOG_STACK = false
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
-INVOCATION_ID = 7f13629806804f81a498c2b527ced78b
+INVOCATION_ID = eea34832613b4d519057b9b726d372b0
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # environment
@@ -131,7 +129,7 @@ PWD = /home/jacob/CHassium/hassium
 # default
 .LOADED := 
 # environment
-SSH_AGENT_PID = 4227
+SSH_AGENT_PID = 4001
 # environment
 ORIGINAL_XDG_CURRENT_DESKTOP = ubuntu:GNOME
 # environment
@@ -179,7 +177,7 @@ CC = gcc
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1001/vscode-ipc-f85f487b-04dd-43e5-bf21-c4429032376a.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1001/vscode-ipc-38673361-93e7-4ed0-8e3a-6c8a3af9381d.sock
 # default
 MAKE_VERSION := 4.2.1
 # environment
@@ -195,7 +193,7 @@ LFLAGS = -Wall -I. -lm
 # default
 MAKE_COMMAND := make
 # environment
-OLDPWD = /home/jacob/CHassium
+OLDPWD = /home/jacob
 # default
 .VARIABLES := 
 # automatic
@@ -233,13 +231,11 @@ SDKMAN_CANDIDATES_DIR = /home/jacob/.sdkman/candidates
 # environment
 LC_ALL = C
 # environment
-GJS_DEBUG_TOPICS = JS ERROR;JS LOG
-# environment
-GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/2f7ebb3f_dd99_48c9_8ae6_f4df13c08a3f
+GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/83a190be_38fb_47e9_bdb1_5494b038fbcc
 # automatic
 ^F = $(notdir $^)
 # environment
-GNOME_TERMINAL_SERVICE = :1.127
+GNOME_TERMINAL_SERVICE = :1.84
 # default
 SUFFIXES := 
 # environment
@@ -248,20 +244,18 @@ CHROME_DESKTOP = code-url-handler.desktop
 WINDOWPATH = 2
 # default
 .INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
-# environment
-GJS_DEBUG_OUTPUT = stderr
 # default
 .RECIPEPREFIX := 
-# makefile (from 'Makefile', line 26)
-OBJECTS = builtins/builtin.o builtins/number.o builtins/weakref.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o ast.o emit.o lexer.o main.o object.o parser.o util.o vm.o
+# makefile (from 'Makefile', line 28)
+OBJECTS = builtins/builtin.o builtins/defaults.o builtins/number.o builtins/string.o builtins/weakref.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o ast.o emit.o lexer.o main.o object.o parser.o util.o vm.o
 # environment
 LANG = C
 # environment
 TERM = xterm-256color
 # environment
-VSCODE_PID = 242801
+VSCODE_PID = 9830
 # variable set hash-table stats:
-# Load=124/1024=12%, Rehash=0, Collisions=16/180=9%
+# Load=122/1024=12%, Rehash=0, Collisions=16/182=9%
 
 # Pattern-specific Variable Values
 
@@ -269,14 +263,14 @@ VSCODE_PID = 242801
 
 # Directories
 
-# . (device 66307, inode 31206378): 17 files, no impossibilities.
+# . (device 66307, inode 31206378): 16 files, no impossibilities.
 
-# 17 files, no impossibilities in 1 directories.
+# 16 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
 %.o: %.c
-#  recipe to execute (from 'Makefile', line 32):
+#  recipe to execute (from 'Makefile', line 34):
 	$(CC) $(CFLAGS) $^ -o $@
 
 # 1 implicit rules, 0 (0.0%) terminal.
@@ -288,8 +282,14 @@ leakcheck_test:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 58):
+#  recipe to execute (from 'Makefile', line 60):
 	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium ./bin/tests.has
+
+# Not a target:
+parser.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
 
 # Not a target:
 all:
@@ -316,6 +316,12 @@ object.o:
 #  File has not been updated.
 
 # Not a target:
+builtins/defaults.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
 emit.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -324,7 +330,7 @@ emit.o:
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-25 16:00:59.964634617
+#  Last modified 2022-07-26 14:57:48.649079307
 #  File has been updated.
 #  Successfully updated.
 
@@ -333,7 +339,7 @@ remove: clean
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 41):
+#  recipe to execute (from 'Makefile', line 43):
 	@$(rm) $(BINDIR)/$(TARGET)
 	@echo "Executable removed!"
 
@@ -354,7 +360,7 @@ test:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 50):
+#  recipe to execute (from 'Makefile', line 52):
 	@bin/hassium "./bin/tests.has"
 
 # Not a target:
@@ -374,14 +380,14 @@ leakcheck:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 54):
+#  recipe to execute (from 'Makefile', line 56):
 	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium ./bin/test.has
 
-bin/hassium: builtins/builtin.o builtins/number.o builtins/weakref.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o ast.o emit.o lexer.o main.o object.o parser.o util.o vm.o
+bin/hassium: builtins/builtin.o builtins/defaults.o builtins/number.o builtins/string.o builtins/weakref.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o ast.o emit.o lexer.o main.o object.o parser.o util.o vm.o
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 30):
+#  recipe to execute (from 'Makefile', line 32):
 	$(LINKER) -o $@ $(LFLAGS) $^ -lgcc
 
 # Not a target:
@@ -391,7 +397,7 @@ builtins/number.o:
 #  File has not been updated.
 
 # Not a target:
-parser.o:
+builtins/string.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -425,17 +431,19 @@ run:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 46):
+#  recipe to execute (from 'Makefile', line 48):
 	@bin/hassium "./bin/test.has"
+
+ 
+make: *** No rule to make target 'all'.  Stop.
 
 clean:
 #  Phony target (prerequisite of .PHONY).
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 36):
+#  recipe to execute (from 'Makefile', line 38):
 	@$(rm) $(OBJECTS)
- 
 	@echo "Cleanup complete!"
 
 # Not a target:
@@ -457,19 +465,19 @@ util.o:
 #  File has not been updated.
 
 # files hash-table stats:
-# Load=27/1024=3%, Rehash=0, Collisions=3/70=4%
+# Load=29/1024=3%, Rehash=0, Collisions=5/74=7%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 46 / storage = 393 B / avg = 8 B
-# current buf: size = 8162 B / used = 393 B / count = 46 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 48 / storage = 431 B / avg = 8 B
+# current buf: size = 8162 B / used = 431 B / count = 48 / avg = 8 B
 
-# strcache performance: lookups = 76 / hit rate = 39%
+# strcache performance: lookups = 77 / hit rate = 37%
 # hash-table stats:
-# Load=46/8192=1%, Rehash=0, Collisions=3/76=4%
-# Finished Make data base on Mon Jul 25 16:01:00 2022
+# Load=48/8192=1%, Rehash=0, Collisions=3/77=4%
+# Finished Make data base on Tue Jul 26 14:57:49 2022
 
  

@@ -54,11 +54,6 @@ struct num_obj_ctx
     float value;
 };
 
-struct string_obj_ctx
-{
-    char *value;
-};
-
 struct weakref_obj_ctx
 {
     struct obj *ref;
@@ -72,6 +67,7 @@ void obj_free(struct obj *);
 struct obj *obj_inc_ref(struct obj *);
 struct obj *obj_dec_ref(struct obj *);
 
+struct obj *obj_invoke(struct obj *, struct vm *, struct vec *);
 void obj_setattr(struct obj *, char *, struct obj *);
 
 struct hashmap *obj_hashmap_new();

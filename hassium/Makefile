@@ -10,7 +10,9 @@ LINKER   = gcc
 LFLAGS   = -Wall -I. -lm
 
 OBJECTS += builtins/builtin.o
+OBJECTS += builtins/defaults.o
 OBJECTS += builtins/number.o
+OBJECTS += builtins/string.o
 OBJECTS += builtins/weakref.o
 OBJECTS += ds/hashmap.o
 OBJECTS += ds/intmap.o
