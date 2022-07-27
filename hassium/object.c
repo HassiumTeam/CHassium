@@ -98,7 +98,7 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args)
         struct builtin_obj_ctx *builtin = obj->ctx;
         struct obj *self = builtin->self;
         if (self != NULL && self->type == OBJ_WEAKREF)
-            self = obj_weakref_val(self);
+            self = self->ctx;
         return builtin->func(self, vm, args);
     }
     else if (obj->type == OBJ_FUNC)
@@ -121,6 +121,20 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args)
 void obj_setattr(struct obj *obj, char *name, struct obj *val)
 {
     obj_hashmap_set(obj->attribs, name, obj_inc_ref(val));
+}
+
+struct obj *obj_to_string(struct obj *obj, struct vm *vm)
+{
+    struct obj *toString = obj_hashmap_get(obj->attribs, "toString");
+    if (toString == NULL)
+    {
+        printf("Object does not have toString()!");
+        exit(-1);
+    }
+    struct vec *args = vec_new();
+    struct obj *ret = obj_invoke(toString, vm, args);
+    vec_free(args);
+    return obj_inc_ref(ret);
 }
 
 static int compare(const void *a, const void *b, void *data)

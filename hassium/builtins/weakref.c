@@ -9,9 +9,3 @@ struct obj *obj_weakref_new(struct obj *ref)
     vec_push(ref->weak_refs, &weakref->ctx);
     return weakref;
 }
-
-struct obj *obj_weakref_val(struct obj *weakref)
-{
-    struct weakref_obj_ctx *ctx = weakref->ctx;
-    return ctx->ref;
-}

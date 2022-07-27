@@ -53,6 +53,16 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj)
             obj_dec_ref(target);
         }
         break;
+        case INST_LOAD_ATTRIB:
+        {
+            struct obj *target = vec_pop(stack);
+            struct obj *attrib = obj_hashmap_get(target->attribs, ((struct load_attrib_inst *)inst->inner)->attrib);
+            if (attrib == NULL)
+                attrib = &none_obj;
+            vec_push(stack, obj_inc_ref(attrib));
+            obj_dec_ref(target);
+        }
+        break;
         case INST_LOAD_ID:
         {
             struct obj *obj;

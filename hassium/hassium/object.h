@@ -60,11 +60,6 @@ struct num_obj_ctx
     float value;
 };
 
-struct weakref_obj_ctx
-{
-    struct obj *ref;
-};
-
 extern struct obj none_obj;
 
 struct obj *obj_new(obj_ctx_type_t, void *);
@@ -75,6 +70,7 @@ struct obj *obj_dec_ref(struct obj *);
 
 struct obj *obj_invoke(struct obj *, struct vm *, struct vec *);
 void obj_setattr(struct obj *, char *, struct obj *);
+struct obj *obj_to_string(struct obj *, struct vm *);
 
 struct hashmap *obj_hashmap_new();
 struct obj *obj_hashmap_get(struct hashmap *, char *);

@@ -24,6 +24,5 @@ struct obj *obj_string_new(char *);
 char *obj_string_val(struct obj *);
 
 struct obj *obj_weakref_new(struct obj *);
-struct obj *obj_weakref_val(struct obj *);
 
 #endif

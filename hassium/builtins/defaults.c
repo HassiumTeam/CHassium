@@ -15,8 +15,12 @@ static struct obj *println(struct obj *_, struct vm *vm, struct vec *args)
     {
         struct obj *arg = vec_get(args, i);
         if (arg->type == OBJ_STRING)
-        {
             printf("%s", (char *)arg->ctx);
+        else
+        {
+            struct obj *str = obj_to_string(arg, vm);
+            printf("%s", (char *)str->ctx);
+            obj_dec_ref(str);
         }
     }
     printf("\n");
