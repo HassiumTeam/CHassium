@@ -104,7 +104,10 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args)
     else if (obj->type == OBJ_FUNC)
     {
         struct func_obj_ctx *func = obj->ctx;
-        vec_push(vm->frames, obj_hashmap_new());
+        struct hashmap *frame = obj_hashmap_new();
+        for (int i = 0; i < func->params->len; i++)
+            obj_hashmap_set(frame, vec_get(func->params, i), obj_inc_ref(vec_get(args, i)));
+        vec_push(vm->frames, frame);
         struct obj *ret = vm_run(vm, func->code_obj);
         obj_hashmap_free(vec_pop(vm->frames));
         return ret;
