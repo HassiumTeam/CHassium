@@ -9,6 +9,7 @@
         "object.h": "c",
         "intmap.h": "c",
         "util.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "stdbool.h": "c"
     }
 }

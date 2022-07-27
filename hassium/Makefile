@@ -11,6 +11,7 @@ LFLAGS   = -Wall -I. -lm
 
 OBJECTS += builtins/builtin.o
 OBJECTS += builtins/defaults.o
+OBJECTS += builtins/func.o
 OBJECTS += builtins/number.o
 OBJECTS += builtins/string.o
 OBJECTS += builtins/weakref.o
@@ -19,6 +20,7 @@ OBJECTS += ds/intmap.o
 OBJECTS += ds/strbuf.o
 OBJECTS += ds/vec.o
 OBJECTS += ast.o
+OBJECTS += codeobj.o
 OBJECTS += emit.o
 OBJECTS += lexer.o
 OBJECTS += main.o

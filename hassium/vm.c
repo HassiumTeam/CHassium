@@ -13,22 +13,12 @@ struct vm *vm_new()
 void vm_free(struct vm *vm)
 {
     for (int i = 0; i < vm->frames->len; i++)
-    {
-        struct hashmap *map = vec_get(vm->frames, i);
-        size_t iter = 0;
-        void *item;
-        while (hashmap_iter(map, &iter, &item))
-        {
-            struct obj_hashmap_entry *entry = item;
-            obj_dec_ref(entry->obj);
-        }
-        hashmap_free(map);
-    }
+        obj_hashmap_free(vec_get(vm->frames, i));
     vec_free(vm->frames);
     free(vm);
 }
 
-void vm_run(struct vm *vm, struct code_obj *code_obj)
+struct obj *vm_run(struct vm *vm, struct code_obj *code_obj)
 {
     struct vec *stack = vec_new();
     struct vm_inst *inst;
@@ -42,7 +32,13 @@ void vm_run(struct vm *vm, struct code_obj *code_obj)
         switch (inst->type)
         {
         case INST_BUILD_FUNC:
-            break;
+        {
+            struct build_func_inst *build_func = inst->inner;
+            struct hashmap *frame = vec_peek(vm->frames);
+            obj_hashmap_set(frame, build_func->code_obj->name,
+                            obj_inc_ref(obj_func_new(build_func->code_obj, build_func->params)));
+        }
+        break;
         case INST_INVOKE:
         {
             int arg_count = ((struct invoke_inst *)inst->inner)->arg_count;
@@ -96,15 +92,8 @@ void vm_run(struct vm *vm, struct code_obj *code_obj)
     }
 
     vec_free(stack);
-}
 
-struct code_obj *code_obj_new(char *name)
-{
-    struct code_obj *code_obj = (struct code_obj *)calloc(1, sizeof(struct code_obj));
-    code_obj->name = name;
-    code_obj->instructions = vec_new();
-    code_obj->labels = intmap_new();
-    return code_obj;
+    return &none_obj;
 }
 
 static void vm_inst_free(struct vm_inst *);

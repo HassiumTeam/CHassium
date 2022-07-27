@@ -2,6 +2,7 @@
 #define _EMIT_H_
 
 #include <ast.h>
+#include <codeobj.h>
 #include <ds/intmap.h>
 #include <ds/vec.h>
 #include <stdio.h>

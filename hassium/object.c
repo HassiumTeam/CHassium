@@ -101,6 +101,14 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args)
             self = obj_weakref_val(self);
         return builtin->func(self, vm, args);
     }
+    else if (obj->type == OBJ_FUNC)
+    {
+        struct func_obj_ctx *func = obj->ctx;
+        vec_push(vm->frames, obj_hashmap_new());
+        struct obj *ret = vm_run(vm, func->code_obj);
+        obj_hashmap_free(vec_pop(vm->frames));
+        return ret;
+    }
     else
     {
         printf("object was not invokable!\n");
@@ -148,4 +156,16 @@ struct obj *obj_hashmap_get(struct hashmap *map, char *key)
 void obj_hashmap_set(struct hashmap *map, char *key, struct obj *val)
 {
     hashmap_set(map, &(struct obj_hashmap_entry){.name = key, .obj = val});
+}
+
+void obj_hashmap_free(struct hashmap *map)
+{
+    size_t iter = 0;
+    void *item;
+    while (hashmap_iter(map, &iter, &item))
+    {
+        struct obj_hashmap_entry *entry = item;
+        obj_dec_ref(entry->obj);
+    }
+    hashmap_free(map);
 }

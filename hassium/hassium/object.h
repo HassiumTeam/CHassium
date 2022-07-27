@@ -79,5 +79,6 @@ void obj_setattr(struct obj *, char *, struct obj *);
 struct hashmap *obj_hashmap_new();
 struct obj *obj_hashmap_get(struct hashmap *, char *);
 void obj_hashmap_set(struct hashmap *, char *, struct obj *);
+void obj_hashmap_free(struct hashmap *);
 
 #endif

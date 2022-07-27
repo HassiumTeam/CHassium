@@ -1,4 +1,6 @@
 make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+make: *** No rule to make target 'all'.  Stop.
+
 # GNU Make 4.2.1
 # Built for x86_64-pc-linux-gnu
 # Copyright (C) 1988-2016 Free Software Foundation, Inc.
@@ -6,7 +8,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Tue Jul 26 14:57:49 2022
+# Make data base, printed on Tue Jul 26 18:48:39 2022
 
 # Variables
 
@@ -54,7 +56,7 @@ VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupp
 JOURNAL_STREAM = 8:71182
 # makefile (from 'Makefile', line 6)
 CFLAGS = -c -std=c99 -I hassium
-# makefile (from 'Makefile', line 29)
+# makefile (from 'Makefile', line 31)
 rm = rm -f
 # environment
 XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
@@ -246,8 +248,8 @@ WINDOWPATH = 2
 .INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
 # default
 .RECIPEPREFIX := 
-# makefile (from 'Makefile', line 28)
-OBJECTS = builtins/builtin.o builtins/defaults.o builtins/number.o builtins/string.o builtins/weakref.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o ast.o emit.o lexer.o main.o object.o parser.o util.o vm.o
+# makefile (from 'Makefile', line 30)
+OBJECTS = builtins/builtin.o builtins/defaults.o builtins/func.o builtins/number.o builtins/string.o builtins/weakref.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o ast.o codeobj.o emit.o lexer.o main.o object.o parser.o util.o vm.o
 # environment
 LANG = C
 # environment
@@ -255,7 +257,7 @@ TERM = xterm-256color
 # environment
 VSCODE_PID = 9830
 # variable set hash-table stats:
-# Load=122/1024=12%, Rehash=0, Collisions=16/182=9%
+# Load=122/1024=12%, Rehash=0, Collisions=16/186=9%
 
 # Pattern-specific Variable Values
 
@@ -263,14 +265,14 @@ VSCODE_PID = 9830
 
 # Directories
 
-# . (device 66307, inode 31206378): 16 files, no impossibilities.
+# . (device 66307, inode 31206378): 17 files, no impossibilities.
 
-# 16 files, no impossibilities in 1 directories.
+# 17 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
 %.o: %.c
-#  recipe to execute (from 'Makefile', line 34):
+#  recipe to execute (from 'Makefile', line 36):
 	$(CC) $(CFLAGS) $^ -o $@
 
 # 1 implicit rules, 0 (0.0%) terminal.
@@ -282,10 +284,11 @@ leakcheck_test:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 60):
+#  recipe to execute (from 'Makefile', line 62):
 	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium ./bin/tests.has
 
 # Not a target:
+ 
 parser.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -316,6 +319,12 @@ object.o:
 #  File has not been updated.
 
 # Not a target:
+builtins/func.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
 builtins/defaults.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -330,7 +339,7 @@ emit.o:
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-26 14:57:48.649079307
+#  Last modified 2022-07-26 18:48:38.010420077
 #  File has been updated.
 #  Successfully updated.
 
@@ -339,7 +348,7 @@ remove: clean
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 43):
+#  recipe to execute (from 'Makefile', line 45):
 	@$(rm) $(BINDIR)/$(TARGET)
 	@echo "Executable removed!"
 
@@ -360,11 +369,17 @@ test:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 52):
+#  recipe to execute (from 'Makefile', line 54):
 	@bin/hassium "./bin/tests.has"
 
 # Not a target:
 ds/strbuf.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+codeobj.o:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -380,14 +395,14 @@ leakcheck:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 56):
+#  recipe to execute (from 'Makefile', line 58):
 	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium ./bin/test.has
 
-bin/hassium: builtins/builtin.o builtins/defaults.o builtins/number.o builtins/string.o builtins/weakref.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o ast.o emit.o lexer.o main.o object.o parser.o util.o vm.o
+bin/hassium: builtins/builtin.o builtins/defaults.o builtins/func.o builtins/number.o builtins/string.o builtins/weakref.o ds/hashmap.o ds/intmap.o ds/strbuf.o ds/vec.o ast.o codeobj.o emit.o lexer.o main.o object.o parser.o util.o vm.o
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 32):
+#  recipe to execute (from 'Makefile', line 34):
 	$(LINKER) -o $@ $(LFLAGS) $^ -lgcc
 
 # Not a target:
@@ -431,18 +446,15 @@ run:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 48):
+#  recipe to execute (from 'Makefile', line 50):
 	@bin/hassium "./bin/test.has"
-
- 
-make: *** No rule to make target 'all'.  Stop.
 
 clean:
 #  Phony target (prerequisite of .PHONY).
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 38):
+#  recipe to execute (from 'Makefile', line 40):
 	@$(rm) $(OBJECTS)
 	@echo "Cleanup complete!"
 
@@ -465,19 +477,19 @@ util.o:
 #  File has not been updated.
 
 # files hash-table stats:
-# Load=29/1024=3%, Rehash=0, Collisions=5/74=7%
+# Load=31/1024=3%, Rehash=0, Collisions=5/78=6%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 48 / storage = 431 B / avg = 8 B
-# current buf: size = 8162 B / used = 431 B / count = 48 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 51 / storage = 467 B / avg = 9 B
+# current buf: size = 8162 B / used = 467 B / count = 51 / avg = 9 B
 
-# strcache performance: lookups = 77 / hit rate = 37%
+# strcache performance: lookups = 80 / hit rate = 36%
 # hash-table stats:
-# Load=48/8192=1%, Rehash=0, Collisions=3/77=4%
-# Finished Make data base on Tue Jul 26 14:57:49 2022
+# Load=51/8192=1%, Rehash=0, Collisions=3/80=4%
+# Finished Make data base on Tue Jul 26 18:48:39 2022
 
  

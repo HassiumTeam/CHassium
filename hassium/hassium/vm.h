@@ -3,6 +3,7 @@
 
 #include <ast.h>
 #include <builtins.h>
+#include <codeobj.h>
 #include <ds/intmap.h>
 #include <ds/vec.h>
 #include <object.h>
@@ -10,20 +11,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-struct code_obj
-{
-    char *name;
-    struct vec *instructions;
-    struct intmap *labels;
-};
-
-struct code_obj *code_obj_new(char *);
-void code_obj_free(struct code_obj *);
-
 struct vm *vm_new();
 void vm_free(struct vm *);
 
-void vm_run(struct vm *, struct code_obj *);
+struct obj *vm_run(struct vm *, struct code_obj *);
 
 typedef enum
 {
@@ -43,6 +34,8 @@ typedef enum
     INST_LOAD_STR,
     INST_LOAD_SUBSCRIPT,
     INST_POP,
+    INST_PUSH_FRAME,
+    INST_POP_FRAME,
     INST_RAISE,
     INST_RETURN,
     INST_SELFREF,

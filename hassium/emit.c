@@ -158,7 +158,11 @@ static void visit_class_decl_node(struct emit *emit, struct class_decl_node *nod
 static void visit_code_block_node(struct emit *emit, struct code_block_node *node)
 {
     for (int i = 0; i < node->children->len; i++)
+    {
+        add_inst(emit, vm_inst_new(INST_PUSH_FRAME, NULL));
         visit_ast_node(emit, vec_get(node->children, i));
+        add_inst(emit, vm_inst_new(INST_POP_FRAME, NULL));
+    }
 }
 
 static void visit_expr_stmt_node(struct emit *emit, struct expr_stmt_node *node)
