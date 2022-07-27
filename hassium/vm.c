@@ -41,6 +41,8 @@ void vm_run(struct vm *vm, struct code_obj *code_obj)
 
         switch (inst->type)
         {
+        case INST_BUILD_FUNC:
+            break;
         case INST_INVOKE:
         {
             int arg_count = ((struct invoke_inst *)inst->inner)->arg_count;
@@ -113,6 +115,10 @@ void code_obj_free(struct code_obj *code_obj)
         // printf("freeing inst %d\n", ((struct vm_inst *)vec_get(code_obj->instructions, i))->type);
         vm_inst_free(vec_get(code_obj->instructions, i));
     }
+    if (code_obj->name != NULL)
+    {
+        free(code_obj->name);
+    }
     vec_free(code_obj->instructions);
     intmap_free(code_obj->labels);
     free(code_obj);
@@ -126,9 +132,12 @@ static void vm_inst_free(struct vm_inst *inst)
         code_obj_free(((struct build_class_inst *)inst->inner)->code_obj);
         break;
     case INST_BUILD_FUNC:
-        code_obj_free(((struct build_func_inst *)inst->inner)->code_obj);
-        vec_free_deep(((struct build_func_inst *)inst->inner)->params);
-        break;
+    {
+        struct build_func_inst *build_func = inst->inner;
+        code_obj_free(build_func->code_obj);
+        vec_free_deep(build_func->params);
+    }
+    break;
     case INST_LOAD_ATTRIB:
         free(((struct load_attrib_inst *)inst->inner)->attrib);
         break;

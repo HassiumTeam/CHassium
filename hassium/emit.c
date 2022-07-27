@@ -53,7 +53,7 @@ static void place_label(struct emit *, int);
 struct code_obj *compile_ast(struct ast_node *ast)
 {
     struct emit emit;
-    emit.code_obj = code_obj_new("__module__");
+    emit.code_obj = code_obj_new(clone_str("__module__"));
 
     visit_ast_node(&emit, ast);
 
@@ -204,8 +204,9 @@ static void visit_func_decl_node(struct emit *emit, struct func_decl_node *node)
         visit_ast_node(emit, node->ret_type);
     struct code_obj *func = code_obj_new(clone_str(node->name));
     struct code_obj *swp = emit->code_obj;
-    visit_ast_node(emit, node->body);
     emit->code_obj = func;
+    visit_ast_node(emit, node->body);
+    emit->code_obj = swp;
     add_inst(emit, build_func_inst_new(func, node->params, node->ret_type != NULL));
 }
 

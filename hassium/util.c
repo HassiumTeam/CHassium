@@ -11,6 +11,13 @@ char *heap_str(int argc, ...)
     return strbuf_done(strbuf);
 }
 
+void *clone(void *ptr, size_t size)
+{
+    void *new = malloc(size);
+    memcpy(new, ptr, size);
+    return new;
+}
+
 char *clone_str(char *str)
 {
     int len = strlen(str);

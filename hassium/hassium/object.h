@@ -49,6 +49,12 @@ struct builtin_obj_ctx
     struct obj *self;
 };
 
+struct func_obj_ctx
+{
+    struct code_obj *code_obj;
+    struct vec *params;
+};
+
 struct num_obj_ctx
 {
     float value;

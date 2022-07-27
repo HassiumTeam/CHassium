@@ -337,7 +337,6 @@ static void foreach_node_free(struct foreach_node *node)
 static void func_decl_node_free(struct func_decl_node *node)
 {
     free(node->name);
-    vec_ast_node_free(node->params);
     ast_node_free(node->ret_type);
     ast_node_free(node->body);
 }

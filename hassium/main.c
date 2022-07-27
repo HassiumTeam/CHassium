@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[])
 {
-    struct vec *toks = lexer_tokenize("println('Hello, World!');");
+    struct vec *toks = lexer_tokenize("func main () { println('Hello, World!'); }");
     debug_toks(toks);
     struct ast_node *ast = parser_parse(toks);
     struct code_obj *module = compile_ast(ast);
