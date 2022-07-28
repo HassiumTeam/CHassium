@@ -11,8 +11,7 @@ struct obj *array_obj_new(struct vec *items) {
 
 struct obj *array_obj_get(struct obj *obj, int index) {
   struct array_obj_ctx *array = obj->ctx;
-  if (index >= array->items->len || index < 0)
-    return none_obj();
+  if (index >= array->items->len || index < 0) return none_obj();
   return vec_get(array->items, index);
 }
 

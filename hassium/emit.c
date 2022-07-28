@@ -14,6 +14,7 @@ static void visit_for_node(struct emit *, struct for_node *);
 static void visit_foreach_node(struct emit *, struct foreach_node *);
 static void visit_func_decl_node(struct emit *, struct func_decl_node *);
 static void visit_id_node(struct emit *, struct id_node *);
+static void visit_if_node(struct emit *, struct if_node *);
 static void visit_import_node(struct emit *, struct import_node *);
 static void visit_invoke_node(struct emit *, struct invoke_node *);
 static void visit_num_node(struct emit *, struct num_node *);
@@ -61,69 +62,72 @@ struct code_obj *compile_ast(struct ast_node *ast) {
 
 static void visit_ast_node(struct emit *emit, struct ast_node *node) {
   switch (node->type) {
-  case ATTRIB_NODE:
-    visit_attrib_node(emit, node->inner);
-    break;
-  case BIN_OP_NODE:
-    visit_bin_op_node(emit, node->inner);
-    break;
-  case CLASS_DECL_NODE:
-    visit_class_decl_node(emit, node->inner);
-    break;
-  case CODE_BLOCK_NODE:
-    visit_code_block_node(emit, node->inner);
-    break;
-  case EXPR_STMT_NODE:
-    visit_expr_stmt_node(emit, node->inner);
-    break;
-  case FOR_NODE:
-    visit_for_node(emit, node->inner);
-    break;
-  case FOREACH_NODE:
-    visit_foreach_node(emit, node->inner);
-    break;
-  case FUNC_DECL_NODE:
-    visit_func_decl_node(emit, node->inner);
-    break;
-  case ID_NODE:
-    visit_id_node(emit, node->inner);
-    break;
-  case IMPORT_NODE:
-    visit_import_node(emit, node->inner);
-    break;
-  case INVOKE_NODE:
-    visit_invoke_node(emit, node->inner);
-    break;
-  case NUM_NODE:
-    visit_num_node(emit, node->inner);
-    break;
-  case OBJ_DECL_NODE:
-    visit_obj_decl_node(emit, node->inner);
-    break;
-  case RAISE_NODE:
-    visit_raise_node(emit, node->inner);
-    break;
-  case RETURN_NODE:
-    visit_return_node(emit, node->inner);
-    break;
-  case STRING_NODE:
-    visit_string_node(emit, node->inner);
-    break;
-  case SUBSCRIPT_NODE:
-    visit_subscript_node(emit, node->inner);
-    break;
-  case SUPER_NODE:
-    visit_super_node(emit, node->inner);
-    break;
-  case TRY_CATCH_NODE:
-    visit_try_catch_node(emit, node->inner);
-    break;
-  case UNARY_OP_NODE:
-    visit_unary_op_node(emit, node->inner);
-    break;
-  case WHILE_NODE:
-    visit_while_node(emit, node->inner);
-    break;
+    case ATTRIB_NODE:
+      visit_attrib_node(emit, node->inner);
+      break;
+    case BIN_OP_NODE:
+      visit_bin_op_node(emit, node->inner);
+      break;
+    case CLASS_DECL_NODE:
+      visit_class_decl_node(emit, node->inner);
+      break;
+    case CODE_BLOCK_NODE:
+      visit_code_block_node(emit, node->inner);
+      break;
+    case EXPR_STMT_NODE:
+      visit_expr_stmt_node(emit, node->inner);
+      break;
+    case FOR_NODE:
+      visit_for_node(emit, node->inner);
+      break;
+    case FOREACH_NODE:
+      visit_foreach_node(emit, node->inner);
+      break;
+    case FUNC_DECL_NODE:
+      visit_func_decl_node(emit, node->inner);
+      break;
+    case ID_NODE:
+      visit_id_node(emit, node->inner);
+      break;
+    case IF_NODE:
+      visit_if_node(emit, node->inner);
+      break;
+    case IMPORT_NODE:
+      visit_import_node(emit, node->inner);
+      break;
+    case INVOKE_NODE:
+      visit_invoke_node(emit, node->inner);
+      break;
+    case NUM_NODE:
+      visit_num_node(emit, node->inner);
+      break;
+    case OBJ_DECL_NODE:
+      visit_obj_decl_node(emit, node->inner);
+      break;
+    case RAISE_NODE:
+      visit_raise_node(emit, node->inner);
+      break;
+    case RETURN_NODE:
+      visit_return_node(emit, node->inner);
+      break;
+    case STRING_NODE:
+      visit_string_node(emit, node->inner);
+      break;
+    case SUBSCRIPT_NODE:
+      visit_subscript_node(emit, node->inner);
+      break;
+    case SUPER_NODE:
+      visit_super_node(emit, node->inner);
+      break;
+    case TRY_CATCH_NODE:
+      visit_try_catch_node(emit, node->inner);
+      break;
+    case UNARY_OP_NODE:
+      visit_unary_op_node(emit, node->inner);
+      break;
+    case WHILE_NODE:
+      visit_while_node(emit, node->inner);
+      break;
   }
 }
 
@@ -133,15 +137,24 @@ static void visit_attrib_node(struct emit *emit, struct attrib_node *node) {
 }
 
 static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node) {
-  visit_ast_node(emit, node->left);
-  visit_ast_node(emit, node->right);
-  add_inst(emit, bin_op_inst_new(node->type));
+  if (node->type == BIN_OP_ASSIGN) {
+    visit_ast_node(emit, node->right);
+    switch (node->left->type) {
+      case ID_NODE: {
+        struct id_node *id_node = node->left->inner;
+        add_inst(emit, store_id_inst_new(clone_str(id_node->id)));
+      } break;
+    }
+  } else {
+    visit_ast_node(emit, node->left);
+    visit_ast_node(emit, node->right);
+    add_inst(emit, bin_op_inst_new(node->type));
+  }
 }
 
 static void visit_class_decl_node(struct emit *emit,
                                   struct class_decl_node *node) {
-  if (node->extends != NULL)
-    visit_ast_node(emit, node->extends);
+  if (node->extends != NULL) visit_ast_node(emit, node->extends);
   struct code_obj *class = code_obj_new(clone_str(node->name));
   struct code_obj *swp = emit->code_obj;
   emit->code_obj = class;
@@ -196,8 +209,7 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
 
 static void visit_func_decl_node(struct emit *emit,
                                  struct func_decl_node *node) {
-  if (node->ret_type != NULL)
-    visit_ast_node(emit, node->ret_type);
+  if (node->ret_type != NULL) visit_ast_node(emit, node->ret_type);
   struct code_obj *func = code_obj_new(clone_str(node->name));
   struct code_obj *swp = emit->code_obj;
   emit->code_obj = func;
@@ -208,7 +220,29 @@ static void visit_func_decl_node(struct emit *emit,
 }
 
 static void visit_id_node(struct emit *emit, struct id_node *node) {
-  add_inst(emit, load_id_inst_new(clone_str(node->id)));
+  if (strcmp(node->id, "true") == 0) {
+    add_inst(emit, vm_inst_new(INST_LOAD_TRUE, NULL));
+  } else if (strcmp(node->id, "false") == 0) {
+    add_inst(emit, vm_inst_new(INST_LOAD_FALSE, NULL));
+  } else if (strcmp(node->id, "none") == 0) {
+    add_inst(emit, vm_inst_new(INST_LOAD_NONE, NULL));
+  } else {
+    add_inst(emit, load_id_inst_new(clone_str(node->id)));
+  }
+}
+
+static void visit_if_node(struct emit *emit, struct if_node *node) {
+  int else_ = new_label();
+  int end = new_label();
+  visit_ast_node(emit, node->predicate);
+  add_inst(emit, jump_if_false_inst_new(else_));
+  visit_ast_node(emit, node->body);
+  add_inst(emit, jump_inst_new(end));
+  place_label(emit, else_);
+  if (node->else_body != NULL) {
+    visit_ast_node(emit, node->else_body);
+  }
+  place_label(emit, end);
 }
 
 static void visit_import_node(struct emit *emit, struct import_node *node) {

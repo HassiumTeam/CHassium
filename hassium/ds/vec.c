@@ -16,44 +16,37 @@ void vec_free(struct vec *vec) {
 }
 
 void vec_free_deep(struct vec *vec) {
-  for (int i = 0; i < vec->len; i++)
-    free(vec_get(vec, i));
+  for (int i = 0; i < vec->len; i++) free(vec_get(vec, i));
   vec_free(vec);
 }
 
 void *vec_peek(struct vec *vec) {
-  if (vec->len == 0)
-    return NULL;
+  if (vec->len == 0) return NULL;
   return vec->data[vec->len - 1];
 }
 
 void *vec_pop(struct vec *vec) {
-  if (vec->len == 0)
-    return NULL;
+  if (vec->len == 0) return NULL;
   return vec->data[--vec->len];
 }
 
 void vec_push(struct vec *vec, void *val) {
-  if (vec->len >= vec->size)
-    expand(vec);
+  if (vec->len >= vec->size) expand(vec);
   vec->data[vec->len++] = val;
 }
 
 void *vec_get(struct vec *vec, int idx) { return vec->data[idx]; }
 
 void vec_set(struct vec *vec, int idx, void *val) {
-  while (idx >= vec->size)
-    expand(vec);
+  while (idx >= vec->size) expand(vec);
   vec->data[idx] = val;
-  if (idx >= vec->len)
-    vec->len = idx + 1;
+  if (idx >= vec->len) vec->len = idx + 1;
 }
 
 void *vec_remove(struct vec *vec, void *val) {
   for (int i = 0; i < vec->len; i++)
     if (vec->data[i] == val) {
-      for (int j = i + 1; j < vec->len; j++)
-        vec->data[j - 1] = vec->data[j];
+      for (int j = i + 1; j < vec->len; j++) vec->data[j - 1] = vec->data[j];
       return val;
     }
   return NULL;

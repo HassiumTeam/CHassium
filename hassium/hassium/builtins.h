@@ -5,6 +5,7 @@
 #include <ds/hashmap.h>
 #include <ds/vec.h>
 #include <object.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <util.h>
 #include <vm.h>
@@ -14,6 +15,9 @@ typedef struct obj *(*builtin_func_t)(struct obj *, struct vm *, struct vec *);
 struct hashmap *get_defaults();
 
 struct obj *obj_builtin_new(builtin_func_t, struct obj *);
+
+bool obj_is_true(struct obj *, struct vm *);
+bool obj_is_false(struct obj *, struct vm *);
 
 struct obj *obj_func_new(struct code_obj *, struct vec *);
 

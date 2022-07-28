@@ -218,82 +218,80 @@ static void unary_op_node_free(struct unary_op_node *);
 static void while_node_free(struct while_node *);
 
 void ast_node_free(struct ast_node *node) {
-  if (node == NULL)
-    return;
+  if (node == NULL) return;
   switch (node->type) {
-  case ATTRIB_NODE:
-    attrib_node_free(node->inner);
-    break;
-  case BIN_OP_NODE:
-    bin_op_node_free(node->inner);
-    break;
-  case CLASS_DECL_NODE:
-    class_decl_node_free(node->inner);
-    break;
-  case CODE_BLOCK_NODE:
-    code_block_node_free(node->inner);
-    break;
-  case EXPR_STMT_NODE:
-    expr_stmt_node_free(node->inner);
-    break;
-  case FOR_NODE:
-    for_node_free(node->inner);
-    break;
-  case FOREACH_NODE:
-    foreach_node_free(node->inner);
-    break;
-  case FUNC_DECL_NODE:
-    func_decl_node_free(node->inner);
-    break;
-  case ID_NODE:
-    id_node_free(node->inner);
-    break;
-  case IF_NODE:
-    if_node_free(node->inner);
-    break;
-  case IMPORT_NODE:
-    import_node_free(node->inner);
-    break;
-  case INVOKE_NODE:
-    invoke_node_free(node->inner);
-    break;
-  case OBJ_DECL_NODE:
-    obj_decl_node_free(node->inner);
-    break;
-  case RAISE_NODE:
-    raise_node_free(node->inner);
-    break;
-  case RETURN_NODE:
-    return_node_free(node->inner);
-    break;
-  case STRING_NODE:
-    string_node_free(node->inner);
-    break;
-  case SUBSCRIPT_NODE:
-    subscript_node_free(node->inner);
-    break;
-  case SUPER_NODE:
-    super_node_free(node->inner);
-    break;
-  case TRY_CATCH_NODE:
-    try_catch_node_free(node->inner);
-    break;
-  case UNARY_OP_NODE:
-    unary_op_node_free(node->inner);
-    break;
-  case WHILE_NODE:
-    while_node_free(node->inner);
-    break;
-  default:
-    break;
+    case ATTRIB_NODE:
+      attrib_node_free(node->inner);
+      break;
+    case BIN_OP_NODE:
+      bin_op_node_free(node->inner);
+      break;
+    case CLASS_DECL_NODE:
+      class_decl_node_free(node->inner);
+      break;
+    case CODE_BLOCK_NODE:
+      code_block_node_free(node->inner);
+      break;
+    case EXPR_STMT_NODE:
+      expr_stmt_node_free(node->inner);
+      break;
+    case FOR_NODE:
+      for_node_free(node->inner);
+      break;
+    case FOREACH_NODE:
+      foreach_node_free(node->inner);
+      break;
+    case FUNC_DECL_NODE:
+      func_decl_node_free(node->inner);
+      break;
+    case ID_NODE:
+      id_node_free(node->inner);
+      break;
+    case IF_NODE:
+      if_node_free(node->inner);
+      break;
+    case IMPORT_NODE:
+      import_node_free(node->inner);
+      break;
+    case INVOKE_NODE:
+      invoke_node_free(node->inner);
+      break;
+    case OBJ_DECL_NODE:
+      obj_decl_node_free(node->inner);
+      break;
+    case RAISE_NODE:
+      raise_node_free(node->inner);
+      break;
+    case RETURN_NODE:
+      return_node_free(node->inner);
+      break;
+    case STRING_NODE:
+      string_node_free(node->inner);
+      break;
+    case SUBSCRIPT_NODE:
+      subscript_node_free(node->inner);
+      break;
+    case SUPER_NODE:
+      super_node_free(node->inner);
+      break;
+    case TRY_CATCH_NODE:
+      try_catch_node_free(node->inner);
+      break;
+    case UNARY_OP_NODE:
+      unary_op_node_free(node->inner);
+      break;
+    case WHILE_NODE:
+      while_node_free(node->inner);
+      break;
+    default:
+      break;
   }
   free(node->inner);
   free(node);
 }
 
 static void vec_ast_node_free(struct vec *vec) {
-  for (int i = 0; i < vec->len; i++)
-    ast_node_free(vec_get(vec, i));
+  for (int i = 0; i < vec->len; i++) ast_node_free(vec_get(vec, i));
   vec_free(vec);
 }
 

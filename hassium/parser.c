@@ -49,8 +49,7 @@ struct ast_node *parser_parse(struct vec *toks) {
   parser.len = parser.toks->len;
 
   struct vec *children = vec_new();
-  while (parser.pos < parser.len)
-    vec_push(children, parse_statement(&parser));
+  while (parser.pos < parser.len) vec_push(children, parse_statement(&parser));
   return code_block_node_new(children);
 }
 
@@ -104,8 +103,7 @@ static struct ast_node *parse_class(struct parser *parser) {
   expecttokv(parser, TOK_ID, "class");
   char *id = expecttok(parser, TOK_ID)->val;
   struct ast_node *extends;
-  if (accepttokv(parser, TOK_ID, "extends"))
-    extends = parse_expr(parser);
+  if (accepttokv(parser, TOK_ID, "extends")) extends = parse_expr(parser);
   struct ast_node *body = parse_statement(parser);
 }
 
@@ -117,8 +115,7 @@ static struct ast_node *parse_for(struct parser *parser) {
   struct ast_node *condition = parse_expr(parser);
   accepttok(parser, TOK_SEMICOLON);
   struct ast_node *repeat = parse_expr_stmt(parser);
-  if (using_parens)
-    expecttok(parser, TOK_CPAREN);
+  if (using_parens) expecttok(parser, TOK_CPAREN);
   struct ast_node *body = parse_statement(parser);
   return for_node_new(initial, condition, repeat, body);
 }
@@ -143,8 +140,7 @@ static struct ast_node *parse_func(struct parser *parser) {
     accepttok(parser, TOK_COMMA);
   }
   struct ast_node *ret_type = NULL;
-  if (accepttok(parser, TOK_COLON))
-    ret_type = parse_expr(parser);
+  if (accepttok(parser, TOK_COLON)) ret_type = parse_expr(parser);
   struct ast_node *body = parse_statement(parser);
   return func_decl_node_new(name, args, ret_type, body);
 }
@@ -153,12 +149,10 @@ static struct ast_node *parse_if(struct parser *parser) {
   expecttokv(parser, TOK_ID, "if");
   bool using_parens = accepttok(parser, TOK_OPAREN);
   struct ast_node *predicate = parse_expr(parser);
-  if (using_parens)
-    expecttok(parser, TOK_CPAREN);
+  if (using_parens) expecttok(parser, TOK_CPAREN);
   struct ast_node *body = parse_statement(parser);
   struct ast_node *else_body = NULL;
-  if (accepttokv(parser, TOK_ID, "else"))
-    else_body = parse_statement(parser);
+  if (accepttokv(parser, TOK_ID, "else")) else_body = parse_statement(parser);
   return if_node_new(predicate, body, else_body);
 }
 
@@ -191,8 +185,7 @@ static struct ast_node *parse_try(struct parser *parser) {
   expecttokv(parser, TOK_ID, "catch");
   bool using_parens = accepttok(parser, TOK_OPAREN);
   char *id = clone_str(expecttok(parser, TOK_ID)->val);
-  if (using_parens)
-    expecttok(parser, TOK_CPAREN);
+  if (using_parens) expecttok(parser, TOK_CPAREN);
   struct ast_node *catch = parse_statement(parser);
   return try_catch_node_new(try, catch, id);
 }
@@ -306,8 +299,7 @@ static struct ast_node *parse_unary(struct parser *parser) {
 }
 static struct ast_node *parse_access(struct parser *parser,
                                      struct ast_node *left) {
-  if (left == NULL)
-    left = parse_obj_decl(parser);
+  if (left == NULL) left = parse_obj_decl(parser);
   if (accepttok(parser, TOK_DOT))
     return parse_access(
         parser,
@@ -372,22 +364,19 @@ static struct vec *parse_arg_list(struct parser *parser) {
 }
 
 static struct tok *curtok(struct parser *parser) {
-  if (parser->pos >= parser->len)
-    return NULL;
+  if (parser->pos >= parser->len) return NULL;
   return vec_get(parser->toks, parser->pos);
 }
 
 static int matchtok(struct parser *parser, toktype_t type) {
   struct tok *tok = curtok(parser);
-  if (tok == NULL)
-    return false;
+  if (tok == NULL) return false;
   return tok->type == type;
 }
 
 static int matchtokv(struct parser *parser, toktype_t type, char *val) {
   struct tok *tok = curtok(parser);
-  if (tok == NULL)
-    return false;
+  if (tok == NULL) return false;
   return tok->type == type && strcmp(tok->val, val) == 0;
 }
 

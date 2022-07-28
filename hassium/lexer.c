@@ -47,59 +47,59 @@ struct vec *lexer_tokenize(char *code) {
       readnum(&lexer);
     else {
       switch (cur) {
-      case '+':
-      case '-':
-      case '*':
-      case '/':
-      case '%':
-        if (next == '=') {
-          addtok(&lexer, TOK_ASSIGN, heap_str(2, cur, '='));
-          readc(&lexer);
-        } else
-          addtok(&lexer, TOK_OP, heap_str(1, cur));
-        break;
-      case '=':
-        if (next == '=') {
-          addtok(&lexer, TOK_OP, heap_str(2, cur, '='));
-          readc(&lexer);
-        } else
-          addtok(&lexer, TOK_ASSIGN, heap_str(1, cur));
-        break;
-      case '>':
-      case '<':
-        if (next == '=') {
-          addtok(&lexer, TOK_OP, heap_str(1, cur, '='));
-          readc(&lexer);
-        } else
-          addtok(&lexer, TOK_OP, heap_str(1, cur));
-        break;
-      case '.':
-        addtok(&lexer, TOK_DOT, heap_str(1, cur));
-        break;
-      case ',':
-        addtok(&lexer, TOK_COMMA, heap_str(1, cur));
-        break;
-      case ':':
-        addtok(&lexer, TOK_COLON, heap_str(1, cur));
-        break;
-      case ';':
-        addtok(&lexer, TOK_SEMICOLON, heap_str(1, cur));
-        break;
-      case '{':
-        addtok(&lexer, TOK_OBRACE, heap_str(1, cur));
-        break;
-      case '}':
-        addtok(&lexer, TOK_CBRACE, heap_str(1, cur));
-        break;
-      case '(':
-        addtok(&lexer, TOK_OPAREN, heap_str(1, cur));
-        break;
-      case ')':
-        addtok(&lexer, TOK_CPAREN, heap_str(1, cur));
-        break;
-      default:
-        printf("Unknown char '%c'!\n", cur);
-        break;
+        case '+':
+        case '-':
+        case '*':
+        case '/':
+        case '%':
+          if (next == '=') {
+            addtok(&lexer, TOK_ASSIGN, heap_str(2, cur, '='));
+            readc(&lexer);
+          } else
+            addtok(&lexer, TOK_OP, heap_str(1, cur));
+          break;
+        case '=':
+          if (next == '=') {
+            addtok(&lexer, TOK_OP, heap_str(2, cur, '='));
+            readc(&lexer);
+          } else
+            addtok(&lexer, TOK_ASSIGN, heap_str(1, cur));
+          break;
+        case '>':
+        case '<':
+          if (next == '=') {
+            addtok(&lexer, TOK_OP, heap_str(1, cur, '='));
+            readc(&lexer);
+          } else
+            addtok(&lexer, TOK_OP, heap_str(1, cur));
+          break;
+        case '.':
+          addtok(&lexer, TOK_DOT, heap_str(1, cur));
+          break;
+        case ',':
+          addtok(&lexer, TOK_COMMA, heap_str(1, cur));
+          break;
+        case ':':
+          addtok(&lexer, TOK_COLON, heap_str(1, cur));
+          break;
+        case ';':
+          addtok(&lexer, TOK_SEMICOLON, heap_str(1, cur));
+          break;
+        case '{':
+          addtok(&lexer, TOK_OBRACE, heap_str(1, cur));
+          break;
+        case '}':
+          addtok(&lexer, TOK_CBRACE, heap_str(1, cur));
+          break;
+        case '(':
+          addtok(&lexer, TOK_OPAREN, heap_str(1, cur));
+          break;
+        case ')':
+          addtok(&lexer, TOK_CPAREN, heap_str(1, cur));
+          break;
+        default:
+          printf("Unknown char '%c'!\n", cur);
+          break;
       }
       readc(&lexer);
     }
@@ -137,25 +137,21 @@ static void readstr(struct lexer *lexer, char delin) {
 }
 
 static void whitespace(struct lexer *lexer) {
-  while (peekc(lexer) != -1 && isspace((char)peekc(lexer)))
-    readc(lexer);
+  while (peekc(lexer) != -1 && isspace((char)peekc(lexer))) readc(lexer);
 }
 
 static int peekc(struct lexer *lexer) {
-  if (lexer->pos >= lexer->len)
-    return -1;
+  if (lexer->pos >= lexer->len) return -1;
   return lexer->code[lexer->pos];
 }
 
 static int peeknc(struct lexer *lexer) {
-  if (lexer->pos + 1 >= lexer->len)
-    return -1;
+  if (lexer->pos + 1 >= lexer->len) return -1;
   return lexer->code[lexer->pos + 1];
 }
 
 static int readc(struct lexer *lexer) {
-  if (lexer->pos >= lexer->len)
-    return -1;
+  if (lexer->pos >= lexer->len) return -1;
   return lexer->code[lexer->pos++];
 }
 
@@ -164,8 +160,7 @@ static void addtok(struct lexer *lexer, toktype_t type, char *val) {
 }
 
 void free_toks(struct vec *toks) {
-  for (int i = 0; i < toks->len; i++)
-    tok_free(vec_get(toks, i));
+  for (int i = 0; i < toks->len; i++) tok_free(vec_get(toks, i));
   vec_free(toks);
 }
 

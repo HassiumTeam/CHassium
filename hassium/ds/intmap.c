@@ -16,8 +16,7 @@ void intmap_free(struct intmap *intmap) {
 }
 
 void intmap_insert(struct intmap *intmap, int key, int value) {
-  while (key >= intmap->size)
-    resize(intmap);
+  while (key >= intmap->size) resize(intmap);
   intmap->values[key] = value;
 }
 

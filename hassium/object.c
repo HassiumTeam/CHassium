@@ -1,10 +1,24 @@
 #include <object.h>
 
-static long next_obj_id = 1;
+static long next_obj_id = 3;
 struct obj none_obj = {
     .id = 0,
-    .refs = 1,
+    .ref_immune = true,
     .type = OBJ_NONE,
+    .parent = NULL,
+};
+
+struct obj true_obj = {
+    .id = 1,
+    .ref_immune = true,
+    .type = OBJ_BOOL,
+    .parent = NULL,
+};
+
+struct obj false_obj = {
+    .id = 2,
+    .ref_immune = true,
+    .type = OBJ_BOOL,
     .parent = NULL,
 };
 
@@ -12,6 +26,7 @@ struct obj *obj_new(obj_ctx_type_t type, void *ctx) {
   struct obj *obj = (struct obj *)calloc(1, sizeof(struct obj));
   obj->id = next_obj_id++;
   obj->refs = 0;
+  obj->ref_immune = false;
   obj->type = type;
   obj->ctx = ctx;
   obj->parent = NULL;
@@ -32,21 +47,20 @@ void obj_free(struct obj *obj) {
   }
 
   switch (obj->type) {
-  case OBJ_WEAKREF:
-    if (obj->ctx != &none_obj) {
-      struct obj *ref = obj->ctx;
-      vec_remove(ref->weak_refs, &obj->ctx);
-    }
-    break;
-  case OBJ_BUILTIN: {
-    struct builtin_obj_ctx *builtin = obj->ctx;
-    obj_dec_ref(builtin->self);
-    free(builtin);
-  } break;
-  default:
-    if (obj->ctx != NULL)
-      free(obj->ctx);
-    break;
+    case OBJ_WEAKREF:
+      if (obj->ctx != &none_obj) {
+        struct obj *ref = obj->ctx;
+        vec_remove(ref->weak_refs, &obj->ctx);
+      }
+      break;
+    case OBJ_BUILTIN: {
+      struct builtin_obj_ctx *builtin = obj->ctx;
+      obj_dec_ref(builtin->self);
+      free(builtin);
+    } break;
+    default:
+      if (obj->ctx != NULL) free(obj->ctx);
+      break;
   }
 
   if (obj->attribs != NULL) {
@@ -59,32 +73,45 @@ void obj_free(struct obj *obj) {
     hashmap_free(obj->attribs);
   }
 
-  if (obj->parent != NULL)
-    obj_dec_ref(obj->parent);
+  if (obj->parent != NULL) obj_dec_ref(obj->parent);
   free(obj);
 }
 
+struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
+                       struct vm *vm) {
+  struct obj *ret;
+  struct obj *func;
+  struct vec *args = vec_new();
+  vec_push(args, right);
+
+  switch (type) {
+    case BIN_OP_ADD:
+      func = obj_hashmap_get(left->attribs, "__add__");
+      break;
+  }
+
+  ret = obj_invoke(func, vm, args);
+  vec_free(args);
+  return ret;
+}
+
 struct obj *obj_inc_ref(struct obj *obj) {
-  if (obj == NULL || obj == &none_obj)
-    return obj;
+  if (obj == NULL || obj->ref_immune) return obj;
   obj->refs++;
   return obj;
 }
 
 struct obj *obj_dec_ref(struct obj *obj) {
-  if (obj == NULL || obj == &none_obj)
-    return obj;
+  if (obj == NULL || obj->ref_immune) return obj;
   obj->refs--;
-  if (obj->refs <= 0)
-    obj_free(obj);
+  if (obj->refs <= 0) obj_free(obj);
 }
 
 struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
   if (obj->type == OBJ_BUILTIN) {
     struct builtin_obj_ctx *builtin = obj->ctx;
     struct obj *self = builtin->self;
-    if (self != NULL && self->type == OBJ_WEAKREF)
-      self = self->ctx;
+    if (self != NULL && self->type == OBJ_WEAKREF) self = self->ctx;
     return builtin->func(self, vm, args);
   } else if (obj->type == OBJ_FUNC) {
     struct func_obj_ctx *func = obj->ctx;
@@ -94,7 +121,6 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
                       obj_inc_ref(vec_get(args, i)));
     vec_push(vm->frames, frame);
     struct obj *ret = vm_run(vm, func->code_obj);
-    printf("after returning, ret has %d refs\n", ret->refs);
     obj_hashmap_free(vec_pop(vm->frames));
     return ret;
   } else {

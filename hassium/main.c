@@ -6,7 +6,7 @@
 #include <vm.h>
 
 int main(int argc, char *argv[]) {
-  struct vec *toks = lexer_tokenize("func test() { return 1 } test(); ");
+  struct vec *toks = lexer_tokenize("2 + 3");
   debug_toks(toks);
   struct ast_node *ast = parser_parse(toks);
   struct code_obj *module = compile_ast(ast);

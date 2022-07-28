@@ -9,6 +9,7 @@ LINKER   = gcc
 # linking flags here
 LFLAGS   = -Wall -I. -lm
 
+OBJECTS += builtins/bool.o
 OBJECTS += builtins/builtin.o
 OBJECTS += builtins/defaults.o
 OBJECTS += builtins/func.o

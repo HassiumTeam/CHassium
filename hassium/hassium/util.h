@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 char *heap_str(int, ...);
-void *clone(void *, size_t size);
+void *clone(void *, size_t);
 char *clone_str(char *);
 
 #endif
