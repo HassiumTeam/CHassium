@@ -94,6 +94,7 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
                       obj_inc_ref(vec_get(args, i)));
     vec_push(vm->frames, frame);
     struct obj *ret = vm_run(vm, func->code_obj);
+    printf("after returning, ret has %d refs\n", ret->refs);
     obj_hashmap_free(vec_pop(vm->frames));
     return ret;
   } else {

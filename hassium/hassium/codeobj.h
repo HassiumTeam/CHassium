@@ -1,14 +1,14 @@
 #ifndef _CODE_OBJ_H_
 #define _CODE_OBJ_H_
 
-#include <ds/vec.h>
 #include <ds/intmap.h>
+#include <ds/vec.h>
 
-struct code_obj
-{
-    char *name;
-    struct vec *instructions;
-    struct intmap *labels;
+struct code_obj {
+  char *name;
+  struct vec *instructions;
+  struct intmap *labels;
+  struct vec *consts;
 };
 
 struct code_obj *code_obj_new(char *);

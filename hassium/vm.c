@@ -1,6 +1,6 @@
 #include <vm.h>
 
-static void vm_run_cleanup(struct vec *, struct vec *);
+static void vm_run_cleanup(struct vec *);
 static struct obj *handle_bin_op(struct vm *, bin_op_type_t, struct obj *,
                                  struct obj *);
 
@@ -20,7 +20,6 @@ void vm_free(struct vm *vm) {
 
 struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
   struct vec *stack = vec_new();
-  struct vec *consts = vec_new();
   struct vm_inst *inst;
 
   int pos = 0;
@@ -78,21 +77,21 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
       struct obj *constant =
           obj_num_new(((struct load_num_inst *)inst->inner)->value);
       vec_push(stack, obj_inc_ref(constant));
-      vec_push(consts, obj_inc_ref(constant));
+      vec_push(code_obj->consts, obj_inc_ref(constant));
     } break;
-    case INST_LOAD_STR:
-      vec_push(stack, obj_inc_ref(obj_string_new(
-                          ((struct load_str_inst *)inst->inner)->str)));
-      break;
+    case INST_LOAD_STR: {
+      struct obj *constant =
+          obj_string_new(((struct load_str_inst *)inst->inner)->str);
+      vec_push(stack, obj_inc_ref(constant));
+      vec_push(code_obj->consts, obj_inc_ref(constant));
+    } break;
     case INST_POP:
       obj_dec_ref(vec_pop(stack));
       break;
     case INST_RETURN: {
       struct obj *ret = vec_pop(stack);
       ret->refs--;
-      // vec_free(stack);
-      // vec_free(consts);
-      // vm_run_cleanup(stack, consts);
+      vm_run_cleanup(stack);
       return ret;
     }
     default:
@@ -102,17 +101,12 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
     pos++;
   }
 
-  vm_run_cleanup(stack, consts);
+  vm_run_cleanup(stack);
 
   return &none_obj;
 }
 
-static void vm_run_cleanup(struct vec *stack, struct vec *consts) {
-  vec_free(stack);
-  for (int i = 0; i < consts->len; i++)
-    obj_dec_ref(vec_get(consts, i));
-  vec_free(consts);
-}
+static void vm_run_cleanup(struct vec *stack) { vec_free(stack); }
 
 static void vm_inst_free(struct vm_inst *);
 void code_obj_free(struct code_obj *code_obj) {
@@ -126,6 +120,9 @@ void code_obj_free(struct code_obj *code_obj) {
   }
   vec_free(code_obj->instructions);
   intmap_free(code_obj->labels);
+  for (int i = 0; i < code_obj->consts->len; i++)
+    obj_dec_ref(vec_get(code_obj->consts, i));
+  vec_free(code_obj->consts);
   free(code_obj);
 }
 
