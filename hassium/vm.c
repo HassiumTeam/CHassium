@@ -86,9 +86,13 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
       break;
     case INST_POP:
       obj_dec_ref(vec_pop(stack));
+      break;
     case INST_RETURN: {
       struct obj *ret = vec_pop(stack);
-      vm_run_cleanup(stack, consts);
+      ret->refs--;
+      // vec_free(stack);
+      // vec_free(consts);
+      // vm_run_cleanup(stack, consts);
       return ret;
     }
     default:
