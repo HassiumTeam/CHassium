@@ -6,11 +6,10 @@
 
 #define STRBUF_EXPAND_AT 8
 
-struct strbuf
-{
-    char *buf;
-    int len;
-    int size;
+struct strbuf {
+  char *buf;
+  int len;
+  int size;
 };
 
 struct strbuf *strbuf_new();

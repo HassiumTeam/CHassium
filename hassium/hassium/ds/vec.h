@@ -4,11 +4,10 @@
 #include <stdlib.h>
 #define VEC_EXPAND_AT 8
 
-struct vec
-{
-    void **data;
-    int len;
-    int size;
+struct vec {
+  void **data;
+  int len;
+  int size;
 };
 
 struct vec *vec_new();

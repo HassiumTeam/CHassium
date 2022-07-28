@@ -5,11 +5,10 @@
 
 #define DICT_SIZE 8
 
-struct intmap
-{
-    int *values;
-    int len;
-    int size;
+struct intmap {
+  int *values;
+  int len;
+  int size;
 };
 
 struct intmap *intmap_new();
