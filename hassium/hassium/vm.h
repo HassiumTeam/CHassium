@@ -18,8 +18,10 @@ struct obj *vm_run(struct vm *, struct code_obj *);
 
 typedef enum {
   INST_BIN_OP,
+  INST_BUILD_ARRAY,
   INST_BUILD_CLASS,
   INST_BUILD_FUNC,
+  INST_BUILD_OBJ,
   INST_IMPORT,
   INST_INVOKE,
   INST_ITER,
@@ -56,6 +58,10 @@ struct bin_op_inst {
   bin_op_type_t type;
 };
 
+struct build_array_inst {
+  int count;
+};
+
 struct build_class_inst {
   struct code_obj *code_obj;
   bool extends;
@@ -65,6 +71,10 @@ struct build_func_inst {
   struct code_obj *code_obj;
   struct vec *params;
   bool with_return_type;
+};
+
+struct build_obj_inst {
+  struct vec *keys;
 };
 
 struct invoke_inst {

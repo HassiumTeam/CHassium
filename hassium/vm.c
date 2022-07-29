@@ -36,12 +36,26 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
         obj_dec_ref(left);
         obj_dec_ref(right);
       } break;
+      case INST_BUILD_ARRAY: {
+        struct vec *items = vec_new();
+        for (int i = ((struct build_array_inst *)inst->inner)->count - 1;
+             i >= 0; i--)
+          vec_set(items, i, vec_pop(stack));
+        vec_push(stack, obj_inc_ref(obj_array_new(items)));
+      } break;
       case INST_BUILD_FUNC: {
         struct build_func_inst *build_func = inst->inner;
         struct hashmap *frame = vec_peek(vm->frames);
         obj_hashmap_set(frame, build_func->code_obj->name,
                         obj_inc_ref(obj_func_new(build_func->code_obj,
                                                  build_func->params)));
+      } break;
+      case INST_BUILD_OBJ: {
+        struct obj *new = obj_new(OBJ_ANON, NULL);
+        struct vec *keys = ((struct build_obj_inst *)inst->inner)->keys;
+        for (int i = keys->len - 1; i >= 0; i--)
+          obj_setattr(new, vec_get(keys, i), obj_down_ref(vec_pop(stack)));
+        vec_push(stack, obj_inc_ref(new));
       } break;
       case INST_INVOKE: {
         int arg_count = ((struct invoke_inst *)inst->inner)->arg_count;
@@ -88,7 +102,8 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
         for (int i = vm->frames->len - 1; i >= 0; i--) {
           struct hashmap *frame = vec_get(vm->frames, i);
           if ((obj = obj_hashmap_get(
-                   frame, ((struct load_id_inst *)inst->inner)->id)) != NULL) {
+                   frame, ((struct load_id_inst *)inst->inner)->id)) !=
+              &none_obj) {
             vec_push(stack, obj_inc_ref(obj));
             found = true;
             break;
@@ -102,6 +117,13 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
       case INST_LOAD_NONE:
         vec_push(stack, &none_obj);
         break;
+      case INST_LOAD_SUBSCRIPT: {
+        struct obj *target = vec_pop(stack);
+        struct obj *key = vec_pop(stack);
+        vec_push(stack, obj_inc_ref(obj_subscript(target, key, vm)));
+        obj_dec_ref(key);
+        obj_dec_ref(target);
+      } break;
       case INST_LOAD_TRUE:
         vec_push(stack, &true_obj);
         break;
@@ -114,14 +136,22 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
         vm_run_cleanup(stack);
         return ret;
       } break;
+      case INST_STORE_ATTRIB: {
+        struct obj *target = vec_pop(stack);
+        struct obj *val = vec_pop(stack);
+        obj_setattr(target, ((struct store_attrib_inst *)inst->inner)->attrib,
+                    val);
+        obj_dec_ref(target);
+        vec_push(stack, val);
+      };
       case INST_STORE_ID: {
         struct store_id_inst *store_id = inst->inner;
         struct hashmap *frame = vec_peek(vm->frames);
-        struct obj *existing;
-        if ((existing = obj_hashmap_get(frame, store_id->id)) != NULL) {
-          obj_dec_ref(existing);
-        }
-        obj_hashmap_set(frame, store_id->id, vec_pop(stack));
+        struct obj *val;
+        obj_dec_ref(obj_hashmap_get(frame, store_id->id));
+        val = vec_pop(stack);
+        obj_hashmap_set(frame, store_id->id, obj_inc_ref(val));
+        vec_push(stack, val);
       } break;
       default:
         break;
@@ -165,6 +195,9 @@ static void vm_inst_free(struct vm_inst *inst) {
       code_obj_free(build_func->code_obj);
       vec_free_deep(build_func->params);
     } break;
+    case INST_BUILD_OBJ:
+      vec_free_deep(((struct build_obj_inst *)inst->inner)->keys);
+      break;
     case INST_LOAD_ATTRIB:
       free(((struct load_attrib_inst *)inst->inner)->attrib);
       break;

@@ -7,8 +7,7 @@ bool obj_is_true(struct obj *obj, struct vm *vm) {
     float val = obj_num_val(obj);
     return val != 0;
   }
-  printf("Not implemented!\n");
-  exit(-1);
+  return obj->type != OBJ_NONE;
 }
 
 bool obj_is_false(struct obj *obj, struct vm *vm) {
@@ -18,6 +17,10 @@ bool obj_is_false(struct obj *obj, struct vm *vm) {
     float val = obj_num_val(obj);
     return val == 0;
   }
-  printf("Not implemented!\n");
-  exit(-1);
+  return obj->type == OBJ_NONE;
+}
+
+struct obj *bool_to_obj(bool b) {
+  if (b) return &true_obj;
+  return &false_obj;
 }

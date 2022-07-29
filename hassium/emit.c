@@ -5,6 +5,7 @@ struct emit {
 };
 
 static void visit_ast_node(struct emit *, struct ast_node *);
+static void visit_array_decl_node(struct emit *, struct array_decl_node *);
 static void visit_attrib_node(struct emit *, struct attrib_node *);
 static void visit_bin_op_node(struct emit *, struct bin_op_node *);
 static void visit_class_decl_node(struct emit *, struct class_decl_node *);
@@ -30,9 +31,11 @@ static void visit_while_node(struct emit *, struct while_node *);
 
 static struct vm_inst *vm_inst_new(vm_inst_t, void *);
 static struct vm_inst *bin_op_inst_new(bin_op_type_t);
+static struct vm_inst *build_array_inst_new(int);
 static struct vm_inst *build_class_inst_new(struct code_obj *, bool);
 static struct vm_inst *build_func_inst_new(struct code_obj *, struct vec *,
                                            bool);
+static struct vm_inst *build_obj_inst_new(struct vec *);
 static struct vm_inst *invoke_inst_new(int);
 static struct vm_inst *jump_inst_new(int);
 static struct vm_inst *jump_if_false_inst_new(int);
@@ -61,6 +64,9 @@ struct code_obj *compile_ast(struct ast_node *ast) {
 
 static void visit_ast_node(struct emit *emit, struct ast_node *node) {
   switch (node->type) {
+    case ARRAY_DECL_NODE:
+      visit_array_decl_node(emit, node->inner);
+      break;
     case ATTRIB_NODE:
       visit_attrib_node(emit, node->inner);
       break;
@@ -130,6 +136,14 @@ static void visit_ast_node(struct emit *emit, struct ast_node *node) {
   }
 }
 
+static void visit_array_decl_node(struct emit *emit,
+                                  struct array_decl_node *node) {
+  for (int i = 0; i < node->values->len; i++) {
+    visit_ast_node(emit, vec_get(node->values, i));
+  }
+  add_inst(emit, build_array_inst_new(node->values->len));
+}
+
 static void visit_attrib_node(struct emit *emit, struct attrib_node *node) {
   visit_ast_node(emit, node->target);
   add_inst(emit, load_attrib_inst_new(clone_str(node->attrib)));
@@ -139,6 +153,11 @@ static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node) {
   if (node->type == BIN_OP_ASSIGN) {
     visit_ast_node(emit, node->right);
     switch (node->left->type) {
+      case ATTRIB_NODE: {
+        struct attrib_node *attrib_node = node->left->inner;
+        visit_ast_node(emit, attrib_node->target);
+        add_inst(emit, store_attrib_inst_new(clone_str(attrib_node->attrib)));
+      } break;
       case ID_NODE: {
         struct id_node *id_node = node->left->inner;
         add_inst(emit, store_id_inst_new(clone_str(id_node->id)));
@@ -273,6 +292,10 @@ static void visit_num_node(struct emit *emit, struct num_node *node) {
 }
 
 static void visit_obj_decl_node(struct emit *emit, struct obj_decl_node *node) {
+  for (int i = 0; i < node->values->len; i++) {
+    visit_ast_node(emit, vec_get(node->values, i));
+  }
+  add_inst(emit, build_obj_inst_new(node->keys));
 }
 
 static void visit_raise_node(struct emit *emit, struct raise_node *node) {
@@ -304,8 +327,8 @@ static void visit_string_node(struct emit *emit, struct string_node *node) {
 
 static void visit_subscript_node(struct emit *emit,
                                  struct subscript_node *node) {
-  visit_ast_node(emit, node->target);
   visit_ast_node(emit, node->key);
+  visit_ast_node(emit, node->target);
   add_inst(emit, vm_inst_new(INST_LOAD_SUBSCRIPT, NULL));
 }
 
@@ -367,6 +390,13 @@ static struct vm_inst *bin_op_inst_new(bin_op_type_t type) {
   return vm_inst_new(INST_BIN_OP, inner);
 }
 
+static struct vm_inst *build_array_inst_new(int count) {
+  struct build_array_inst *inner =
+      (struct build_array_inst *)malloc(sizeof(struct build_array_inst));
+  inner->count = count;
+  return vm_inst_new(INST_BUILD_ARRAY, inner);
+}
+
 static struct vm_inst *build_class_inst_new(struct code_obj *code_obj,
                                             bool extends) {
   struct build_class_inst *inner =
@@ -385,6 +415,13 @@ static struct vm_inst *build_func_inst_new(struct code_obj *code_obj,
   inner->params = params;
   inner->with_return_type = with_return_type;
   return vm_inst_new(INST_BUILD_FUNC, inner);
+}
+
+static struct vm_inst *build_obj_inst_new(struct vec *keys) {
+  struct build_obj_inst *inner =
+      (struct build_obj_inst *)malloc(sizeof(struct build_obj_inst));
+  inner->keys = keys;
+  return vm_inst_new(INST_BUILD_OBJ, inner);
 }
 
 static struct vm_inst *invoke_inst_new(int arg_count) {

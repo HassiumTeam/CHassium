@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 typedef enum {
+  ARRAY_DECL_NODE,
   ATTRIB_NODE,
   BIN_OP_NODE,
   BREAK_NODE,
@@ -57,6 +58,9 @@ struct ast_node {
   void *inner;
 };
 
+struct array_decl_node {
+  struct vec *values;
+};
 struct attrib_node {
   struct ast_node *target;
   char *attrib;
@@ -168,6 +172,7 @@ struct while_node {
 };
 
 struct ast_node *ast_node_new(ast_type_t, void *);
+struct ast_node *array_decl_node_new(struct vec *);
 struct ast_node *attrib_node_new(struct ast_node *, char *);
 struct ast_node *bin_op_node_new(bin_op_type_t, struct ast_node *,
                                  struct ast_node *);

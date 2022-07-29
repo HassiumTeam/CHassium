@@ -30,7 +30,8 @@ static struct ast_node *parse_add(struct parser *);
 static struct ast_node *parse_mult(struct parser *);
 static struct ast_node *parse_unary(struct parser *);
 static struct ast_node *parse_access(struct parser *, struct ast_node *);
-static struct ast_node *parse_obj_decl(struct parser *parser);
+static struct ast_node *parse_array_decl(struct parser *);
+static struct ast_node *parse_obj_decl(struct parser *);
 static struct ast_node *parse_term(struct parser *);
 static struct vec *parse_arg_list(struct parser *);
 
@@ -299,7 +300,7 @@ static struct ast_node *parse_unary(struct parser *parser) {
 }
 static struct ast_node *parse_access(struct parser *parser,
                                      struct ast_node *left) {
-  if (left == NULL) left = parse_obj_decl(parser);
+  if (left == NULL) left = parse_array_decl(parser);
   if (accepttok(parser, TOK_DOT))
     return parse_access(
         parser,
@@ -315,28 +316,49 @@ static struct ast_node *parse_access(struct parser *parser,
   return left;
 }
 
+static struct ast_node *parse_array_decl(struct parser *parser) {
+  if (accepttok(parser, TOK_OSQUARE)) {
+    struct vec *values = vec_new();
+    while (!accepttok(parser, TOK_CSQUARE)) {
+      vec_push(values, parse_expr(parser));
+      accepttok(parser, TOK_COMMA);
+    }
+    return array_decl_node_new(values);
+  } else {
+    return parse_obj_decl(parser);
+  }
+}
+
 static struct ast_node *parse_obj_decl(struct parser *parser) {
   if (accepttok(parser, TOK_OBRACE)) {
     struct vec *keys = vec_new();
     struct vec *values = vec_new();
     while (!accepttok(parser, TOK_CBRACE)) {
       char *key;
-      if (matchtok(parser, TOK_ID))
+      bool id = false;
+      if (matchtok(parser, TOK_ID)) {
         key = clone_str(expecttok(parser, TOK_ID)->val);
-      else if (matchtok(parser, TOK_STRING))
+        id = true;
+      } else if (matchtok(parser, TOK_STRING)) {
         key = clone_str(expecttok(parser, TOK_STRING)->val);
-      else
+      } else {
+        // throw an error
         expecttok(parser, TOK_ID);
-      expecttok(parser, TOK_COLON);
+      }
       vec_push(keys, key);
-      vec_push(values, parse_expr(parser));
+
+      if (id && !accepttok(parser, TOK_COLON)) {
+        vec_push(values, id_node_new(clone_str(key)));
+      } else {
+        vec_push(values, parse_expr(parser));
+      }
       accepttok(parser, TOK_COMMA);
     }
 
     return obj_decl_node_new(keys, values);
+  } else {
+    return parse_term(parser);
   }
-
-  return parse_term(parser);
 }
 
 static struct ast_node *parse_term(struct parser *parser) {

@@ -85,6 +85,12 @@ struct vec *lexer_tokenize(char *code) {
         case ';':
           addtok(&lexer, TOK_SEMICOLON, heap_str(1, cur));
           break;
+        case '[':
+          addtok(&lexer, TOK_OSQUARE, heap_str(1, cur));
+          break;
+        case ']':
+          addtok(&lexer, TOK_CSQUARE, heap_str(1, cur));
+          break;
         case '{':
           addtok(&lexer, TOK_OBRACE, heap_str(1, cur));
           break;

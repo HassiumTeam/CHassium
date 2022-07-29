@@ -7,6 +7,13 @@ struct ast_node *ast_node_new(ast_type_t type, void *inner) {
   return node;
 }
 
+struct ast_node *array_decl_node_new(struct vec *values) {
+  struct array_decl_node *inner =
+      (struct array_decl_node *)calloc(1, sizeof(struct array_decl_node));
+  inner->values = values;
+  return ast_node_new(ARRAY_DECL_NODE, inner);
+}
+
 struct ast_node *attrib_node_new(struct ast_node *target, char *attrib) {
   struct attrib_node *inner =
       (struct attrib_node *)calloc(1, sizeof(struct attrib_node));
@@ -195,6 +202,7 @@ struct ast_node *while_node_new(struct ast_node *condition,
 }
 
 static void vec_ast_node_free(struct vec *);
+static void array_decl_node_free(struct array_decl_node *);
 static void attrib_node_free(struct attrib_node *);
 static void bin_op_node_free(struct bin_op_node *);
 static void class_decl_node_free(struct class_decl_node *);
@@ -220,6 +228,9 @@ static void while_node_free(struct while_node *);
 void ast_node_free(struct ast_node *node) {
   if (node == NULL) return;
   switch (node->type) {
+    case ARRAY_DECL_NODE:
+      array_decl_node_free(node->inner);
+      break;
     case ATTRIB_NODE:
       attrib_node_free(node->inner);
       break;
@@ -295,6 +306,10 @@ static void vec_ast_node_free(struct vec *vec) {
   vec_free(vec);
 }
 
+static void array_decl_node_free(struct array_decl_node *node) {
+  vec_ast_node_free(node->values);
+}
+
 static void attrib_node_free(struct attrib_node *node) {
   free(node->attrib);
   ast_node_free(node->target);
@@ -356,7 +371,6 @@ static void invoke_node_free(struct invoke_node *node) {
 }
 
 static void obj_decl_node_free(struct obj_decl_node *node) {
-  vec_free_deep(node->keys);
   vec_ast_node_free(node->values);
 }
 

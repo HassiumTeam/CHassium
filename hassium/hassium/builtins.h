@@ -14,10 +14,14 @@ typedef struct obj *(*builtin_func_t)(struct obj *, struct vm *, struct vec *);
 
 struct hashmap *get_defaults();
 
+struct obj *obj_array_new(struct vec *);
+int obj_array_len(struct obj *);
+
 struct obj *obj_builtin_new(builtin_func_t, struct obj *);
 
 bool obj_is_true(struct obj *, struct vm *);
 bool obj_is_false(struct obj *, struct vm *);
+struct obj *bool_to_obj(bool);
 
 struct obj *obj_func_new(struct code_obj *, struct vec *);
 

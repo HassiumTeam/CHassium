@@ -47,17 +47,22 @@ void obj_free(struct obj *obj) {
   }
 
   switch (obj->type) {
+    case OBJ_ARRAY: {
+      struct vec *items = obj->ctx;
+      for (int i = 0; i < items->len; i++) obj_dec_ref(vec_get(items, i));
+      vec_free(items);
+    } break;
+    case OBJ_BUILTIN: {
+      struct builtin_obj_ctx *builtin = obj->ctx;
+      obj_dec_ref(builtin->self);
+      free(builtin);
+    } break;
     case OBJ_WEAKREF:
       if (obj->ctx != &none_obj) {
         struct obj *ref = obj->ctx;
         vec_remove(ref->weak_refs, &obj->ctx);
       }
       break;
-    case OBJ_BUILTIN: {
-      struct builtin_obj_ctx *builtin = obj->ctx;
-      obj_dec_ref(builtin->self);
-      free(builtin);
-    } break;
     default:
       if (obj->ctx != NULL) free(obj->ctx);
       break;
@@ -82,6 +87,9 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
     case BIN_OP_ADD:
       func = obj_hashmap_get(left->attribs, "__add__");
       break;
+    case BIN_OP_AND:
+      vec_free(args);
+      return bool_to_obj(obj_is_true(left, vm) && obj_is_true(right, vm));
     case BIN_OP_DIV:
       func = obj_hashmap_get(left->attribs, "__div__");
       break;
@@ -93,6 +101,10 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
       break;
     case BIN_OP_MUL:
       func = obj_hashmap_get(left->attribs, "__mul__");
+      break;
+    case BIN_OP_OR:
+      vec_free(args);
+      return bool_to_obj(obj_is_true(left, vm) || obj_is_true(right, vm));
       break;
     case BIN_OP_SUB:
       func = obj_hashmap_get(left->attribs, "__sub__");
@@ -114,6 +126,13 @@ struct obj *obj_dec_ref(struct obj *obj) {
   if (obj == NULL || obj->ref_immune) return obj;
   obj->refs--;
   if (obj->refs <= 0) obj_free(obj);
+  return obj;
+}
+
+struct obj *obj_down_ref(struct obj *obj) {
+  if (obj == NULL || obj->ref_immune) return obj;
+  obj->refs--;
+  return obj;
 }
 
 struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
@@ -139,15 +158,29 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
 }
 
 void obj_setattr(struct obj *obj, char *name, struct obj *val) {
+  obj_dec_ref(obj_hashmap_get(obj->attribs, name));
   obj_hashmap_set(obj->attribs, name, obj_inc_ref(val));
+}
+
+struct obj *obj_subscript(struct obj *target, struct obj *key, struct vm *vm) {
+  switch (target->type) {
+    case OBJ_ARRAY:
+      if (key->type != OBJ_NUM) {
+        printf("Array must be indexed by a number!");
+        exit(-1);
+      }
+      return vec_get(target->ctx, (int)obj_num_val(key));
+    default:
+      if (key->type != OBJ_STRING) {
+        printf("Object must be accessed by a string!");
+        exit(-1);
+      }
+      return obj_hashmap_get(target->attribs, obj_string_val(key));
+  }
 }
 
 struct obj *obj_to_string(struct obj *obj, struct vm *vm) {
   struct obj *toString = obj_hashmap_get(obj->attribs, "toString");
-  if (toString == NULL) {
-    printf("Object does not have toString()!");
-    exit(-1);
-  }
   struct vec *args = vec_new();
   struct obj *ret = obj_invoke(toString, vm, args);
   vec_free(args);
@@ -163,7 +196,7 @@ struct obj *obj_hashmap_get(struct hashmap *map, char *key) {
   if (hashmap_get(map, key, strlen(key), (uintptr_t *)&obj)) {
     return obj;
   }
-  return NULL;
+  return &none_obj;
 }
 
 void obj_hashmap_set(struct hashmap *map, char *key, struct obj *val) {
