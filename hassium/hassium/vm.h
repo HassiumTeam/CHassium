@@ -31,8 +31,7 @@ typedef enum {
   INST_LOAD_FALSE,
   INST_LOAD_ID,
   INST_LOAD_NONE,
-  INST_LOAD_NUM,
-  INST_LOAD_STR,
+  INST_LOAD_CONST,
   INST_LOAD_SUBSCRIPT,
   INST_LOAD_TRUE,
   INST_POP,
@@ -84,12 +83,8 @@ struct load_id_inst {
   char *id;
 };
 
-struct load_num_inst {
-  float value;
-};
-
-struct load_str_inst {
-  char *str;
+struct load_const_inst {
+  int idx;
 };
 
 struct store_attrib_inst {

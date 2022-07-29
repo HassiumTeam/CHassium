@@ -45,7 +45,7 @@ typedef enum {
   BIN_OP_MOD,
   BIN_OP_MUL,
   BIN_OP_OR,
-  BIN_OP_SUBTRACT,
+  BIN_OP_SUB,
 } bin_op_type_t;
 
 typedef enum {

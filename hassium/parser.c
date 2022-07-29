@@ -216,7 +216,7 @@ static struct ast_node *parse_assign(struct parser *parser) {
     if (strcmp(op, "+=") == 0)
       op_type = BIN_OP_ADD;
     else if (strcmp(op, "-=") == 0)
-      op_type = BIN_OP_SUBTRACT;
+      op_type = BIN_OP_SUB;
     else if (strcmp(op, "*=") == 0)
       op_type = BIN_OP_MUL;
     else if (strcmp(op, "/=") == 0)
@@ -277,7 +277,7 @@ static struct ast_node *parse_add(struct parser *parser) {
   if (accepttokv(parser, TOK_OP, "+"))
     return bin_op_node_new(BIN_OP_ADD, left, parse_add(parser));
   else if (accepttokv(parser, TOK_OP, "-"))
-    return bin_op_node_new(BIN_OP_SUBTRACT, left, parse_add(parser));
+    return bin_op_node_new(BIN_OP_SUB, left, parse_add(parser));
   return left;
 }
 

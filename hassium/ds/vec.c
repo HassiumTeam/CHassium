@@ -3,8 +3,12 @@
 static void expand(struct vec *);
 
 struct vec *vec_new() {
-  struct vec *vec = (struct vec *)calloc(1, sizeof(struct vec));
-  vec->data = calloc(VEC_EXPAND_AT, sizeof(void *));
+  struct vec *vec = (struct vec *)malloc(sizeof(struct vec));
+  return vec_init(vec);
+}
+
+struct vec *vec_init(struct vec *vec) {
+  vec->data = malloc(VEC_EXPAND_AT * sizeof(void *));
   vec->len = 0;
   vec->size = VEC_EXPAND_AT;
   return vec;

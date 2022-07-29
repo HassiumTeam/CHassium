@@ -39,8 +39,7 @@ static struct vm_inst *jump_if_false_inst_new(int);
 static struct vm_inst *jump_if_full_inst_new(int);
 static struct vm_inst *load_attrib_inst_new(char *);
 static struct vm_inst *load_id_inst_new(char *);
-static struct vm_inst *load_num_inst_new(float);
-static struct vm_inst *load_str_inst_new(char *);
+static struct vm_inst *load_const_inst_new(int);
 static struct vm_inst *store_attrib_inst_new(char *);
 static struct vm_inst *store_id_inst_new(char *);
 static struct vm_inst *super_inst_new(int);
@@ -258,7 +257,19 @@ static void visit_invoke_node(struct emit *emit, struct invoke_node *node) {
 }
 
 static void visit_num_node(struct emit *emit, struct num_node *node) {
-  add_inst(emit, load_num_inst_new(node->value));
+  int idx = -1;
+  for (int i = 0; i < emit->code_obj->consts->len; i++) {
+    struct obj *const_ = vec_get(emit->code_obj->consts, i);
+    if (const_->type == OBJ_NUM && obj_num_val(const_) == node->value) {
+      idx = i;
+      break;
+    }
+  }
+  if (idx == -1) {
+    vec_push(emit->code_obj->consts, obj_inc_ref(obj_num_new(node->value)));
+    idx = emit->code_obj->consts->len - 1;
+  }
+  add_inst(emit, load_const_inst_new(idx));
 }
 
 static void visit_obj_decl_node(struct emit *emit, struct obj_decl_node *node) {
@@ -275,7 +286,20 @@ static void visit_return_node(struct emit *emit, struct return_node *node) {
 }
 
 static void visit_string_node(struct emit *emit, struct string_node *node) {
-  add_inst(emit, load_str_inst_new(clone_str(node->value)));
+  int idx = -1;
+  for (int i = 0; i < emit->code_obj->consts->len; i++) {
+    struct obj *const_ = vec_get(emit->code_obj->consts, i);
+    if (const_->type == OBJ_STRING &&
+        strcmp(obj_string_val(const_), node->value) == 0) {
+      idx = i;
+      break;
+    }
+  }
+  if (idx == -1) {
+    vec_push(emit->code_obj->consts, obj_inc_ref(obj_string_new(node->value)));
+    idx = emit->code_obj->consts->len - 1;
+  }
+  add_inst(emit, load_const_inst_new(idx));
 }
 
 static void visit_subscript_node(struct emit *emit,
@@ -405,18 +429,11 @@ static struct vm_inst *load_id_inst_new(char *id) {
   return vm_inst_new(INST_LOAD_ID, inner);
 }
 
-static struct vm_inst *load_num_inst_new(float value) {
-  struct load_num_inst *inner =
-      (struct load_num_inst *)calloc(1, sizeof(struct load_num_inst));
-  inner->value = value;
-  return vm_inst_new(INST_LOAD_NUM, inner);
-}
-
-static struct vm_inst *load_str_inst_new(char *str) {
-  struct load_str_inst *inner =
-      (struct load_str_inst *)calloc(1, sizeof(struct load_str_inst));
-  inner->str = str;
-  return vm_inst_new(INST_LOAD_STR, inner);
+static struct vm_inst *load_const_inst_new(int idx) {
+  struct load_const_inst *inner =
+      (struct load_const_inst *)calloc(1, sizeof(struct load_const_inst));
+  inner->idx = idx;
+  return vm_inst_new(INST_LOAD_CONST, inner);
 }
 
 static struct vm_inst *store_attrib_inst_new(char *attrib) {

@@ -2,9 +2,11 @@
 #define _EMIT_H_
 
 #include <ast.h>
+#include <builtins.h>
 #include <codeobj.h>
 #include <ds/intmap.h>
 #include <ds/vec.h>
+#include <object.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <util.h>

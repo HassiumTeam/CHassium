@@ -23,7 +23,7 @@ struct obj false_obj = {
 };
 
 struct obj *obj_new(obj_ctx_type_t type, void *ctx) {
-  struct obj *obj = (struct obj *)calloc(1, sizeof(struct obj));
+  struct obj *obj = (struct obj *)malloc(sizeof(struct obj));
   obj->id = next_obj_id++;
   obj->refs = 0;
   obj->ref_immune = false;
@@ -36,7 +36,7 @@ struct obj *obj_new(obj_ctx_type_t type, void *ctx) {
 }
 
 void obj_free(struct obj *obj) {
-  printf("freeing %d\n", obj->type);
+  // printf("freeing %d\n", obj->type);
   if (obj->weak_refs != NULL) {
     struct obj **ref;
     for (int i = 0; i < obj->weak_refs->len; i++) {
@@ -88,6 +88,21 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
     case BIN_OP_ADD:
       func = obj_hashmap_get(left->attribs, "__add__");
       break;
+    case BIN_OP_DIV:
+      func = obj_hashmap_get(left->attribs, "__div__");
+      break;
+    case BIN_OP_EQ:
+      func = obj_hashmap_get(left->attribs, "__eq__");
+      break;
+    case BIN_OP_GREATER:
+      func = obj_hashmap_get(left->attribs, "__greater__");
+      break;
+    case BIN_OP_MUL:
+      func = obj_hashmap_get(left->attribs, "__mul__");
+      break;
+    case BIN_OP_SUB:
+      func = obj_hashmap_get(left->attribs, "__sub__");
+      break;
   }
 
   ret = obj_invoke(func, vm, args);
@@ -124,7 +139,8 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
     obj_hashmap_free(vec_pop(vm->frames));
     return ret;
   } else {
-    printf("object was not invokable!\n");
+    printf("object %d was not invokable!\n", obj->type);
+    exit(-1);
   }
 }
 
