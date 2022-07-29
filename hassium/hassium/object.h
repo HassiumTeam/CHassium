@@ -36,11 +36,6 @@ struct obj {
   struct vec *weak_refs;
 };
 
-struct obj_hashmap_entry {
-  char *name;
-  struct obj *obj;
-};
-
 struct builtin_obj_ctx {
   builtin_func_t func;
   struct obj *self;

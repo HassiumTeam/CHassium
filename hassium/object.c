@@ -64,13 +64,7 @@ void obj_free(struct obj *obj) {
   }
 
   if (obj->attribs != NULL) {
-    size_t iter = 0;
-    void *item;
-    while (hashmap_iter(obj->attribs, &iter, &item)) {
-      struct obj_hashmap_entry *entry = item;
-      obj_dec_ref(entry->obj);
-    }
-    hashmap_free(obj->attribs);
+    obj_hashmap_free(obj->attribs);
   }
 
   if (obj->parent != NULL) obj_dec_ref(obj->parent);
@@ -160,46 +154,28 @@ struct obj *obj_to_string(struct obj *obj, struct vm *vm) {
   return obj_inc_ref(ret);
 }
 
-static int compare(const void *a, const void *b, void *data) {
-  const struct obj_hashmap_entry *ea = a;
-  const struct obj_hashmap_entry *eb = b;
-  return strcmp(ea->name, ea->name);
-}
-
-static bool iter(const void *item, void *udata) {
-  const struct obj_hashmap_entry *entry = item;
-  return true;
-}
-
-static uint64_t hash(const void *ptr, uint64_t seed0, uint64_t seed1) {
-  const struct obj_hashmap_entry *item = ptr;
-  return hashmap_sip(item->name, strlen(item->name), seed0, seed1);
-}
-
 struct hashmap *obj_hashmap_new() {
-  return hashmap_new(sizeof(struct obj_hashmap_entry), 0, 0, 0, hash, compare,
-                     NULL, NULL);
+  return hashmap_create();
 }
 
 struct obj *obj_hashmap_get(struct hashmap *map, char *key) {
-  struct obj_hashmap_entry *entry =
-      hashmap_get(map, &(struct obj_hashmap_entry){.name = key});
-  if (entry != NULL)
-    return entry->obj;
-  else
-    return NULL;
+  struct obj *obj;
+  if (hashmap_get(map, key, strlen(key), (uintptr_t *)&obj)) {
+    return obj;
+  }
+  return NULL;
 }
 
 void obj_hashmap_set(struct hashmap *map, char *key, struct obj *val) {
-  hashmap_set(map, &(struct obj_hashmap_entry){.name = key, .obj = val});
+  hashmap_set(map, key, strlen(key), (uintptr_t)val);
+}
+
+static void obj_hashmap_entry_free(void *key, size_t ksize, uintptr_t value,
+                                   void *usr) {
+  obj_dec_ref((struct obj *)value);
 }
 
 void obj_hashmap_free(struct hashmap *map) {
-  size_t iter = 0;
-  void *item;
-  while (hashmap_iter(map, &iter, &item)) {
-    struct obj_hashmap_entry *entry = item;
-    obj_dec_ref(entry->obj);
-  }
+  hashmap_iterate(map, obj_hashmap_entry_free, NULL);
   hashmap_free(map);
 }
