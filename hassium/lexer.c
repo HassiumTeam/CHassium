@@ -39,6 +39,8 @@ struct vec *lexer_tokenize(char *code) {
     whitespace(&lexer);
     char cur = (char)peekc(&lexer);
     int next = peeknc(&lexer);
+    if (cur == -1) break;
+
     if (cur == '"' || cur == '\'')
       readstr(&lexer, cur);
     else if (isalpha(cur) || cur == '_')
