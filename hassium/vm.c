@@ -24,7 +24,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
   int pos = 0;
   while (pos < code_obj->instructions->len) {
     inst = vec_get(code_obj->instructions, pos);
-    // printf("Inst %d\n", inst->type);
+    printf("Inst %d\n", inst->type);
 
     switch (inst->type) {
       case INST_BIN_OP: {
@@ -110,7 +110,8 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
           }
         }
         if (!found) {
-          printf("Could not load ID!\n");
+          printf("Could not load ID! %s\n",
+                 ((struct load_id_inst *)inst->inner)->id);
           exit(-1);
         }
       } break;
@@ -130,6 +131,12 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
       case INST_POP:
         obj_dec_ref(vec_pop(stack));
         break;
+      case INST_POP_FRAME:
+        obj_hashmap_free(vec_pop(vm->frames));
+        break;
+      case INST_PUSH_FRAME:
+        vec_push(vm->frames, obj_hashmap_new());
+        break;
       case INST_RETURN: {
         struct obj *ret = vec_pop(stack);
         ret->refs--;
@@ -138,20 +145,18 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
       } break;
       case INST_STORE_ATTRIB: {
         struct obj *target = vec_pop(stack);
-        struct obj *val = vec_pop(stack);
+        struct obj *val = vec_peek(stack);
         obj_setattr(target, ((struct store_attrib_inst *)inst->inner)->attrib,
                     val);
         obj_dec_ref(target);
-        vec_push(stack, val);
       };
       case INST_STORE_ID: {
         struct store_id_inst *store_id = inst->inner;
         struct hashmap *frame = vec_peek(vm->frames);
         struct obj *val;
         obj_dec_ref(obj_hashmap_get(frame, store_id->id));
-        val = vec_pop(stack);
+        val = vec_peek(stack);
         obj_hashmap_set(frame, store_id->id, obj_inc_ref(val));
-        vec_push(stack, val);
       } break;
       default:
         break;
