@@ -231,7 +231,7 @@ static struct ast_node *parse_assign(struct parser *parser) {
       op_type = BIN_OP_OR;
 
     return bin_op_node_new(
-        BIN_OP_ASSIGN, left,
+        BIN_OP_ASSIGN_SHORT, left,
         bin_op_node_new(op_type, left, parse_assign(parser)));
   }
   return left;
@@ -336,22 +336,25 @@ static struct ast_node *parse_obj_decl(struct parser *parser) {
     struct vec *values = vec_new();
     while (!accepttok(parser, TOK_CBRACE)) {
       char *key;
-      bool id = false;
+      bool str = false;
       if (matchtok(parser, TOK_ID)) {
         key = clone_str(expecttok(parser, TOK_ID)->val);
-        id = true;
       } else if (matchtok(parser, TOK_STRING)) {
         key = clone_str(expecttok(parser, TOK_STRING)->val);
+        str = true;
       } else {
         // throw an error
         expecttok(parser, TOK_ID);
       }
       vec_push(keys, key);
 
-      if (id && !accepttok(parser, TOK_COLON)) {
-        vec_push(values, id_node_new(clone_str(key)));
-      } else {
+      if (str) {
+        expecttok(parser, TOK_COLON);
         vec_push(values, parse_expr(parser));
+      } else if (accepttok(parser, TOK_COLON)) {
+        vec_push(values, parse_expr(parser));
+      } else {
+        vec_push(values, id_node_new(clone_str(key)));
       }
       accepttok(parser, TOK_COMMA);
     }

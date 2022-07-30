@@ -28,7 +28,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
   int pos = 0;
   while (pos < code_obj->instructions->len) {
     inst = vec_get(code_obj->instructions, pos);
-    printf("Inst %d\n", inst->type);
+    // printf("Inst %d\n", inst->type);
 
     switch (inst->type) {
       case INST_BIN_OP: {

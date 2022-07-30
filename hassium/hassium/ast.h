@@ -37,6 +37,7 @@ typedef enum {
   BIN_OP_ADD,
   BIN_OP_AND,
   BIN_OP_ASSIGN,
+  BIN_OP_ASSIGN_SHORT,
   BIN_OP_DIV,
   BIN_OP_EQ,
   BIN_OP_GREATER,

@@ -151,7 +151,7 @@ static void visit_attrib_node(struct emit *emit, struct attrib_node *node) {
 }
 
 static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node) {
-  if (node->type == BIN_OP_ASSIGN) {
+  if (node->type == BIN_OP_ASSIGN || node->type == BIN_OP_ASSIGN_SHORT) {
     visit_ast_node(emit, node->right);
     switch (node->left->type) {
       case ATTRIB_NODE: {

@@ -316,7 +316,10 @@ static void attrib_node_free(struct attrib_node *node) {
 }
 
 static void bin_op_node_free(struct bin_op_node *node) {
-  ast_node_free(node->left);
+  // This will be freed when visiting node->right
+  if (node->type != BIN_OP_ASSIGN_SHORT) {
+    ast_node_free(node->left);
+  }
   ast_node_free(node->right);
 }
 
