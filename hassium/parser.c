@@ -127,6 +127,7 @@ static struct ast_node *parse_foreach(struct parser *parser) {
   char *id = clone_str(expecttok(parser, TOK_ID)->val);
   expecttokv(parser, TOK_ID, "in");
   struct ast_node *target = parse_expr(parser);
+  if (using_parens) expecttok(parser, TOK_CPAREN);
   struct ast_node *body = parse_statement(parser);
   return foreach_node_new(id, target, body);
 }

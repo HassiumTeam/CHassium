@@ -41,7 +41,7 @@ struct vec *lexer_tokenize(char *code) {
     int next = peeknc(&lexer);
     if (cur == '"' || cur == '\'')
       readstr(&lexer, cur);
-    else if (isalpha(cur))
+    else if (isalpha(cur) || cur == '_')
       readid(&lexer);
     else if (isdigit(cur))
       readnum(&lexer);
