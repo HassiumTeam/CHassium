@@ -162,6 +162,19 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
         val = vec_peek(stack);
         obj_hashmap_set(frame, store_id->id, obj_inc_ref(val));
       } break;
+      case INST_UNARY_OP: {
+        struct obj *target = vec_pop(stack);
+        switch (((struct unary_op_inst *)inst->inner)->type) {
+          case UNARY_OP_NOT: {
+            vec_push(stack, bool_to_obj(!obj_is_true(target, vm)));
+            obj_dec_ref(target);
+          } break;
+          default: {
+            printf("Unknown unary op!");
+            exit(-1);
+          }
+        }
+      } break;
       default:
         break;
     }

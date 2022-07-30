@@ -68,10 +68,19 @@ struct vec *lexer_tokenize(char *code) {
         case '>':
         case '<':
           if (next == '=') {
-            addtok(&lexer, TOK_OP, heap_str(1, cur, '='));
+            addtok(&lexer, TOK_OP, heap_str(2, cur, '='));
             readc(&lexer);
-          } else
+          } else {
             addtok(&lexer, TOK_OP, heap_str(1, cur));
+          }
+          break;
+        case '!':
+          if (next == '=') {
+            addtok(&lexer, TOK_OP, heap_str(2, cur, '='));
+            readc(&lexer);
+          } else {
+            addtok(&lexer, TOK_OP, heap_str(1, cur));
+          }
           break;
         case '.':
           addtok(&lexer, TOK_DOT, heap_str(1, cur));

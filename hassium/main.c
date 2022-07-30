@@ -7,9 +7,9 @@
 
 int main(int argc, char *argv[]) {
   struct vec *toks = lexer_tokenize(
-      "a = [1, 2, 3]; b = a.__iter__(); while (b.__iterfull__() == false) "
+      "a = [1, 2, 3]; b = a.__iter__(); while (b.__iterfull__() != true) "
       "println(b.__iternext__());");
-  // debug_toks(toks);
+  debug_toks(toks);
   struct ast_node *ast = parser_parse(toks);
   struct code_obj *module = compile_ast(ast);
   ast_node_free(ast);
