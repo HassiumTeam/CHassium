@@ -58,7 +58,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
         struct obj *new = obj_new(OBJ_ANON, NULL);
         struct vec *keys = ((struct build_obj_inst *)inst->inner)->keys;
         for (int i = keys->len - 1; i >= 0; i--)
-          obj_setattr(new, vec_get(keys, i), obj_down_ref(vec_pop(stack)));
+          obj_set_attrib(new, vec_get(keys, i), obj_down_ref(vec_pop(stack)));
         vec_push(stack, obj_inc_ref(new));
       } break;
       case INST_INVOKE: {
@@ -83,6 +83,24 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
                            ((struct jump_inst *)inst->inner)->label);
         }
         obj_dec_ref(val);
+      } break;
+      case INST_ITER: {
+        struct obj *target = vec_pop(stack);
+        vec_push(stack,
+                 obj_inc_ref(obj_invoke_attrib(target, "__iter__", vm, NULL)));
+        obj_dec_ref(target);
+      } break;
+      case INST_JUMP_IF_FULL: {
+        struct obj *iter = vec_pop(stack);
+        if (obj_is_true(obj_invoke_attrib(iter, "__iterfull__", vm, NULL),
+                        vm)) {
+          pos = intmap_get(code_obj->labels,
+                           ((struct jump_inst *)inst->inner)->label);
+        } else {
+          vec_push(stack, obj_inc_ref(obj_invoke_attrib(iter, "__iternext__",
+                                                        vm, NULL)));
+        }
+        obj_dec_ref(iter);
       } break;
       case INST_LOAD_ATTRIB: {
         struct obj *target = vec_pop(stack);
@@ -150,10 +168,10 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
       case INST_STORE_ATTRIB: {
         struct obj *target = vec_pop(stack);
         struct obj *val = vec_peek(stack);
-        obj_setattr(target, ((struct store_attrib_inst *)inst->inner)->attrib,
-                    val);
+        obj_set_attrib(target,
+                       ((struct store_attrib_inst *)inst->inner)->attrib, val);
         obj_dec_ref(target);
-      };
+      }; break;
       case INST_STORE_ID: {
         struct store_id_inst *store_id = inst->inner;
         struct hashmap *frame = vec_peek(vm->frames);

@@ -4,7 +4,7 @@ static struct obj *__eq__(struct obj *, struct vm *, struct vec *);
 
 void obj_bool_init(struct obj *obj) {
   obj->attribs = obj_hashmap_new();
-  obj_setattr(obj, "__eq__", obj_builtin_new(__eq__, obj));
+  obj_set_attrib(obj, "__eq__", obj_builtin_new(__eq__, obj));
 }
 
 void obj_bool_free(struct obj *obj) {

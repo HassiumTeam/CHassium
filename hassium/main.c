@@ -6,9 +6,8 @@
 #include <vm.h>
 
 int main(int argc, char *argv[]) {
-  struct vec *toks = lexer_tokenize(
-      "a = [1, 2, 3]; b = a.__iter__(); while (b.__iterfull__() != true) "
-      "println(b.__iternext__());");
+  struct vec *toks =
+      lexer_tokenize("a = [1, 2, 3]; foreach (b in [4, 5, 6]) { println(b); }");
   debug_toks(toks);
   struct ast_node *ast = parser_parse(toks);
   struct code_obj *module = compile_ast(ast);

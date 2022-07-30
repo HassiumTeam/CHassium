@@ -13,13 +13,13 @@ struct obj *obj_num_new(float value) {
       (struct num_obj_ctx *)malloc(sizeof(struct num_obj_ctx));
   ctx->value = value;
   struct obj *num = obj_new(OBJ_NUM, ctx);
-  obj_setattr(num, "__add__", obj_builtin_new(__add__, num));
-  obj_setattr(num, "__div__", obj_builtin_new(__div__, num));
-  obj_setattr(num, "__eq__", obj_builtin_new(__eq__, num));
-  obj_setattr(num, "__greater__", obj_builtin_new(__greater__, num));
-  obj_setattr(num, "__mul__", obj_builtin_new(__mul__, num));
-  obj_setattr(num, "__sub__", obj_builtin_new(__sub__, num));
-  obj_setattr(num, "toString", obj_builtin_new(toString, num));
+  obj_set_attrib(num, "__add__", obj_builtin_new(__add__, num));
+  obj_set_attrib(num, "__div__", obj_builtin_new(__div__, num));
+  obj_set_attrib(num, "__eq__", obj_builtin_new(__eq__, num));
+  obj_set_attrib(num, "__greater__", obj_builtin_new(__greater__, num));
+  obj_set_attrib(num, "__mul__", obj_builtin_new(__mul__, num));
+  obj_set_attrib(num, "__sub__", obj_builtin_new(__sub__, num));
+  obj_set_attrib(num, "toString", obj_builtin_new(toString, num));
   return num;
 }
 

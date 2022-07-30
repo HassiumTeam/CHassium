@@ -141,11 +141,20 @@ struct obj *obj_down_ref(struct obj *obj) {
 }
 
 struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
+  bool no_args = false;
+
+  if (args == NULL) {
+    args = vec_new();
+    no_args = true;
+  }
+
+  struct obj *ret;
+
   if (obj->type == OBJ_BUILTIN) {
     struct builtin_obj_ctx *builtin = obj->ctx;
     struct obj *self = builtin->self;
     if (self != NULL && self->type == OBJ_WEAKREF) self = self->ctx;
-    return builtin->func(self, vm, args);
+    ret = builtin->func(self, vm, args);
   } else if (obj->type == OBJ_FUNC) {
     struct func_obj_ctx *func = obj->ctx;
     struct hashmap *frame = obj_hashmap_new();
@@ -153,16 +162,31 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
       obj_hashmap_set(frame, vec_get(func->params, i),
                       obj_inc_ref(vec_get(args, i)));
     vec_push(vm->frames, frame);
-    struct obj *ret = vm_run(vm, func->code_obj);
+    ret = vm_run(vm, func->code_obj);
     obj_hashmap_free(vec_pop(vm->frames));
-    return ret;
   } else {
     printf("object %d was not invokable!\n", obj->type);
     exit(-1);
   }
+
+  if (no_args) {
+    vec_free(args);
+  }
+
+  return ret;
 }
 
-void obj_setattr(struct obj *obj, char *name, struct obj *val) {
+struct obj *obj_invoke_attrib(struct obj *obj, char *attrib, struct vm *vm,
+                              struct vec *args) {
+  struct obj *func = obj_hashmap_get(obj->attribs, attrib);
+  if (func == NULL) {
+    printf("No such attrib %s\n", attrib);
+    exit(-1);
+  }
+  return obj_invoke(func, vm, args);
+}
+
+void obj_set_attrib(struct obj *obj, char *name, struct obj *val) {
   obj_dec_ref(obj_hashmap_get(obj->attribs, name));
   obj_hashmap_set(obj->attribs, name, obj_inc_ref(val));
 }

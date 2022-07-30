@@ -227,6 +227,7 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
   add_inst(emit, load_id_inst_new(clone_str(id)));
   add_inst(emit, jump_if_full_inst_new(end));  // note to decrement iter if full
   add_inst(emit, store_id_inst_new(clone_str(node->id)));
+  add_inst(emit, vm_inst_new(INST_POP, NULL));
   visit_ast_node(emit, node->body);
   add_inst(emit, jump_inst_new(body));
 

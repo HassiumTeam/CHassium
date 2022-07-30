@@ -70,7 +70,8 @@ struct obj *obj_down_ref(struct obj *);
 
 struct obj *obj_bin_op(bin_op_type_t, struct obj *, struct obj *, struct vm *);
 struct obj *obj_invoke(struct obj *, struct vm *, struct vec *);
-void obj_setattr(struct obj *, char *, struct obj *);
+struct obj *obj_invoke_attrib(struct obj *, char *, struct vm *, struct vec *);
+void obj_set_attrib(struct obj *, char *, struct obj *);
 struct obj *obj_subscript(struct obj *, struct obj *, struct vm *);
 struct obj *obj_to_string(struct obj *, struct vm *);
 

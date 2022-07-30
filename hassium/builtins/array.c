@@ -8,8 +8,8 @@ static struct obj *__iter____iterfull__(struct obj *, struct vm *,
 
 struct obj *obj_array_new(struct vec *items) {
   struct obj *arr = obj_new(OBJ_ARRAY, items);
-  obj_setattr(arr, "__iter__", obj_builtin_new(__iter__, arr));
-  obj_setattr(arr, "length", obj_num_new(items->len));
+  obj_set_attrib(arr, "__iter__", obj_builtin_new(__iter__, arr));
+  obj_set_attrib(arr, "length", obj_num_new(items->len));
   return arr;
 }
 
@@ -17,10 +17,10 @@ int obj_array_len(struct obj *array) { return ((struct vec *)array->ctx)->len; }
 
 static struct obj *__iter__(struct obj *arr, struct vm *vm, struct vec *args) {
   struct obj *iter = obj_iter_new(arr);
-  obj_setattr(iter, "__iterfull__",
-              obj_builtin_new(__iter____iterfull__, iter));
-  obj_setattr(iter, "__iternext__",
-              obj_builtin_new(__iter____iternext__, iter));
+  obj_set_attrib(iter, "__iterfull__",
+                 obj_builtin_new(__iter____iterfull__, iter));
+  obj_set_attrib(iter, "__iternext__",
+                 obj_builtin_new(__iter____iternext__, iter));
   return iter;
 }
 
