@@ -1,0 +1,29 @@
+func main () {
+    arr = [1, 2, 3];
+    obj = {
+        arr,
+        num: 5,
+        "str": "s",
+    };
+
+    foreach (i in arr) {
+        println (i);
+    }
+
+    println (obj.arr[2]);
+    obj.num += 2;
+    println(obj.num);
+
+    println (add(10, 20, obj.num));
+    println (void());
+}
+
+func add (x, y, z) {
+    return x + y + z;
+}
+
+func void () {
+    
+}
+
+main ();
