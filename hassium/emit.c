@@ -37,6 +37,7 @@ static struct vm_inst *build_func_inst_new(struct code_obj *, struct vec *,
                                            bool);
 static struct vm_inst *build_obj_inst_new(struct vec *);
 static struct vm_inst *invoke_inst_new(int);
+static struct vm_inst *iter_next_inst_new(char *);
 static struct vm_inst *jump_inst_new(int);
 static struct vm_inst *jump_if_false_inst_new(int);
 static struct vm_inst *jump_if_full_inst_new(int);
@@ -199,13 +200,15 @@ static void visit_expr_stmt_node(struct emit *emit,
 static void visit_for_node(struct emit *emit, struct for_node *node) {
   int body = new_label();
   int end = new_label();
-  visit_ast_node(emit, node->repeated);
+  visit_ast_node(emit, node->initial);
+
   place_label(emit, body);
   visit_ast_node(emit, node->condition);
   add_inst(emit, jump_if_full_inst_new(end));
   visit_ast_node(emit, node->body);
   visit_ast_node(emit, node->repeated);
   add_inst(emit, jump_inst_new(body));
+
   place_label(emit, end);
 }
 
@@ -213,15 +216,20 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
   int body = new_label();
   int end = new_label();
   char *id = tmp_symbol();
+
+  add_inst(emit, vm_inst_new(INST_PUSH_FRAME, NULL));
   visit_ast_node(emit, node->target);
   add_inst(emit, vm_inst_new(INST_ITER, NULL));
   add_inst(emit, store_id_inst_new(id));
   add_inst(emit, vm_inst_new(INST_POP, NULL));
+
   place_label(emit, body);
-  add_inst(emit, load_id_inst_new(id));
-  add_inst(emit, jump_if_full_inst_new(end));
+  add_inst(emit, load_id_inst_new(clone_str(id)));
+  add_inst(emit, jump_if_full_inst_new(end));  // note to decrement iter if full
+  add_inst(emit, store_id_inst_new(clone_str(node->id)));
   visit_ast_node(emit, node->body);
   add_inst(emit, jump_inst_new(body));
+
   place_label(emit, end);
 }
 
@@ -457,6 +465,13 @@ static struct vm_inst *load_attrib_inst_new(char *attrib) {
       (struct load_attrib_inst *)calloc(1, sizeof(struct load_attrib_inst));
   inner->attrib = attrib;
   return vm_inst_new(INST_LOAD_ATTRIB, inner);
+}
+
+static struct vm_inst *iter_next_inst_new(char *id) {
+  struct iter_next_inst *inner =
+      (struct iter_next_inst *)malloc(sizeof(struct iter_next_inst));
+  inner->id = id;
+  return vm_inst_new(INST_ITER_NEXT, inner);
 }
 
 static struct vm_inst *load_id_inst_new(char *id) {

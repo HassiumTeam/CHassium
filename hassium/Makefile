@@ -14,6 +14,7 @@ OBJECTS += builtins/bool.o
 OBJECTS += builtins/builtin.o
 OBJECTS += builtins/defaults.o
 OBJECTS += builtins/func.o
+OBJECTS += builtins/iter.o
 OBJECTS += builtins/number.o
 OBJECTS += builtins/string.o
 OBJECTS += builtins/weakref.o

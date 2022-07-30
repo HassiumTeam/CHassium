@@ -25,7 +25,7 @@ typedef enum {
   INST_IMPORT,
   INST_INVOKE,
   INST_ITER,
-  INST_ITERNEXT,
+  INST_ITER_NEXT,
   INST_JUMP,
   INST_JUMP_IF_FALSE,
   INST_JUMP_IF_FULL,
@@ -83,6 +83,10 @@ struct invoke_inst {
 
 struct jump_inst {
   int label;
+};
+
+struct iter_next_inst {
+  char *id;
 };
 
 struct load_attrib_inst {

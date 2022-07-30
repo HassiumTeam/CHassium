@@ -20,6 +20,7 @@ typedef enum {
   OBJ_BUILTIN,
   OBJ_CLASS,
   OBJ_FUNC,
+  OBJ_ITER,
   OBJ_NONE,
   OBJ_NUM,
   OBJ_STRING,
@@ -40,6 +41,11 @@ struct obj {
 struct builtin_obj_ctx {
   builtin_func_t func;
   struct obj *self;
+};
+
+struct iter_obj_ctx {
+  struct obj *target;
+  int pos;
 };
 
 struct func_obj_ctx {

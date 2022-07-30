@@ -6,6 +6,8 @@ struct vm *vm_new() {
   struct vm *vm = (struct vm *)calloc(1, sizeof(struct vm));
   vm->frames = vec_new();
   vec_push(vm->frames, get_defaults());
+  obj_bool_init(&true_obj);
+  obj_bool_init(&false_obj);
   return vm;
 }
 
@@ -13,6 +15,8 @@ void vm_free(struct vm *vm) {
   for (int i = 0; i < vm->frames->len; i++)
     obj_hashmap_free(vec_get(vm->frames, i));
   vec_free(vm->frames);
+  obj_bool_free(&true_obj);
+  obj_bool_free(&false_obj);
   free(vm);
 }
 
@@ -202,6 +206,9 @@ static void vm_inst_free(struct vm_inst *inst) {
     } break;
     case INST_BUILD_OBJ:
       vec_free_deep(((struct build_obj_inst *)inst->inner)->keys);
+      break;
+    case INST_ITER_NEXT:
+      free(((struct iter_next_inst *)inst->inner)->id);
       break;
     case INST_LOAD_ATTRIB:
       free(((struct load_attrib_inst *)inst->inner)->attrib);

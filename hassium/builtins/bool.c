@@ -1,5 +1,24 @@
 #include <builtins.h>
 
+static struct obj *__eq__(struct obj *, struct vm *, struct vec *);
+
+void obj_bool_init(struct obj *obj) {
+  obj->attribs = obj_hashmap_new();
+  obj_setattr(obj, "__eq__", obj_builtin_new(__eq__, obj));
+}
+
+void obj_bool_free(struct obj *obj) {
+  if (obj->weak_refs != NULL) {
+    struct obj **ref;
+    for (int i = 0; i < obj->weak_refs->len; i++) {
+      ref = vec_get(obj->weak_refs, i);
+      *ref = &none_obj;
+    }
+    vec_free(obj->weak_refs);
+  }
+  obj_hashmap_free(obj->attribs);
+}
+
 bool obj_is_true(struct obj *obj, struct vm *vm) {
   if (obj == &true_obj) return true;
   if (obj == &false_obj) return false;
@@ -23,4 +42,9 @@ bool obj_is_false(struct obj *obj, struct vm *vm) {
 struct obj *bool_to_obj(bool b) {
   if (b) return &true_obj;
   return &false_obj;
+}
+
+static struct obj *__eq__(struct obj *bool_, struct vm *vm, struct vec *args) {
+  return bool_to_obj(obj_is_true(bool_, vm) ==
+                     obj_is_true(vec_get(args, 0), vm));
 }

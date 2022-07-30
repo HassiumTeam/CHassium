@@ -57,6 +57,11 @@ void obj_free(struct obj *obj) {
       obj_dec_ref(builtin->self);
       free(builtin);
     } break;
+    case OBJ_ITER: {
+      struct iter_obj_ctx *iter = obj->ctx;
+      obj_dec_ref(iter->target);
+      free(iter);
+    } break;
     case OBJ_WEAKREF:
       if (obj->ctx != &none_obj) {
         struct obj *ref = obj->ctx;

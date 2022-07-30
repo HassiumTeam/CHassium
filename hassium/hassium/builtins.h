@@ -17,11 +17,16 @@ struct hashmap *get_defaults();
 struct obj *obj_array_new(struct vec *);
 int obj_array_len(struct obj *);
 
-struct obj *obj_builtin_new(builtin_func_t, struct obj *);
-
+void obj_bool_init(struct obj *);
+void obj_bool_free(struct obj *);
 bool obj_is_true(struct obj *, struct vm *);
 bool obj_is_false(struct obj *, struct vm *);
 struct obj *bool_to_obj(bool);
+
+struct obj *obj_builtin_new(builtin_func_t, struct obj *);
+
+struct obj *obj_iter_new(struct obj *);
+struct obj *obj_iter_target(struct obj *);
 
 struct obj *obj_func_new(struct code_obj *, struct vec *);
 
