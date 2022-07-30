@@ -16,6 +16,12 @@ func main () {
     println (10.5);
     println (add(10, 20, obj.num));
     println (void ());
+
+    anon = fn (x, y) {
+        return x + y + obj.num;
+    };
+
+    println (anon (40, 2));
 }
 
 func add (x, y, z) {

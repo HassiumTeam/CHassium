@@ -1,1 +1,10 @@
-println(10.5);
+c = 2;
+
+a = fn (a) {
+  println("hello, world!");
+  println(a + c);
+};
+
+a(2);
+c = 10;
+a(3);

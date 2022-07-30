@@ -7,6 +7,7 @@ void *clone(void *ptr, size_t size) {
 }
 
 char *clone_str(char *str) {
+  if (str == NULL) return NULL;
   int len = strlen(str);
   char *new = (char *)calloc(len + 1, sizeof(char));
   memcpy(new, str, len + 1);

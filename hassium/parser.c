@@ -133,8 +133,11 @@ static struct ast_node *parse_foreach(struct parser *parser) {
 }
 
 static struct ast_node *parse_func(struct parser *parser) {
-  expecttokv(parser, TOK_ID, "func");
-  char *name = clone_str(expecttok(parser, TOK_ID)->val);
+  expecttok(parser, TOK_ID);
+  char *name = NULL;
+  if (matchtok(parser, TOK_ID)) {
+    name = clone_str(expecttok(parser, TOK_ID)->val);
+  }
   expecttok(parser, TOK_OPAREN);
   struct vec *args = vec_new();
   while (!accepttok(parser, TOK_CPAREN)) {
@@ -370,6 +373,9 @@ static struct ast_node *parse_term(struct parser *parser) {
     struct ast_node *expr = parse_expr(parser);
     expecttok(parser, TOK_CPAREN);
     return expr;
+  } else if (matchtokv(parser, TOK_ID, "fn") ||
+             matchtokv(parser, TOK_ID, "func")) {
+    return parse_func(parser);
   } else if (matchtok(parser, TOK_ID)) {
     return id_node_new(clone_str(expecttok(parser, TOK_ID)->val));
   } else if (matchtok(parser, TOK_NUM)) {

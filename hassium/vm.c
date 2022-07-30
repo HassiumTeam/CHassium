@@ -50,8 +50,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
       case INST_BUILD_FUNC: {
         struct build_func_inst *build_func = inst->inner;
         struct hashmap *frame = vec_peek(vm->frames);
-        obj_hashmap_set(frame, build_func->code_obj->name,
-                        obj_inc_ref(obj_func_new(build_func->code_obj,
+        vec_push(stack, obj_inc_ref(obj_func_new(build_func->code_obj,
                                                  build_func->params)));
       } break;
       case INST_BUILD_OBJ: {
@@ -210,8 +209,6 @@ static void vm_run_cleanup(struct vec *stack) { free(stack->data); }
 static void vm_inst_free(struct vm_inst *);
 void code_obj_free(struct code_obj *code_obj) {
   for (int i = 0; i < code_obj->instructions->len; i++) {
-    // printf("freeing inst %d\n", ((struct vm_inst
-    // *)vec_get(code_obj->instructions, i))->type);
     vm_inst_free(vec_get(code_obj->instructions, i));
   }
   if (code_obj->name != NULL) {
@@ -226,6 +223,7 @@ void code_obj_free(struct code_obj *code_obj) {
 }
 
 static void vm_inst_free(struct vm_inst *inst) {
+  // printf("freeing inst %d\n", inst->type);
   switch (inst->type) {
     case INST_BUILD_CLASS:
       code_obj_free(((struct build_class_inst *)inst->inner)->code_obj);

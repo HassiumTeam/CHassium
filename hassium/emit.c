@@ -244,6 +244,10 @@ static void visit_func_decl_node(struct emit *emit,
   emit->code_obj = swp;
   add_inst(emit,
            build_func_inst_new(func, node->params, node->ret_type != NULL));
+  if (node->name != NULL) {
+    add_inst(emit, store_id_inst_new(clone_str(func->name)));
+    add_inst(emit, vm_inst_new(INST_POP, NULL));
+  }
 }
 
 static void visit_id_node(struct emit *emit, struct id_node *node) {
