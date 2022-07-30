@@ -370,11 +370,24 @@ static struct ast_node *parse_term(struct parser *parser) {
     struct ast_node *expr = parse_expr(parser);
     expecttok(parser, TOK_CPAREN);
     return expr;
-  } else if (matchtok(parser, TOK_ID))
+  } else if (matchtok(parser, TOK_ID)) {
     return id_node_new(clone_str(expecttok(parser, TOK_ID)->val));
-  else if (matchtok(parser, TOK_NUM))
-    return num_node_new(atof(expecttok(parser, TOK_NUM)->val));
-  else if (matchtok(parser, TOK_STRING))
+  } else if (matchtok(parser, TOK_NUM)) {
+    char *a = expecttok(parser, TOK_NUM)->val;
+    int alen = strlen(a);
+    bool is_float = false;
+    for (int i = 0; i < alen; i++) {
+      if (a[i] == '.') {
+        is_float = true;
+        break;
+      }
+    }
+    if (is_float) {
+      return num_node_new(is_float, 0, atof(a));
+    } else {
+      return num_node_new(is_float, atoi(a), 0);
+    }
+  } else if (matchtok(parser, TOK_STRING))
     return string_node_new(clone_str(expecttok(parser, TOK_STRING)->val));
   struct tok *tok = curtok(parser);
   printf("Unexpected %d '%s'\n", tok->type, tok->val);

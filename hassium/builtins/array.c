@@ -9,7 +9,7 @@ static struct obj *__iter____iterfull__(struct obj *, struct vm *,
 struct obj *obj_array_new(struct vec *items) {
   struct obj *arr = obj_new(OBJ_ARRAY, items);
   obj_set_attrib(arr, "__iter__", obj_builtin_new(__iter__, arr));
-  obj_set_attrib(arr, "length", obj_num_new(items->len));
+  obj_set_attrib(arr, "length", obj_num_new(false, items->len, 0));
   return arr;
 }
 

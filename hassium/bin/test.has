@@ -1,18 +1,1 @@
-func main () {
-    arr = [1, 2, 3];
-    obj = {
-        arr,
-        num: 5,
-        "str": "s",
-    };
-
-    foreach (i in arr) {
-        println (i);
-    }
-
-    println (obj.arr[2]);
-    obj.num += 2;
-    println(obj.num);
-}
-
-main ();
+println(10.5);

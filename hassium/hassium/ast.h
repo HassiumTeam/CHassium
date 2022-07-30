@@ -127,7 +127,9 @@ struct invoke_node {
 };
 
 struct num_node {
-  float value;
+  bool is_float;
+  int val_int;
+  float val_float;
 };
 
 struct obj_decl_node {
@@ -191,7 +193,7 @@ struct ast_node *if_node_new(struct ast_node *, struct ast_node *,
                              struct ast_node *);
 struct ast_node *import_node_new(struct ast_node *);
 struct ast_node *invoke_node_new(struct ast_node *, struct vec *);
-struct ast_node *num_node_new(float);
+struct ast_node *num_node_new(bool, int, float);
 struct ast_node *obj_decl_node_new(struct vec *, struct vec *);
 struct ast_node *raise_node_new(struct ast_node *);
 struct ast_node *return_node_new(struct ast_node *);

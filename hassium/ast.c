@@ -121,10 +121,12 @@ struct ast_node *invoke_node_new(struct ast_node *target, struct vec *args) {
   return ast_node_new(INVOKE_NODE, inner);
 }
 
-struct ast_node *num_node_new(float value) {
+struct ast_node *num_node_new(bool is_float, int val_int, float val_float) {
   struct num_node *inner =
       (struct num_node *)calloc(1, sizeof(struct num_node));
-  inner->value = value;
+  inner->is_float = is_float;
+  inner->val_int = val_int;
+  inner->val_float = val_float;
   return ast_node_new(NUM_NODE, inner);
 }
 

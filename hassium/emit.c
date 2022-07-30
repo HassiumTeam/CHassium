@@ -288,13 +288,16 @@ static void visit_num_node(struct emit *emit, struct num_node *node) {
   int idx = -1;
   for (int i = 0; i < emit->code_obj->consts->len; i++) {
     struct obj *const_ = vec_get(emit->code_obj->consts, i);
-    if (const_->type == OBJ_NUM && obj_num_val(const_) == node->value) {
+    if (const_->type == OBJ_NUM && obj_num_val(const_) == node->val_int &&
+        obj_num_val(const_) == node->val_float) {
       idx = i;
       break;
     }
   }
   if (idx == -1) {
-    vec_push(emit->code_obj->consts, obj_inc_ref(obj_num_new(node->value)));
+    vec_push(emit->code_obj->consts,
+             obj_inc_ref(
+                 obj_num_new(node->is_float, node->val_int, node->val_float)));
     idx = emit->code_obj->consts->len - 1;
   }
   add_inst(emit, load_const_inst_new(idx));

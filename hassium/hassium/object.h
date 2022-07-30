@@ -54,7 +54,9 @@ struct func_obj_ctx {
 };
 
 struct num_obj_ctx {
-  float value;
+  bool is_float;
+  int val_int;
+  float val_float;
 };
 
 extern struct obj none_obj;

@@ -30,8 +30,9 @@ struct obj *obj_iter_target(struct obj *);
 
 struct obj *obj_func_new(struct code_obj *, struct vec *);
 
-struct obj *obj_num_new(float);
-float obj_num_val(struct obj *);
+struct obj *obj_num_new(bool, int, float);
+bool obj_num_is_float(struct obj *);
+int obj_num_val(struct obj *);
 
 struct obj *obj_string_new(char *);
 char *obj_string_val(struct obj *);

@@ -10,12 +10,12 @@ func main () {
         println (i);
     }
 
-    println (obj.arr[2]);
+    println (obj.arr [2]);
     obj.num += 2;
-    println(obj.num);
-
+    println (obj.num);
+    println (10.5);
     println (add(10, 20, obj.num));
-    println (void());
+    println (void ());
 }
 
 func add (x, y, z) {
