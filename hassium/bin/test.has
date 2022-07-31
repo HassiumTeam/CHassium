@@ -1,7 +1,14 @@
 a = [1, 2, 4];
 
-println(a.length());
-a.push(6);
-println(a.length());
-a.pop();
-println(a.length());
+b = a.filterMap(
+    fn (n) {
+        return n > 1;
+    },
+    fn (n) {
+        return n + 1;
+    }
+);
+
+foreach (n in b) {
+    println (n);
+}
