@@ -5,6 +5,7 @@ static struct obj *__iter____iternext__(struct obj *, struct vm *,
                                         struct vec *);
 static struct obj *__iter____iterfull__(struct obj *, struct vm *,
                                         struct vec *);
+static struct obj *peek(struct obj *, struct vm *, struct vec *);
 static struct obj *pop(struct obj *, struct vm *, struct vec *);
 static struct obj *push(struct obj *, struct vm *, struct vec *);
 
@@ -13,6 +14,7 @@ struct obj *obj_array_new(struct vec *items) {
 
   obj_set_attrib(arr, "__iter__", obj_builtin_new(__iter__, arr));
   obj_set_attrib(arr, "length", obj_num_new(false, items->len, 0));
+  obj_set_attrib(arr, "peek", obj_builtin_new(peek, arr));
   obj_set_attrib(arr, "pop", obj_builtin_new(pop, arr));
   obj_set_attrib(arr, "push", obj_builtin_new(push, arr));
   return arr;
@@ -43,6 +45,11 @@ static struct obj *__iter____iternext__(struct obj *iter_, struct vm *vm,
   struct iter_obj_ctx *iter = iter_->ctx;
   struct vec *arr = iter->target->ctx;
   return vec_get(arr, iter->pos++);
+}
+
+static struct obj *peek(struct obj *arr, struct vm *vm, struct vec *args) {
+  if (obj_array_len(arr) == 0) return &none_obj;
+  return vec_peek(arr->ctx);
 }
 
 static struct obj *pop(struct obj *arr, struct vm *vm, struct vec *args) {

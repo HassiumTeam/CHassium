@@ -30,6 +30,8 @@ func main () {
     println (anon2 (10));
 
     arr.push('pushed');
+    println(arr.peek());
+    println(arr.pop());
     println(arr.pop());
 }
 
