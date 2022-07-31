@@ -1,3 +1,7 @@
-foreach (c in "hello") {
-    println(c);
-}
+a = [1, 2, 4];
+
+println(a.length());
+a.push(6);
+println(a.length());
+a.pop();
+println(a.length());
