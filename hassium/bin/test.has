@@ -1,1 +1,4 @@
-println(String == typeof(""));
+
+foreach (key in keys (123)) {
+  println (key);
+}

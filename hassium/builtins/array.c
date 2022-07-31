@@ -11,6 +11,7 @@ static struct obj *push(struct obj *, struct vm *, struct vec *);
 
 struct obj *obj_array_new(struct vec *items) {
   struct obj *arr = obj_new(OBJ_ARRAY, items, &array_type_obj);
+  for (int i = 0; i < items->len; i++) obj_inc_ref(vec_get(items, i));
 
   obj_set_attrib(arr, "__iter__", obj_builtin_new(__iter__, arr));
   obj_set_attrib(arr, "length", obj_num_new(false, items->len, 0));

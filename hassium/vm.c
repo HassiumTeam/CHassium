@@ -44,7 +44,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
         struct vec *items = vec_new();
         for (int i = ((struct build_array_inst *)inst->inner)->count - 1;
              i >= 0; i--)
-          vec_set(items, i, vec_pop(stack));
+          vec_set(items, i, obj_down_ref(vec_pop(stack)));
         vec_push(stack, obj_inc_ref(obj_array_new(items)));
       } break;
       case INST_BUILD_FUNC: {
