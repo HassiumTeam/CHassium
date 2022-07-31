@@ -9,7 +9,8 @@ static void visit_array_decl_node(struct emit *, struct array_decl_node *);
 static void visit_attrib_node(struct emit *, struct attrib_node *);
 static void visit_bin_op_node(struct emit *, struct bin_op_node *);
 static void visit_class_decl_node(struct emit *, struct class_decl_node *);
-static void visit_code_block_node(struct emit *, struct code_block_node *);
+static void visit_code_block_node(struct emit *, struct code_block_node *,
+                                  bool);
 static void visit_expr_stmt_node(struct emit *, struct expr_stmt_node *);
 static void visit_for_node(struct emit *, struct for_node *);
 static void visit_foreach_node(struct emit *, struct foreach_node *);
@@ -78,7 +79,7 @@ static void visit_ast_node(struct emit *emit, struct ast_node *node) {
       visit_class_decl_node(emit, node->inner);
       break;
     case CODE_BLOCK_NODE:
-      visit_code_block_node(emit, node->inner);
+      visit_code_block_node(emit, node->inner, true);
       break;
     case EXPR_STMT_NODE:
       visit_expr_stmt_node(emit, node->inner);
@@ -183,12 +184,17 @@ static void visit_class_decl_node(struct emit *emit,
 }
 
 static void visit_code_block_node(struct emit *emit,
-                                  struct code_block_node *node) {
-  add_inst(emit, vm_inst_new(INST_PUSH_FRAME, NULL));
+                                  struct code_block_node *node,
+                                  bool new_frame) {
+  if (new_frame) {
+    add_inst(emit, vm_inst_new(INST_PUSH_FRAME, NULL));
+  }
   for (int i = 0; i < node->children->len; i++) {
     visit_ast_node(emit, vec_get(node->children, i));
   }
-  add_inst(emit, vm_inst_new(INST_POP_FRAME, NULL));
+  if (new_frame) {
+    add_inst(emit, vm_inst_new(INST_POP_FRAME, NULL));
+  }
 }
 
 static void visit_expr_stmt_node(struct emit *emit,
@@ -240,7 +246,7 @@ static void visit_func_decl_node(struct emit *emit,
   struct code_obj *func = code_obj_new(clone_str(node->name));
   struct code_obj *swp = emit->code_obj;
   emit->code_obj = func;
-  visit_ast_node(emit, node->body);
+  visit_code_block_node(emit, node->body->inner, false);
   emit->code_obj = swp;
   add_inst(emit,
            build_func_inst_new(func, node->params, node->ret_type != NULL));
