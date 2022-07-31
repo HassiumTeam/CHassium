@@ -15,7 +15,7 @@ struct obj *obj_num_new(bool is_float, int val_int, float val_float) {
   ctx->val_int = val_int;
   ctx->val_float = val_float;
 
-  struct obj *num = obj_new(OBJ_NUM, ctx);
+  struct obj *num = obj_new(OBJ_NUM, ctx, &number_type_obj);
   obj_set_attrib(num, "__add__", obj_builtin_new(__add__, num));
   obj_set_attrib(num, "__div__", obj_builtin_new(__div__, num));
   obj_set_attrib(num, "__eq__", obj_builtin_new(__eq__, num));

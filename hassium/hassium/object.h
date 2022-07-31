@@ -24,14 +24,15 @@ typedef enum {
   OBJ_NONE,
   OBJ_NUM,
   OBJ_STRING,
+  OBJ_TYPE,
   OBJ_WEAKREF,
 } obj_ctx_type_t;
 
 struct obj {
-  long id;
   int refs;
   bool ref_immune;
   obj_ctx_type_t type;
+  struct obj *obj_type;
   void *ctx;
   struct obj *parent;
   struct hashmap *attribs;
@@ -59,11 +60,23 @@ struct num_obj_ctx {
   float val_float;
 };
 
+extern struct obj array_type_obj;
+extern struct obj bool_type_obj;
+extern struct obj builtin_type_obj;
+extern struct obj func_type_obj;
+extern struct obj iter_type_obj;
+extern struct obj none_type_obj;
+extern struct obj number_type_obj;
+extern struct obj object_type_obj;
+extern struct obj string_type_obj;
+extern struct obj type_type_obj;
+extern struct obj weakref_type_obj;
+
 extern struct obj none_obj;
 extern struct obj true_obj;
 extern struct obj false_obj;
 
-struct obj *obj_new(obj_ctx_type_t, void *);
+struct obj *obj_new(obj_ctx_type_t, void *, struct obj *);
 void obj_free(struct obj *);
 
 struct obj *obj_inc_ref(struct obj *);

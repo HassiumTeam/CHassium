@@ -1,34 +1,120 @@
 #include <object.h>
 
-static long next_obj_id = 3;
+struct obj array_type_obj = {
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &object_type_obj,
+    .obj_type = &type_type_obj,
+};
+
+struct obj bool_type_obj = {
+    .ctx = "bool",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &object_type_obj,
+    .obj_type = &type_type_obj,
+};
+
+struct obj builtin_type_obj = {
+    .ctx = "builtin",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &object_type_obj,
+    .obj_type = &type_type_obj,
+};
+
+struct obj func_type_obj = {
+    .ctx = "func",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &object_type_obj,
+    .obj_type = &type_type_obj,
+};
+
+struct obj iter_type_obj = {
+    .ctx = "Iter",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &object_type_obj,
+    .obj_type = &type_type_obj,
+};
+
+struct obj none_type_obj = {
+    .ctx = "none",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = NULL,
+    .obj_type = &type_type_obj,
+};
+
+struct obj number_type_obj = {
+    .ctx = "number",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &object_type_obj,
+    .obj_type = &type_type_obj,
+};
+
+struct obj object_type_obj = {
+    .ctx = "object",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &object_type_obj,
+    .obj_type = &type_type_obj,
+};
+
+struct obj string_type_obj = {
+    .ctx = "String",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = NULL,
+    .obj_type = &type_type_obj,
+};
+
+struct obj type_type_obj = {
+    .ctx = "type",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &object_type_obj,
+    .obj_type = &object_type_obj,
+};
+
+struct obj weakref_type_obj = {
+    .ctx = "weakref",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &object_type_obj,
+    .obj_type = &type_type_obj,
+};
+
 struct obj none_obj = {
-    .id = 0,
     .ref_immune = true,
     .type = OBJ_NONE,
     .parent = NULL,
+    .obj_type = &none_type_obj,
 };
 
 struct obj true_obj = {
-    .id = 1,
     .ref_immune = true,
     .type = OBJ_BOOL,
-    .parent = NULL,
+    .parent = &object_type_obj,
+    .obj_type = &bool_type_obj,
 };
 
 struct obj false_obj = {
-    .id = 2,
     .ref_immune = true,
     .type = OBJ_BOOL,
-    .parent = NULL,
+    .parent = &object_type_obj,
+    .obj_type = &bool_type_obj,
 };
 
-struct obj *obj_new(obj_ctx_type_t type, void *ctx) {
+struct obj *obj_new(obj_ctx_type_t type, void *ctx, struct obj *obj_type) {
   struct obj *obj = (struct obj *)malloc(sizeof(struct obj));
-  obj->id = next_obj_id++;
   obj->refs = 0;
   obj->ref_immune = false;
   obj->type = type;
   obj->ctx = ctx;
+  obj->obj_type = obj_inc_ref(obj_type);
   obj->parent = NULL;
   obj->attribs = obj_hashmap_new();
   obj->weak_refs = NULL;
@@ -73,11 +159,10 @@ void obj_free(struct obj *obj) {
       break;
   }
 
-  if (obj->attribs != NULL) {
-    obj_hashmap_free(obj->attribs);
-  }
-
+  if (obj->attribs != NULL) obj_hashmap_free(obj->attribs);
   if (obj->parent != NULL) obj_dec_ref(obj->parent);
+  if (obj->obj_type != NULL) obj_dec_ref(obj->obj_type);
+
   free(obj);
 }
 
@@ -100,6 +185,10 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
       break;
     case BIN_OP_EQ:
       func = obj_hashmap_get(left->attribs, "__eq__");
+      if (func == &none_obj) {
+        vec_free(args);
+        return bool_to_obj(left == right);
+      }
       break;
     case BIN_OP_GREATER:
       func = obj_hashmap_get(left->attribs, "__greater__");
@@ -221,6 +310,8 @@ struct hashmap *obj_hashmap_new() {
 }
 
 struct obj *obj_hashmap_get(struct hashmap *map, char *key) {
+  if (map == NULL) return &none_obj;
+
   struct obj *obj;
   if (hashmap_get(map, key, strlen(key), (uintptr_t *)&obj)) {
     return obj;

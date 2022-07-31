@@ -54,7 +54,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
                                                  build_func->params)));
       } break;
       case INST_BUILD_OBJ: {
-        struct obj *new = obj_new(OBJ_ANON, NULL);
+        struct obj *new = obj_new(OBJ_ANON, NULL, &object_type_obj);
         struct vec *keys = ((struct build_obj_inst *)inst->inner)->keys;
         for (int i = keys->len - 1; i >= 0; i--)
           obj_set_attrib(new, vec_get(keys, i), obj_down_ref(vec_pop(stack)));

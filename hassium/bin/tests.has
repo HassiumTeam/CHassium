@@ -33,6 +33,9 @@ func main () {
     println(arr.peek());
     println(arr.pop());
     println(arr.pop());
+
+    println(typeof(2));
+    println(typeof(2) == number);
 }
 
 func add (x, y, z) {
