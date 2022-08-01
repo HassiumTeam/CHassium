@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
   ast_node_free(ast);
   free_toks(toks);
   struct vm *vm = vm_new();
-  obj_dec_ref(vm_run(vm, module));
+  obj_dec_ref(vm_run(NULL, vm, module));
   code_obj_free(module);
   vm_free(vm);
 }

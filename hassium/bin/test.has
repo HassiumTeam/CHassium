@@ -1,7 +1,27 @@
-class MyClass { 
-    func myFunc () {
-        println("hello world from a class");
+class Point {
+    func new (x, y) {
+        self.x = x;
+        self.y = y;
+    }
+
+    func print() {
+        println (self.x);
+        println (self.y);
+    }
+
+    func addX (i) {
+        self.x += i;
+    }
+
+    func addY (i) {
+        self.y += i;
     }
 }
 
-MyClass.myFunc();
+p1 = Point (2, 4);
+p2 = Point (10, 12);
+p1.addX (3);
+p2.addY (4);
+
+p1.print ();
+p2.print ();

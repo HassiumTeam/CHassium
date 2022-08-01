@@ -273,6 +273,8 @@ static void visit_id_node(struct emit *emit, struct id_node *node) {
     add_inst(emit, vm_inst_new(INST_LOAD_FALSE, NULL));
   } else if (strcmp(node->id, "none") == 0) {
     add_inst(emit, vm_inst_new(INST_LOAD_NONE, NULL));
+  } else if (strcmp(node->id, "self") == 0) {
+    add_inst(emit, vm_inst_new(INST_LOAD_SELF, NULL));
   } else {
     add_inst(emit, load_id_inst_new(clone_str(node->id)));
   }

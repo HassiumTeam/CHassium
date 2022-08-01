@@ -14,7 +14,7 @@
 struct vm *vm_new();
 void vm_free(struct vm *);
 
-struct obj *vm_run(struct vm *, struct code_obj *);
+struct obj *vm_run(struct obj *, struct vm *, struct code_obj *);
 
 typedef enum {
   INST_BIN_OP,
@@ -34,6 +34,7 @@ typedef enum {
   INST_LOAD_ID,
   INST_LOAD_NONE,
   INST_LOAD_CONST,
+  INST_LOAD_SELF,
   INST_LOAD_SUBSCRIPT,
   INST_LOAD_TRUE,
   INST_POP,

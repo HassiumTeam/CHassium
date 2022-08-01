@@ -58,7 +58,7 @@ test:
 
 .PHONY: leakcheck
 leakcheck:
-	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium ./bin/test.has
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./bin/hassium ./bin/test.has
 
 .PHONY: leakcheck_test
 leakcheck_test:

@@ -30,11 +30,10 @@ struct hashmap *get_defaults() {
 
 static void get_keys(void *key, size_t ksize, uintptr_t value, void *usr) {
   struct vec *vec = usr;
-  char *keystr = malloc(ksize + 1);
+  char keystr[ksize + 1];
   memcpy(keystr, key, ksize);
   keystr[ksize] = 0;
   vec_push(vec, obj_string_new(keystr));
-  free(keystr);
 }
 
 static struct obj *keys(struct obj *_, struct vm *vm, struct vec *args) {

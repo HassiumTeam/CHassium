@@ -34,6 +34,11 @@ void obj_free(struct obj *obj) {
       obj_dec_ref(builtin->self);
       free(builtin);
     } break;
+    case OBJ_FUNC: {
+      struct func_obj_ctx *func = obj->ctx;
+      obj_dec_ref(func->self);
+      free(func);
+    } break;
     case OBJ_ITER: {
       struct iter_obj_ctx *iter = obj->ctx;
       obj_dec_ref(iter->target);
@@ -85,6 +90,12 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
       break;
     case BIN_OP_GREATER:
       func = obj_hashmap_get(left->attribs, "__greater__");
+      break;
+    case BIN_OP_LESSER:
+      func = obj_hashmap_get(left->attribs, "__lesser__");
+      break;
+    case BIN_OP_MOD:
+      func = obj_hashmap_get(left->attribs, "__mod__");
       break;
     case BIN_OP_MUL:
       func = obj_hashmap_get(left->attribs, "__mul__");
@@ -139,6 +150,31 @@ struct obj *obj_index(struct obj *target, struct obj *key, struct vm *vm) {
   }
 }
 
+static void instantiate_attrib(void *key, size_t ksize, uintptr_t value,
+                               void *usr) {
+  struct obj *new = usr;
+  struct obj *attrib_val = (struct obj *)value;
+
+  if (attrib_val->type == OBJ_FUNC) {
+    struct func_obj_ctx *func_ctx = attrib_val->ctx;
+    struct obj *new_func =
+        obj_func_new(func_ctx->code_obj, func_ctx->params, new);
+    obj_set_attrib(new, key, new_func);
+  } else {
+    obj_set_attrib(new, key, obj_inc_ref(attrib_val));
+  }
+}
+struct obj *obj_instantiate(struct obj *class, struct vm *vm,
+                            struct vec *args) {
+  struct obj *new = obj_new(OBJ_ANON, NULL, class);
+  hashmap_iterate(class->attribs, instantiate_attrib, new);
+  if (obj_hashmap_has(new->attribs, "new")) {
+    obj_invoke_attrib(obj_inc_ref(new), "new", vm, args);
+    obj_down_ref(new);
+  }
+  return new;
+}
+
 struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
   bool no_args = false;
 
@@ -152,17 +188,25 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
   if (obj->type == OBJ_BUILTIN) {
     struct builtin_obj_ctx *builtin = obj->ctx;
     struct obj *self = builtin->self;
-    if (self != NULL && self->type == OBJ_WEAKREF) self = self->ctx;
+    if (self != NULL && self->type == OBJ_WEAKREF) {
+      self = self->ctx;
+    }
     ret = builtin->func(self, vm, args);
   } else if (obj->type == OBJ_FUNC) {
     struct func_obj_ctx *func = obj->ctx;
     struct hashmap *frame = obj_hashmap_new();
-    for (int i = 0; i < func->params->len; i++)
+    for (int i = 0; i < func->params->len; i++) {
       obj_hashmap_set(frame, vec_get(func->params, i),
                       obj_inc_ref(vec_get(args, i)));
+    }
+    struct obj *self = func->self;
+    if (self != NULL && self->type == OBJ_WEAKREF) self = self->ctx;
     vec_push(vm->frames, frame);
-    ret = vm_run(vm, func->code_obj);
+    ret = vm_run(self, vm, func->code_obj);
     obj_hashmap_free(vec_pop(vm->frames));
+  } else if (obj_hashmap_has(obj->attribs, "new")) {
+    struct obj *new = obj_instantiate(obj, vm, args);
+    ret = new;
   } else {
     printf("object %d was not invokable!\n", obj->type);
     exit(-1);
