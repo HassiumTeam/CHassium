@@ -44,7 +44,7 @@ func main () {
     a = [1, 2, 4];
 
     foreach (z in a) {
-        println (n);
+        println (z);
     }
 }
 
