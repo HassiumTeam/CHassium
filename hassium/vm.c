@@ -47,6 +47,17 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
           vec_set(items, i, obj_down_ref(vec_pop(stack)));
         vec_push(stack, obj_inc_ref(obj_array_new(items)));
       } break;
+      case INST_BUILD_CLASS: {
+        struct build_class_inst *build_class = inst->inner;
+        struct obj *class =
+            obj_new(OBJ_TYPE, build_class->code_obj->name, &type_type_obj);
+        vec_push(vm->frames, class->attribs);
+        vm_run(vm, build_class->code_obj);
+        vec_pop(vm->frames);
+        obj_hashmap_set(vec_peek(vm->frames), build_class->code_obj->name,
+                        obj_inc_ref(class));
+
+      } break;
       case INST_BUILD_FUNC: {
         struct build_func_inst *build_func = inst->inner;
         struct hashmap *frame = vec_peek(vm->frames);

@@ -102,10 +102,11 @@ static struct ast_node *parse_block(struct parser *parser) {
 
 static struct ast_node *parse_class(struct parser *parser) {
   expecttokv(parser, TOK_ID, "class");
-  char *id = expecttok(parser, TOK_ID)->val;
-  struct ast_node *extends;
+  char *id = clone_str(expecttok(parser, TOK_ID)->val);
+  struct ast_node *extends = NULL;
   if (accepttokv(parser, TOK_ID, "extends")) extends = parse_expr(parser);
   struct ast_node *body = parse_statement(parser);
+  return class_decl_node_new(id, extends, body);
 }
 
 static struct ast_node *parse_for(struct parser *parser) {

@@ -18,7 +18,6 @@ typedef enum {
   OBJ_ARRAY,
   OBJ_BOOL,
   OBJ_BUILTIN,
-  OBJ_CLASS,
   OBJ_FUNC,
   OBJ_ITER,
   OBJ_NONE,

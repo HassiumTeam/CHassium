@@ -14,7 +14,6 @@ struct obj *obj_new(obj_ctx_type_t type, void *ctx, struct obj *obj_type) {
 }
 
 void obj_free(struct obj *obj) {
-  // printf("freeing %d\n", obj->type);
   if (obj->weak_refs != NULL) {
     struct obj **ref;
     for (int i = 0; i < obj->weak_refs->len; i++) {
@@ -45,6 +44,8 @@ void obj_free(struct obj *obj) {
         struct obj *ref = obj->ctx;
         vec_remove(ref->weak_refs, &obj->ctx);
       }
+      break;
+    case OBJ_TYPE:
       break;
     default:
       if (obj->ctx != NULL) free(obj->ctx);

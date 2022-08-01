@@ -184,7 +184,7 @@ static void visit_class_decl_node(struct emit *emit,
   struct code_obj *class = code_obj_new(clone_str(node->name));
   struct code_obj *swp = emit->code_obj;
   emit->code_obj = class;
-  visit_ast_node(emit, node->body);
+  visit_code_block_node(emit, node->body->inner, false);
   emit->code_obj = swp;
   add_inst(emit, build_class_inst_new(class, node->extends != NULL));
 }
