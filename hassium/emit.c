@@ -252,7 +252,11 @@ static void visit_func_decl_node(struct emit *emit,
   struct code_obj *func = code_obj_new(clone_str(node->name));
   struct code_obj *swp = emit->code_obj;
   emit->code_obj = func;
-  visit_code_block_node(emit, node->body->inner, false);
+  if (node->body->type == CODE_BLOCK_NODE) {
+    visit_code_block_node(emit, node->body->inner, false);
+  } else {
+    visit_ast_node(emit, node->body);
+  }
   emit->code_obj = swp;
   add_inst(emit,
            build_func_inst_new(func, node->params, node->ret_type != NULL));
