@@ -42,7 +42,8 @@ func main () {
     println (typeof (2) == number);
 
     a = [1, 2, 4];
-
+    a[0] = 2;
+    a[5] = 5;
     foreach (z in a) {
         println (z);
     }
