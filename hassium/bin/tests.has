@@ -12,7 +12,7 @@ class Point {
         self.y = y;
     }
 
-    func print() {
+    func print () {
         println (self.x);
         println (self.y);
     }

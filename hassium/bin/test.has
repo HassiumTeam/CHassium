@@ -25,3 +25,5 @@ p2.addY (4);
 
 p1.print ();
 p2.print ();
+
+println (5 >= 6);

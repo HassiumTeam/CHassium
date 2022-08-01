@@ -67,51 +67,69 @@ void obj_free(struct obj *obj) {
 struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
                        struct vm *vm) {
   struct obj *ret;
-  struct obj *func;
   struct vec *args = vec_new();
   vec_push(args, right);
 
   switch (type) {
     case BIN_OP_ADD:
-      func = obj_hashmap_get(left->attribs, "__add__");
+      ret = obj_invoke_attrib(left, "__add__", vm, args);
       break;
     case BIN_OP_AND:
-      vec_free(args);
-      return bool_to_obj(obj_is_true(left, vm) && obj_is_true(right, vm));
+      ret = bool_to_obj(obj_is_true(left, vm) && obj_is_true(right, vm));
     case BIN_OP_DIV:
-      func = obj_hashmap_get(left->attribs, "__div__");
+      ret = obj_invoke_attrib(left, "__div__", vm, args);
       break;
     case BIN_OP_EQ:
-      func = obj_hashmap_get(left->attribs, "__eq__");
-      if (func == &none_obj) {
-        vec_free(args);
-        return bool_to_obj(left == right);
-      }
+      ret = obj_eq(left, right, vm);
       break;
     case BIN_OP_GREATER:
-      func = obj_hashmap_get(left->attribs, "__greater__");
+      ret = obj_invoke_attrib(left, "__greater__", vm, args);
+      break;
+    case BIN_OP_GREATER_OR_EQ:
+      if (obj_eq(left, right, vm) == &true_obj) {
+        ret = &true_obj;
+      } else {
+        ret = obj_invoke_attrib(left, "__greater__", vm, args);
+      }
       break;
     case BIN_OP_LESSER:
-      func = obj_hashmap_get(left->attribs, "__lesser__");
+      ret = obj_invoke_attrib(left, "__lesser__", vm, args);
+      break;
+    case BIN_OP_LESSER_OR_EQ:
+      if (obj_eq(left, right, vm) == &true_obj) {
+        ret = &true_obj;
+      } else {
+        ret = obj_invoke_attrib(left, "__lesser__", vm, args);
+      }
       break;
     case BIN_OP_MOD:
-      func = obj_hashmap_get(left->attribs, "__mod__");
+      ret = obj_invoke_attrib(left, "__mod__", vm, args);
       break;
     case BIN_OP_MUL:
-      func = obj_hashmap_get(left->attribs, "__mul__");
+      ret = obj_invoke_attrib(left, "__mul__", vm, args);
       break;
     case BIN_OP_OR:
-      vec_free(args);
-      return bool_to_obj(obj_is_true(left, vm) || obj_is_true(right, vm));
+      ret = bool_to_obj(obj_is_true(left, vm) || obj_is_true(right, vm));
       break;
     case BIN_OP_SUB:
-      func = obj_hashmap_get(left->attribs, "__sub__");
+      ret = obj_invoke_attrib(left, "__sub__", vm, args);
       break;
   }
 
-  ret = obj_invoke(func, vm, args);
   vec_free(args);
   return ret;
+}
+
+struct obj *obj_eq(struct obj *left, struct obj *right, struct vm *vm) {
+  if (obj_hashmap_has(left->attribs, "__eq__")) {
+    struct vec *args = vec_new();
+    vec_push(args, right);
+    struct obj *ret = obj_invoke_attrib(left, "__eq__", vm, args);
+    vec_free(args);
+    return ret;
+  } else {
+    return bool_to_obj(left == right);
+  }
 }
 
 struct obj *obj_inc_ref(struct obj *obj) {

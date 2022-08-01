@@ -83,6 +83,7 @@ struct obj *obj_inc_ref(struct obj *);
 struct obj *obj_dec_ref(struct obj *);
 struct obj *obj_down_ref(struct obj *);
 
+struct obj *obj_eq(struct obj *, struct obj *, struct vm *);
 struct obj *obj_bin_op(bin_op_type_t, struct obj *, struct obj *, struct vm *);
 struct obj *obj_index(struct obj *, struct obj *, struct vm *);
 struct obj *obj_instantiate(struct obj *, struct vm *, struct vec *);
