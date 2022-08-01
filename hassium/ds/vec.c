@@ -11,6 +11,7 @@ struct vec *vec_init(struct vec *vec) {
   vec->data = malloc(VEC_EXPAND_AT * sizeof(void *));
   vec->len = 0;
   vec->size = VEC_EXPAND_AT;
+  vec->grow_with = NULL;
   return vec;
 }
 
@@ -43,6 +44,11 @@ void *vec_get(struct vec *vec, int idx) { return vec->data[idx]; }
 
 void vec_set(struct vec *vec, int idx, void *val) {
   while (idx >= vec->size) expand(vec);
+  if (vec->grow_with != NULL && idx > vec->len) {
+    for (int i = vec->len; i < idx; i++) {
+      vec->data[i] = vec->grow_with;
+    }
+  }
   vec->data[idx] = val;
   if (idx >= vec->len) vec->len = idx + 1;
 }

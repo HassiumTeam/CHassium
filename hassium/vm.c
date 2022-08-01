@@ -118,14 +118,12 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
         vec_push(stack, &false_obj);
         break;
       case INST_LOAD_ID: {
-        struct obj *obj;
         bool found = false;
+        char *id = ((struct load_id_inst *)inst->inner)->id;
         for (int i = vm->frames->len - 1; i >= 0; i--) {
           struct hashmap *frame = vec_get(vm->frames, i);
-          if ((obj = obj_hashmap_get(
-                   frame, ((struct load_id_inst *)inst->inner)->id)) !=
-              &none_obj) {
-            vec_push(stack, obj_inc_ref(obj));
+          if (obj_hashmap_has(frame, id)) {
+            vec_push(stack, obj_inc_ref(obj_hashmap_get(frame, id)));
             found = true;
             break;
           }
@@ -142,7 +140,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
       case INST_LOAD_SUBSCRIPT: {
         struct obj *target = vec_pop(stack);
         struct obj *key = vec_pop(stack);
-        vec_push(stack, obj_inc_ref(obj_subscript(target, key, vm)));
+        vec_push(stack, obj_inc_ref(obj_index(target, key, vm)));
         obj_dec_ref(key);
         obj_dec_ref(target);
       } break;
@@ -178,6 +176,15 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj) {
         obj_dec_ref(obj_hashmap_get(frame, store_id->id));
         val = vec_peek(stack);
         obj_hashmap_set(frame, store_id->id, obj_inc_ref(val));
+      } break;
+      case INST_STORE_SUBSCRIPT: {
+        struct obj *target = vec_pop(stack);
+        struct obj *key = vec_pop(stack);
+        struct obj *val = vec_pop(stack);
+        obj_store_index(target, key, val, vm);
+        obj_dec_ref(key);
+        obj_dec_ref(target);
+        vec_push(stack, val);
       } break;
       case INST_UNARY_OP: {
         struct obj *target = vec_pop(stack);

@@ -84,14 +84,16 @@ struct obj *obj_dec_ref(struct obj *);
 struct obj *obj_down_ref(struct obj *);
 
 struct obj *obj_bin_op(bin_op_type_t, struct obj *, struct obj *, struct vm *);
+struct obj *obj_index(struct obj *, struct obj *, struct vm *);
 struct obj *obj_invoke(struct obj *, struct vm *, struct vec *);
 struct obj *obj_invoke_attrib(struct obj *, char *, struct vm *, struct vec *);
 void obj_set_attrib(struct obj *, char *, struct obj *);
-struct obj *obj_subscript(struct obj *, struct obj *, struct vm *);
+void obj_store_index(struct obj *, struct obj *, struct obj *, struct vm *);
 struct obj *obj_to_string(struct obj *, struct vm *);
 
 struct hashmap *obj_hashmap_new();
 struct obj *obj_hashmap_get(struct hashmap *, char *);
+bool obj_hashmap_has(struct hashmap *, char *);
 void obj_hashmap_set(struct hashmap *, char *, struct obj *);
 void obj_hashmap_free(struct hashmap *);
 

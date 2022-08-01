@@ -164,6 +164,12 @@ static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node) {
         struct id_node *id_node = node->left->inner;
         add_inst(emit, store_id_inst_new(clone_str(id_node->id)));
       } break;
+      case SUBSCRIPT_NODE: {
+        struct subscript_node *subscript_node = node->left->inner;
+        visit_ast_node(emit, subscript_node->key);
+        visit_ast_node(emit, subscript_node->target);
+        add_inst(emit, vm_inst_new(INST_STORE_SUBSCRIPT, NULL));
+      }
     }
   } else {
     visit_ast_node(emit, node->left);

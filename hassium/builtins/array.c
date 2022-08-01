@@ -1,10 +1,12 @@
 #include <object.h>
 
+static struct obj *__index__(struct obj *, struct vm *, struct vec *);
 static struct obj *__iter__(struct obj *, struct vm *, struct vec *);
 static struct obj *__iter____iternext__(struct obj *, struct vm *,
                                         struct vec *);
 static struct obj *__iter____iterfull__(struct obj *, struct vm *,
                                         struct vec *);
+static struct obj *__storeindex__(struct obj *, struct vm *, struct vec *);
 static struct obj *each(struct obj *, struct vm *, struct vec *);
 static struct obj *filter(struct obj *, struct vm *, struct vec *);
 static struct obj *filterMap(struct obj *, struct vm *, struct vec *);
@@ -15,10 +17,13 @@ static struct obj *pop(struct obj *, struct vm *, struct vec *);
 static struct obj *push(struct obj *, struct vm *, struct vec *);
 
 struct obj *obj_array_new(struct vec *items) {
+  items->grow_with = &none_obj;
   struct obj *arr = obj_new(OBJ_ARRAY, items, &array_type_obj);
   for (int i = 0; i < items->len; i++) obj_inc_ref(vec_get(items, i));
 
+  obj_set_attrib(arr, "__index__", obj_builtin_new(__index__, arr));
   obj_set_attrib(arr, "__iter__", obj_builtin_new(__iter__, arr));
+  obj_set_attrib(arr, "__storeindex__", obj_builtin_new(__storeindex__, arr));
   obj_set_attrib(arr, "each", obj_builtin_new(each, arr));
   obj_set_attrib(arr, "filter", obj_builtin_new(filter, arr));
   obj_set_attrib(arr, "filterMap", obj_builtin_new(filterMap, arr));
@@ -31,6 +36,16 @@ struct obj *obj_array_new(struct vec *items) {
 }
 
 int obj_array_len(struct obj *array) { return ((struct vec *)array->ctx)->len; }
+
+static struct obj *__index__(struct obj *arr, struct vm *vm, struct vec *args) {
+  struct obj *key = vec_get(args, 0);
+  if (key->type != OBJ_NUM) {
+    printf("Must index array by number!");
+    exit(-1);
+  }
+  int idx = obj_num_val(key);
+  return vec_get(arr->ctx, idx);
+}
 
 static struct obj *__iter__(struct obj *arr, struct vm *vm, struct vec *args) {
   struct obj *iter = obj_iter_new(arr);
@@ -55,6 +70,22 @@ static struct obj *__iter____iternext__(struct obj *iter_, struct vm *vm,
   struct iter_obj_ctx *iter = iter_->ctx;
   struct vec *arr = iter->target->ctx;
   return vec_get(arr, iter->pos++);
+}
+
+static struct obj *__storeindex__(struct obj *arr, struct vm *vm,
+                                  struct vec *args) {
+  struct vec *vec = arr->ctx;
+  int key = obj_num_val(vec_get(args, 0));
+  struct obj *val = vec_get(args, 1);
+
+  if (key < vec->len) {
+    struct obj *cur = vec_get(vec, key);
+    obj_down_ref(cur);
+    vec_set(vec, key, obj_inc_ref(val));
+
+  } else {
+    vec_set(vec, key, obj_inc_ref(val));
+  }
 }
 
 static struct obj *each(struct obj *arr, struct vm *vm, struct vec *args) {

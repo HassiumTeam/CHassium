@@ -10,6 +10,7 @@ struct vec {
   void **data;
   int len;
   int size;
+  void *grow_with;
 };
 
 struct vec *vec_new();

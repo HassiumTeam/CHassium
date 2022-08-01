@@ -121,6 +121,23 @@ struct obj *obj_down_ref(struct obj *obj) {
   return obj;
 }
 
+struct obj *obj_index(struct obj *target, struct obj *key, struct vm *vm) {
+  struct obj *index = obj_hashmap_get(target->attribs, "__index__");
+  if (index != &none_obj) {
+    struct vec *key_args = vec_new();
+    vec_push(key_args, key);
+    struct obj *val = obj_invoke(index, vm, key_args);
+    vec_free(key_args);
+    return val;
+  } else {
+    if (key->type != OBJ_STRING) {
+      printf("Object must be accessed by a string!");
+      exit(-1);
+    }
+    return obj_hashmap_get(target->attribs, obj_string_val(key));
+  }
+}
+
 struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
   bool no_args = false;
 
@@ -160,7 +177,7 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
 struct obj *obj_invoke_attrib(struct obj *obj, char *attrib, struct vm *vm,
                               struct vec *args) {
   struct obj *func = obj_hashmap_get(obj->attribs, attrib);
-  if (func == NULL) {
+  if (func == &none_obj) {
     printf("No such attrib %s\n", attrib);
     exit(-1);
   }
@@ -172,20 +189,21 @@ void obj_set_attrib(struct obj *obj, char *name, struct obj *val) {
   obj_hashmap_set(obj->attribs, name, obj_inc_ref(val));
 }
 
-struct obj *obj_subscript(struct obj *target, struct obj *key, struct vm *vm) {
-  switch (target->type) {
-    case OBJ_ARRAY:
-      if (key->type != OBJ_NUM) {
-        printf("Array must be indexed by a number!");
-        exit(-1);
-      }
-      return vec_get(target->ctx, (int)obj_num_val(key));
-    default:
-      if (key->type != OBJ_STRING) {
-        printf("Object must be accessed by a string!");
-        exit(-1);
-      }
-      return obj_hashmap_get(target->attribs, obj_string_val(key));
+void obj_store_index(struct obj *obj, struct obj *key, struct obj *val,
+                     struct vm *vm) {
+  struct obj *storeindex = obj_hashmap_get(obj->attribs, "__storeindex__");
+  if (storeindex != &none_obj) {
+    struct vec *args = vec_new();
+    vec_push(args, key);
+    vec_push(args, val);
+    obj_invoke(storeindex, vm, args);
+    vec_free(args);
+  } else if (key->type == OBJ_STRING) {
+    char *attrib = key->ctx;
+    obj_hashmap_set(obj->attribs, attrib, val);
+  } else {
+    printf("Key must be of type string!\n");
+    exit(-1);
   }
 }
 
@@ -209,6 +227,11 @@ struct obj *obj_hashmap_get(struct hashmap *map, char *key) {
     return obj;
   }
   return &none_obj;
+}
+
+bool obj_hashmap_has(struct hashmap *map, char *key) {
+  struct obj tmp;
+  return hashmap_get(map, key, strlen(key), (uintptr_t *)&tmp);
 }
 
 void obj_hashmap_set(struct hashmap *map, char *key, struct obj *val) {
