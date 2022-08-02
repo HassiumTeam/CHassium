@@ -279,10 +279,13 @@ void obj_store_index(struct obj *obj, struct obj *key, struct obj *val,
 
 struct obj *obj_to_string(struct obj *obj, struct vm *vm) {
   struct obj *toString = obj_hashmap_get(obj->attribs, "toString");
+  if (toString == &none_obj) {
+    return obj_string_new(obj->obj_type->ctx);
+  }
   struct vec *args = vec_new();
   struct obj *ret = obj_invoke(toString, vm, args);
   vec_free(args);
-  return obj_inc_ref(ret);
+  return ret;
 }
 
 struct hashmap *obj_hashmap_new() {

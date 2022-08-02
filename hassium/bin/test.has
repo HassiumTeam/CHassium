@@ -1,1 +1,6 @@
-println (typeof (2) == number);
+class MyClass { func new() {} };
+
+s = MyClass();
+
+println (s);
+println (typeof (typeof (s)));
