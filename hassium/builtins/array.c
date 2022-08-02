@@ -27,7 +27,7 @@ struct obj *obj_array_new(struct vec *items) {
   obj_set_attrib(arr, "each", obj_builtin_new(each, arr));
   obj_set_attrib(arr, "filter", obj_builtin_new(filter, arr));
   obj_set_attrib(arr, "filterMap", obj_builtin_new(filterMap, arr));
-  obj_set_attrib(arr, "length", obj_builtin_new(length, arr));
+  obj_set_attrib(arr, "len", obj_builtin_new(length, arr));
   obj_set_attrib(arr, "map", obj_builtin_new(map, arr));
   obj_set_attrib(arr, "peek", obj_builtin_new(peek, arr));
   obj_set_attrib(arr, "pop", obj_builtin_new(pop, arr));

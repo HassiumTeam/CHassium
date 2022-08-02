@@ -15,8 +15,11 @@ struct code_obj *compile_module(char *str) {
 }
 
 struct code_obj *compile_module_for_import(struct vec *from) {
-  char rel_path[512];
-  strcpy(rel_path, dirname(hassium_ctx.prog_path));
+  char *rel_path = calloc(512, sizeof(char));
+  char *prog_path = clone_str(hassium_ctx.prog_path);
+
+  strcpy(rel_path, dirname(prog_path));
+  free(prog_path);
   strcat(rel_path, "/");
   strcat(rel_path, vec_get(from, 0));
   for (int i = 1; i < from->len; i++) {
@@ -32,7 +35,9 @@ struct code_obj *compile_module_for_import(struct vec *from) {
 
   char *code = file_to_str(rel_path);
   struct code_obj *mod = compile_module(code);
+
   free(code);
+  free(rel_path);
   return mod;
 }
 

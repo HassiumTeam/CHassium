@@ -28,7 +28,7 @@ func main () {
     obj.num += 2;
     println (obj.num);
     println (10.5);
-    println (add(10, 20, obj.num));
+    println (add (10, 20, obj.num));
     println (void ());
 
     anon = fn (x, y) {
