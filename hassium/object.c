@@ -1,5 +1,7 @@
 #include <object.h>
 
+static struct obj *toString(struct obj *, struct vm *, struct vec *);
+
 struct obj *obj_new(obj_ctx_type_t type, void *ctx, struct obj *obj_type) {
   struct obj *obj = (struct obj *)malloc(sizeof(struct obj));
   obj->refs = 0;
@@ -10,7 +12,12 @@ struct obj *obj_new(obj_ctx_type_t type, void *ctx, struct obj *obj_type) {
   obj->parent = NULL;
   obj->attribs = obj_hashmap_new();
   obj->weak_refs = NULL;
+
   return obj;
+}
+
+static struct obj *toString(struct obj *obj, struct vm *vm, struct vec *args) {
+  return obj_string_new(obj->obj_type->ctx);
 }
 
 void obj_free(struct obj *obj) {

@@ -1,5 +1,5 @@
 
-TARGET   = bin/hassium
+TARGET   = bin/hassium.out
 
 CC       = gcc
 # compiling flags here
@@ -25,6 +25,7 @@ OBJECTS += ds/vec.o
 OBJECTS += ast.o
 OBJECTS += codeobj.o
 OBJECTS += emit.o
+OBJECTS += hassium.o
 OBJECTS += lexer.o
 OBJECTS += main.o
 OBJECTS += object.o
@@ -50,16 +51,16 @@ remove: clean
 
 .PHONY: run
 run:
-	@bin/hassium "./bin/test.has"
+	@bin/hassium.out "./bin/test.has"
 
 .PHONY: test
 test:
-	@bin/hassium "./bin/tests.has"
+	@bin/hassium.out "./bin/tests.has"
 
 .PHONY: leakcheck
 leakcheck:
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./bin/hassium ./bin/test.has
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./bin/hassium.out ./bin/test.has
 
 .PHONY: leakcheck_test
 leakcheck_test:
-	@valgrind --leak-check=full --show-leak-kinds=all ./bin/hassium ./bin/tests.has
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./bin/hassium.out ./bin/tests.has
