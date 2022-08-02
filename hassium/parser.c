@@ -135,19 +135,29 @@ static struct ast_node *parse_foreach(struct parser *parser) {
 
 static struct ast_node *parse_func(struct parser *parser) {
   expecttok(parser, TOK_ID);
+
   char *name = NULL;
   if (matchtok(parser, TOK_ID)) {
     name = clone_str(expecttok(parser, TOK_ID)->val);
   }
+
   expecttok(parser, TOK_OPAREN);
   struct vec *args = vec_new();
   while (!accepttok(parser, TOK_CPAREN)) {
     vec_push(args, clone_str(expecttok(parser, TOK_ID)->val));
     accepttok(parser, TOK_COMMA);
   }
+
   struct ast_node *ret_type = NULL;
   if (accepttok(parser, TOK_COLON)) ret_type = parse_expr(parser);
-  struct ast_node *body = parse_statement(parser);
+
+  struct ast_node *body;
+  if (matchtok(parser, TOK_OBRACE)) {
+    body = parse_statement(parser);
+  } else {
+    body = return_node_new(parse_expr(parser));
+  }
+
   return func_decl_node_new(name, args, ret_type, body);
 }
 
