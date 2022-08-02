@@ -43,8 +43,6 @@
 *.pdb
 *.vscode/
 
-hassium
-
 # Kernel Module Compile Results
 *.mod*
 *.cmd
