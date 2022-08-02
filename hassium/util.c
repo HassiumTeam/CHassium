@@ -23,6 +23,11 @@ char *heap_str(int argc, ...) {
   return strbuf_done(strbuf);
 }
 
+bool file_exists(char *filename) {
+  struct stat buffer;
+  return (stat(filename, &buffer) == 0);
+}
+
 char *file_to_str(char *fpath) {
   char *str = NULL;
   FILE *file = fopen(fpath, "rb");

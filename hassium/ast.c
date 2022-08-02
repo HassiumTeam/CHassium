@@ -106,10 +106,11 @@ struct ast_node *if_node_new(struct ast_node *predicate, struct ast_node *body,
   return ast_node_new(IF_NODE, inner);
 }
 
-struct ast_node *import_node_new(struct ast_node *target) {
+struct ast_node *import_node_new(struct vec *imports, struct vec *from) {
   struct import_node *inner =
       (struct import_node *)calloc(1, sizeof(struct import_node));
-  inner->target = target;
+  inner->imports = imports;
+  inner->from = from;
   return ast_node_new(IMPORT_NODE, inner);
 }
 
@@ -367,7 +368,7 @@ static void if_node_free(struct if_node *node) {
 }
 
 static void import_node_free(struct import_node *node) {
-  ast_node_free(node->target);
+  vec_free_deep(node->from);
 }
 
 static void invoke_node_free(struct invoke_node *node) {

@@ -1,5 +1,6 @@
 #include <vm.h>
 
+static void import_attrib_from_map(void *, size_t, uintptr_t, void *);
 static void vm_run_cleanup(struct vec *);
 
 struct vm *vm_new() {
@@ -70,6 +71,24 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
         for (int i = keys->len - 1; i >= 0; i--)
           obj_set_attrib(new, vec_get(keys, i), obj_down_ref(vec_pop(stack)));
         vec_push(stack, obj_inc_ref(new));
+      } break;
+      case INST_IMPORT: {
+        struct import_inst *import = inst->inner;
+        struct hashmap *frame = obj_hashmap_new();
+        vec_push(vm->frames, frame);
+        vm_run(NULL, vm, import->mod);
+        vec_pop(vm->frames);
+        if (import->imports->len == 0) {
+          hashmap_iterate(frame, import_attrib_from_map, vec_peek(vm->frames));
+        } else {
+          for (int i = 0; i < import->imports->len; i++) {
+            char *attrib = vec_get(import->imports, i);
+            import_attrib_from_map(attrib, 0,
+                                   (uintptr_t)obj_hashmap_get(frame, attrib),
+                                   vec_peek(vm->frames));
+          }
+        }
+        obj_hashmap_free(frame);
       } break;
       case INST_INVOKE: {
         int arg_count = ((struct invoke_inst *)inst->inner)->arg_count;
@@ -234,6 +253,14 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
   return &none_obj;
 }
 
+static void import_attrib_from_map(void *key, size_t ksize, uintptr_t value,
+                                   void *usr) {
+  struct hashmap *frame = usr;
+  struct obj *obj_val = (struct obj *)value;
+  obj_dec_ref(obj_hashmap_get(frame, key));
+  obj_hashmap_set(frame, key, obj_inc_ref(obj_val));
+}
+
 static void vm_run_cleanup(struct vec *stack) { free(stack->data); }
 
 static void vm_inst_free(struct vm_inst *);
@@ -266,6 +293,11 @@ static void vm_inst_free(struct vm_inst *inst) {
     case INST_BUILD_OBJ:
       vec_free_deep(((struct build_obj_inst *)inst->inner)->keys);
       break;
+    case INST_IMPORT: {
+      struct import_inst *import = inst->inner;
+      vec_free_deep(import->imports);
+      code_obj_free(import->mod);
+    } break;
     case INST_ITER_NEXT:
       free(((struct iter_next_inst *)inst->inner)->id);
       break;

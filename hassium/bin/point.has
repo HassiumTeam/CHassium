@@ -1,0 +1,19 @@
+class Point {
+    func new (x, y) {
+        self.x = x;
+        self.y = y;
+    }
+
+    func print () {
+        println (self.x);
+        println (self.y);
+    }
+
+    func addX (i) {
+        self.x += i;
+    }
+
+    func addY (i) {
+        self.y += i;
+    }
+}

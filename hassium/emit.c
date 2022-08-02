@@ -37,6 +37,7 @@ static struct vm_inst *build_class_inst_new(struct code_obj *, bool);
 static struct vm_inst *build_func_inst_new(struct code_obj *, struct vec *,
                                            bool);
 static struct vm_inst *build_obj_inst_new(struct vec *);
+static struct vm_inst *import_inst_new(struct vec *, struct code_obj *);
 static struct vm_inst *invoke_inst_new(int);
 static struct vm_inst *iter_next_inst_new(char *);
 static struct vm_inst *jump_inst_new(int);
@@ -59,7 +60,7 @@ struct code_obj *compile_ast(struct ast_node *ast) {
   struct emit emit;
   emit.code_obj = code_obj_new(clone_str("__module__"));
 
-  visit_ast_node(&emit, ast);
+  visit_code_block_node(&emit, ast->inner, false);
 
   return emit.code_obj;
 }
@@ -244,6 +245,7 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
   add_inst(emit, jump_inst_new(body));
 
   place_label(emit, end);
+  add_inst(emit, vm_inst_new(INST_POP_FRAME, NULL));
 }
 
 static void visit_func_decl_node(struct emit *emit,
@@ -295,8 +297,8 @@ static void visit_if_node(struct emit *emit, struct if_node *node) {
 }
 
 static void visit_import_node(struct emit *emit, struct import_node *node) {
-  visit_ast_node(emit, node->target);
-  add_inst(emit, vm_inst_new(INST_IMPORT, NULL));
+  struct code_obj *mod = compile_module_for_import(node->from);
+  add_inst(emit, import_inst_new(node->imports, mod));
 }
 
 static void visit_invoke_node(struct emit *emit, struct invoke_node *node) {
@@ -456,6 +458,15 @@ static struct vm_inst *build_obj_inst_new(struct vec *keys) {
       (struct build_obj_inst *)malloc(sizeof(struct build_obj_inst));
   inner->keys = keys;
   return vm_inst_new(INST_BUILD_OBJ, inner);
+}
+
+static struct vm_inst *import_inst_new(struct vec *imports,
+                                       struct code_obj *mod) {
+  struct import_inst *inner =
+      (struct import_inst *)malloc(sizeof(struct import_inst));
+  inner->imports = imports;
+  inner->mod = mod;
+  return vm_inst_new(INST_IMPORT, inner);
 }
 
 static struct vm_inst *invoke_inst_new(int arg_count) {

@@ -164,8 +164,23 @@ static struct ast_node *parse_if(struct parser *parser) {
 
 static struct ast_node *parse_import(struct parser *parser) {
   expecttokv(parser, TOK_ID, "import");
-  struct ast_node *target = parse_expr(parser);
-  return import_node_new(target);
+  struct vec *imports = vec_new();
+  if (!accepttokv(parser, TOK_OP, "*")) {
+    vec_push(imports, clone_str(expecttok(parser, TOK_ID)->val));
+    while (accepttok(parser, TOK_COMMA)) {
+      vec_push(imports, clone_str(expecttok(parser, TOK_ID)->val));
+    }
+    accepttok(parser, TOK_COMMA);
+  }
+
+  expecttokv(parser, TOK_ID, "from");
+  struct vec *from = vec_new();
+  vec_push(from, clone_str(expecttok(parser, TOK_ID)->val));
+  while (accepttok(parser, TOK_DOT)) {
+    vec_push(from, clone_str(expecttok(parser, TOK_ID)->val));
+  }
+
+  return import_node_new(imports, from);
 }
 
 static struct ast_node *parse_raise(struct parser *parser) {

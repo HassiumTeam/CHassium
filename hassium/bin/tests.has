@@ -1,28 +1,10 @@
+import Point from point;
+
 class MyClass {
     func fib(n) {
         if (n == 0) return n;
         if (n == 1) return n;
         return MyClass.fib (n - 2) + MyClass.fib (n - 1);
-    }
-}
-
-class Point {
-    func new (x, y) {
-        self.x = x;
-        self.y = y;
-    }
-
-    func print () {
-        println (self.x);
-        println (self.y);
-    }
-
-    func addX (i) {
-        self.x += i;
-    }
-
-    func addY (i) {
-        self.y += i;
     }
 }
 
@@ -83,6 +65,10 @@ func main () {
 
     p1.print ();
     p2.print ();
+
+    foreach (key in keys(p1)) {
+        println (key);
+    }
 }
 
 println (MyClass.fib (8));
@@ -95,4 +81,4 @@ func void () {
     
 }
 
-main ();
+main();

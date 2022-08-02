@@ -6,6 +6,7 @@
 #include <codeobj.h>
 #include <ds/intmap.h>
 #include <ds/vec.h>
+#include <hassium.h>
 #include <object.h>
 #include <parser.h>
 #include <stdbool.h>
@@ -84,6 +85,11 @@ struct invoke_inst {
 
 struct jump_inst {
   int label;
+};
+
+struct import_inst {
+  struct vec *imports;
+  struct code_obj *mod;
 };
 
 struct iter_next_inst {
