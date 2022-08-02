@@ -293,11 +293,15 @@ struct obj *obj_hashmap_get(struct hashmap *map, char *key) {
 }
 
 bool obj_hashmap_has(struct hashmap *map, char *key) {
+  if (map == NULL) return false;
+
   struct obj tmp;
   return hashmap_get(map, key, strlen(key), (uintptr_t *)&tmp);
 }
 
 void obj_hashmap_set(struct hashmap *map, char *key, struct obj *val) {
+  if (map == NULL) return;
+
   hashmap_set(map, key, strlen(key), (uintptr_t)val);
 }
 
@@ -316,6 +320,7 @@ struct obj array_type_obj = {
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
     .obj_type = &type_type_obj,
+    .attribs = NULL,
 };
 
 struct obj bool_type_obj = {
@@ -324,6 +329,7 @@ struct obj bool_type_obj = {
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
     .obj_type = &type_type_obj,
+    .attribs = NULL,
 };
 
 struct obj builtin_type_obj = {
@@ -332,6 +338,7 @@ struct obj builtin_type_obj = {
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
     .obj_type = &type_type_obj,
+    .attribs = NULL,
 };
 
 struct obj func_type_obj = {
@@ -340,6 +347,7 @@ struct obj func_type_obj = {
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
     .obj_type = &type_type_obj,
+    .attribs = NULL,
 };
 
 struct obj iter_type_obj = {
@@ -348,6 +356,7 @@ struct obj iter_type_obj = {
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
     .obj_type = &type_type_obj,
+    .attribs = NULL,
 };
 
 struct obj none_type_obj = {
@@ -356,6 +365,7 @@ struct obj none_type_obj = {
     .type = OBJ_TYPE,
     .parent = NULL,
     .obj_type = &type_type_obj,
+    .attribs = NULL,
 };
 
 struct obj number_type_obj = {
@@ -364,6 +374,7 @@ struct obj number_type_obj = {
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
     .obj_type = &type_type_obj,
+    .attribs = NULL,
 };
 
 struct obj object_type_obj = {
@@ -372,6 +383,7 @@ struct obj object_type_obj = {
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
     .obj_type = &type_type_obj,
+    .attribs = NULL,
 };
 
 struct obj string_type_obj = {
@@ -380,6 +392,7 @@ struct obj string_type_obj = {
     .type = OBJ_TYPE,
     .parent = NULL,
     .obj_type = &type_type_obj,
+    .attribs = NULL,
 };
 
 struct obj type_type_obj = {
@@ -388,6 +401,7 @@ struct obj type_type_obj = {
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
     .obj_type = &object_type_obj,
+    .attribs = NULL,
 };
 
 struct obj weakref_type_obj = {
@@ -396,6 +410,7 @@ struct obj weakref_type_obj = {
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
     .obj_type = &type_type_obj,
+    .attribs = NULL,
 };
 
 struct obj none_obj = {
@@ -403,6 +418,7 @@ struct obj none_obj = {
     .type = OBJ_NONE,
     .parent = NULL,
     .obj_type = &none_type_obj,
+    .attribs = NULL,
 };
 
 struct obj true_obj = {
