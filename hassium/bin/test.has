@@ -1,7 +1,26 @@
-    func fib(n) {
-        if (n == 0) return n;
-        if (n == 1) return n;
-        return fib (n - 2) + fib (n - 1);
-    }
+class Point {
+        func new(x, y) {
+                self.x = x;
+                self.y = y;
+        }
 
-    println (fib (32));
+        func swap() {
+                tmp = self.x;
+                self.x = self.y;
+                self.y = tmp;
+        }
+
+        func __add__(p) {
+                ret = Point (self.x, self.y);
+                println("instantiated");
+                ret.x += p.x;
+                ret.y += p.y;
+                return ret;
+        }
+}
+
+p1 = Point (5, 10);
+p2 = Point (15, 20);
+p3 = p1 + p2;
+println (p3.x);
+println (p3.y);

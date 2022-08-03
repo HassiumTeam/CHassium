@@ -206,6 +206,7 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
     vec_push(vm->frames, frame);
     ret = vm_run(self, vm, func->code_obj);
     obj_hashmap_free(vec_pop(vm->frames));
+    obj_down_ref(ret);
   } else if (obj_hashmap_has(obj->attribs, "new")) {
     struct obj *new = obj_instantiate(obj, vm, args);
     ret = new;

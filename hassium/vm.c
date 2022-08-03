@@ -191,7 +191,6 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
         break;
       case INST_RETURN: {
         struct obj *ret = vec_pop(stack);
-        ret->refs--;
         vm_run_cleanup(stack);
         return ret;
       } break;
