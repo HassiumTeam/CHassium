@@ -13,16 +13,51 @@ struct vec {
   void *grow_with;
 };
 
-struct vec *vec_new();
-struct vec *vec_init(struct vec *);
-void vec_free(struct vec *);
-void vec_free_deep(struct vec *);
+static inline struct vec *vec_init(struct vec *vec) {
+  vec->data = malloc(VEC_EXPAND_AT * sizeof(void *));
+  vec->len = 0;
+  vec->size = VEC_EXPAND_AT;
+  vec->grow_with = NULL;
+  return vec;
+}
 
-bool vec_has(struct vec *, void *);
-void *vec_peek(struct vec *);
-void *vec_pop(struct vec *);
-void vec_push(struct vec *, void *);
-void *vec_get(struct vec *, int);
+static inline struct vec *vec_new() {
+  struct vec *vec = (struct vec *)malloc(sizeof(struct vec));
+  return vec_init(vec);
+}
+
+static inline void expand(struct vec *vec) {
+  vec->size += VEC_EXPAND_AT;
+  vec->data = realloc(vec->data, sizeof(void *) * vec->size);
+}
+
+static inline void vec_free(struct vec *vec) {
+  free(vec->data);
+  free(vec);
+}
+
+static inline void *vec_get(struct vec *vec, int idx) { return vec->data[idx]; }
+
+static inline void vec_free_deep(struct vec *vec) {
+  for (int i = 0; i < vec->len; i++) free(vec_get(vec, i));
+  vec_free(vec);
+}
+
+static inline void *vec_peek(struct vec *vec) {
+  if (vec->len == 0) return NULL;
+  return vec->data[vec->len - 1];
+}
+
+static inline void *vec_pop(struct vec *vec) {
+  if (vec->len == 0) return NULL;
+  return vec->data[--vec->len];
+}
+
+static inline void vec_push(struct vec *vec, void *val) {
+  if (vec->len >= vec->size) expand(vec);
+  vec->data[vec->len++] = val;
+}
+
 void vec_set(struct vec *, int, void *);
 void *vec_remove(struct vec *, void *);
 

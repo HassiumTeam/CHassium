@@ -2,46 +2,6 @@
 
 static void expand(struct vec *);
 
-struct vec *vec_new() {
-  struct vec *vec = (struct vec *)malloc(sizeof(struct vec));
-  return vec_init(vec);
-}
-
-struct vec *vec_init(struct vec *vec) {
-  vec->data = malloc(VEC_EXPAND_AT * sizeof(void *));
-  vec->len = 0;
-  vec->size = VEC_EXPAND_AT;
-  vec->grow_with = NULL;
-  return vec;
-}
-
-void vec_free(struct vec *vec) {
-  free(vec->data);
-  free(vec);
-}
-
-void vec_free_deep(struct vec *vec) {
-  for (int i = 0; i < vec->len; i++) free(vec_get(vec, i));
-  vec_free(vec);
-}
-
-void *vec_peek(struct vec *vec) {
-  if (vec->len == 0) return NULL;
-  return vec->data[vec->len - 1];
-}
-
-void *vec_pop(struct vec *vec) {
-  if (vec->len == 0) return NULL;
-  return vec->data[--vec->len];
-}
-
-void vec_push(struct vec *vec, void *val) {
-  if (vec->len >= vec->size) expand(vec);
-  vec->data[vec->len++] = val;
-}
-
-void *vec_get(struct vec *vec, int idx) { return vec->data[idx]; }
-
 void vec_set(struct vec *vec, int idx, void *val) {
   while (idx >= vec->size) expand(vec);
   if (vec->grow_with != NULL && idx > vec->len) {
@@ -60,9 +20,4 @@ void *vec_remove(struct vec *vec, void *val) {
       return val;
     }
   return NULL;
-}
-
-static void expand(struct vec *vec) {
-  vec->size += VEC_EXPAND_AT;
-  vec->data = realloc(vec->data, sizeof(void *) * vec->size);
 }
