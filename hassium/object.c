@@ -163,7 +163,7 @@ static void instantiate_attrib(void *key, size_t ksize, uintptr_t value,
         obj_func_new(func_ctx->code_obj, func_ctx->params, new);
     obj_set_attrib(new, key, new_func);
   } else {
-    obj_set_attrib(new, key, obj_inc_ref(attrib_val));
+    obj_set_attrib(new, key, attrib_val);
   }
 }
 struct obj *obj_instantiate(struct obj *class, struct vm *vm,

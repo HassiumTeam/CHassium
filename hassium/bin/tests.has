@@ -1,6 +1,7 @@
 import Point from point;
 
 class MyClass {
+    fib_num = 12;
     func fib(n) {
         if (n == 0) return n;
         if (n == 1) return n;
@@ -71,7 +72,7 @@ func main () {
     }
 }
 
-println (MyClass.fib (8));
+println (MyClass.fib (MyClass.fib_num));
 
 func add (x, y, z) {
     return x + y + z;
