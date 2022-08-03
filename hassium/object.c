@@ -16,10 +16,6 @@ struct obj *obj_new(obj_ctx_type_t type, void *ctx, struct obj *obj_type) {
   return obj;
 }
 
-static struct obj *toString(struct obj *obj, struct vm *vm, struct vec *args) {
-  return obj_string_new(obj->obj_type->ctx);
-}
-
 void obj_free(struct obj *obj) {
   if (obj->weak_refs != NULL) {
     struct obj **ref;
@@ -137,25 +133,6 @@ struct obj *obj_eq(struct obj *left, struct obj *right, struct vm *vm) {
   } else {
     return bool_to_obj(left == right);
   }
-}
-
-struct obj *obj_inc_ref(struct obj *obj) {
-  if (obj == NULL || obj->ref_immune) return obj;
-  obj->refs++;
-  return obj;
-}
-
-struct obj *obj_dec_ref(struct obj *obj) {
-  if (obj == NULL || obj->ref_immune) return obj;
-  obj->refs--;
-  if (obj->refs <= 0) obj_free(obj);
-  return obj;
-}
-
-struct obj *obj_down_ref(struct obj *obj) {
-  if (obj == NULL || obj->ref_immune) return obj;
-  obj->refs--;
-  return obj;
 }
 
 struct obj *obj_index(struct obj *target, struct obj *key, struct vm *vm) {
@@ -286,43 +263,6 @@ struct obj *obj_to_string(struct obj *obj, struct vm *vm) {
   struct obj *ret = obj_invoke(toString, vm, args);
   vec_free(args);
   return ret;
-}
-
-struct hashmap *obj_hashmap_new() {
-  return hashmap_create();
-}
-
-struct obj *obj_hashmap_get(struct hashmap *map, char *key) {
-  if (map == NULL) return &none_obj;
-
-  struct obj *obj;
-  if (hashmap_get(map, key, strlen(key), (uintptr_t *)&obj)) {
-    return obj;
-  }
-  return &none_obj;
-}
-
-bool obj_hashmap_has(struct hashmap *map, char *key) {
-  if (map == NULL) return false;
-
-  struct obj tmp;
-  return hashmap_get(map, key, strlen(key), (uintptr_t *)&tmp);
-}
-
-void obj_hashmap_set(struct hashmap *map, char *key, struct obj *val) {
-  if (map == NULL) return;
-
-  hashmap_set(map, key, strlen(key), (uintptr_t)val);
-}
-
-static void obj_hashmap_entry_free(void *key, size_t ksize, uintptr_t value,
-                                   void *usr) {
-  obj_dec_ref((struct obj *)value);
-}
-
-void obj_hashmap_free(struct hashmap *map) {
-  hashmap_iterate(map, obj_hashmap_entry_free, NULL);
-  hashmap_free(map);
 }
 
 struct obj array_type_obj = {

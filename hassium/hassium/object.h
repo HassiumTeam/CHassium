@@ -79,9 +79,24 @@ extern struct obj false_obj;
 struct obj *obj_new(obj_ctx_type_t, void *, struct obj *);
 void obj_free(struct obj *);
 
-struct obj *obj_inc_ref(struct obj *);
-struct obj *obj_dec_ref(struct obj *);
-struct obj *obj_down_ref(struct obj *);
+static inline struct obj *obj_inc_ref(struct obj *obj) {
+  if (obj == NULL || obj->ref_immune) return obj;
+  obj->refs++;
+  return obj;
+}
+
+static inline struct obj *obj_dec_ref(struct obj *obj) {
+  if (obj == NULL || obj->ref_immune) return obj;
+  obj->refs--;
+  if (obj->refs <= 0) obj_free(obj);
+  return obj;
+}
+
+static inline struct obj *obj_down_ref(struct obj *obj) {
+  if (obj == NULL || obj->ref_immune) return obj;
+  obj->refs--;
+  return obj;
+}
 
 struct obj *obj_eq(struct obj *, struct obj *, struct vm *);
 struct obj *obj_bin_op(bin_op_type_t, struct obj *, struct obj *, struct vm *);
@@ -93,10 +108,36 @@ void obj_set_attrib(struct obj *, char *, struct obj *);
 void obj_store_index(struct obj *, struct obj *, struct obj *, struct vm *);
 struct obj *obj_to_string(struct obj *, struct vm *);
 
-struct hashmap *obj_hashmap_new();
-struct obj *obj_hashmap_get(struct hashmap *, char *);
-bool obj_hashmap_has(struct hashmap *, char *);
-void obj_hashmap_set(struct hashmap *, char *, struct obj *);
-void obj_hashmap_free(struct hashmap *);
+static inline struct hashmap *obj_hashmap_new() { return hashmap_create(); }
+static inline struct obj *obj_hashmap_get(struct hashmap *map, char *key) {
+  if (map == NULL) return &none_obj;
+
+  struct obj *obj;
+  if (hashmap_get(map, key, strlen(key), (uintptr_t *)&obj)) {
+    return obj;
+  }
+  return &none_obj;
+}
+static inline bool obj_hashmap_has(struct hashmap *map, char *key) {
+  if (map == NULL) return false;
+
+  struct obj tmp;
+  return hashmap_get(map, key, strlen(key), (uintptr_t *)&tmp);
+}
+static inline void obj_hashmap_set(struct hashmap *map, char *key,
+                                   struct obj *val) {
+  if (map == NULL) return;
+
+  hashmap_set(map, key, strlen(key), (uintptr_t)val);
+}
+static void obj_hashmap_entry_free(void *key, size_t ksize, uintptr_t value,
+                                   void *usr) {
+  obj_dec_ref((struct obj *)value);
+}
+
+static inline void obj_hashmap_free(struct hashmap *map) {
+  hashmap_iterate(map, obj_hashmap_entry_free, NULL);
+  hashmap_free(map);
+}
 
 #endif
