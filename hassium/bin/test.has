@@ -1,5 +1,6 @@
 class MyClass {
-    func f (s: MyClass) {
-        
+    func myFunc() {
+        return 1;
     }
 }
+

@@ -154,7 +154,9 @@ static struct ast_node *parse_func(struct parser *parser) {
   }
 
   struct ast_node *ret_type = NULL;
-  if (accepttok(parser, TOK_COLON)) ret_type = parse_expr(parser);
+  if (accepttok(parser, TOK_COLON) && !accepttokv(parser, TOK_ID, "any")) {
+    ret_type = parse_expr(parser);
+  }
 
   struct ast_node *body;
   if (matchtok(parser, TOK_OBRACE)) {
