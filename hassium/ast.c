@@ -91,9 +91,10 @@ struct ast_node *func_decl_node_new(char *name, struct vec *params,
   return ast_node_new(FUNC_DECL_NODE, inner);
 }
 
-struct ast_node *id_node_new(char *id) {
+struct ast_node *id_node_new(char *id, struct ast_node *type) {
   struct id_node *inner = (struct id_node *)calloc(1, sizeof(struct id_node));
   inner->id = id;
+  inner->type = type;
   return ast_node_new(ID_NODE, inner);
 }
 
@@ -357,9 +358,13 @@ static void func_decl_node_free(struct func_decl_node *node) {
   free(node->name);
   ast_node_free(node->ret_type);
   ast_node_free(node->body);
+  vec_ast_node_free(node->params);
 }
 
-static void id_node_free(struct id_node *node) { free(node->id); }
+static void id_node_free(struct id_node *node) {
+  free(node->id);
+  if (node->type != NULL) ast_node_free(node->type);
+}
 
 static void if_node_free(struct if_node *node) {
   ast_node_free(node->predicate);

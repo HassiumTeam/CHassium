@@ -2,7 +2,7 @@ import Point from point;
 
 class MyClass {
     fib_num = 12;
-    func fib(n) {
+    func fib(n: number) {
         if (n == 0) return n;
         if (n == 1) return n;
         return MyClass.fib (n - 2) + MyClass.fib (n - 1);
@@ -11,7 +11,7 @@ class MyClass {
 
 func main () {
     arr = [1, 2, 3];
-    arr2 = arr.map(fn (n) n + 1);
+    arr2 = arr.map(fn (n: number) n + 1);
     foreach (i in arr2) {
         println(i);
     }
@@ -32,13 +32,13 @@ func main () {
     println (add (10, 20, obj.num));
     println (void ());
 
-    anon = fn (x, y) {
+    anon = fn (x: number, y: number) {
         return x + y + obj.num;
     };
 
     println (anon (40, 2));
 
-    func anon2 (x) {
+    func anon2 (x: number) {
         return x * anon (x, obj.num);
     }
 
@@ -67,14 +67,15 @@ func main () {
     p1.print ();
     p2.print ();
 
-    foreach (key in keys(p1)) {
-        println (key);
-    }
+
+
+    p3 = p1 + p2;
+    p3.print();
 }
 
 println (MyClass.fib (MyClass.fib_num));
 
-func add (x, y, z) {
+func add (x: any, y: any, z: any) {
     return x + y + z;
 }
 

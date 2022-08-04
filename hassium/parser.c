@@ -144,7 +144,12 @@ static struct ast_node *parse_func(struct parser *parser) {
   expecttok(parser, TOK_OPAREN);
   struct vec *args = vec_new();
   while (!accepttok(parser, TOK_CPAREN)) {
-    vec_push(args, clone_str(expecttok(parser, TOK_ID)->val));
+    char *id = clone_str(expecttok(parser, TOK_ID)->val);
+    struct ast_node *type = NULL;
+    if (accepttok(parser, TOK_COLON) && !accepttokv(parser, TOK_ID, "any")) {
+      type = parse_expr(parser);
+    }
+    vec_push(args, id_node_new(id, type));
     accepttok(parser, TOK_COMMA);
   }
 
@@ -383,7 +388,7 @@ static struct ast_node *parse_obj_decl(struct parser *parser) {
       } else if (accepttok(parser, TOK_COLON)) {
         vec_push(values, parse_expr(parser));
       } else {
-        vec_push(values, id_node_new(clone_str(key)));
+        vec_push(values, id_node_new(clone_str(key), NULL));
       }
       accepttok(parser, TOK_COMMA);
     }
@@ -403,7 +408,12 @@ static struct ast_node *parse_term(struct parser *parser) {
              matchtokv(parser, TOK_ID, "func")) {
     return parse_func(parser);
   } else if (matchtok(parser, TOK_ID)) {
-    return id_node_new(clone_str(expecttok(parser, TOK_ID)->val));
+    struct ast_node *type = NULL;
+    char *id = clone_str(expecttok(parser, TOK_ID)->val);
+    if (accepttok(parser, TOK_COLON) && !accepttokv(parser, TOK_ID, "any")) {
+      type = parse_expr(parser);
+    }
+    return id_node_new(id, type);
   } else if (matchtok(parser, TOK_NUM)) {
     char *a = expecttok(parser, TOK_NUM)->val;
     int alen = strlen(a);

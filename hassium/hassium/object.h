@@ -54,6 +54,12 @@ struct func_obj_ctx {
   struct obj *self;
 };
 
+struct func_param {
+  char *id;
+  struct code_obj *code_obj;
+  struct obj *type;
+};
+
 struct num_obj_ctx {
   bool is_float;
   int val_int;
@@ -104,6 +110,7 @@ struct obj *obj_index(struct obj *, struct obj *, struct vm *);
 struct obj *obj_instantiate(struct obj *, struct vm *, struct vec *);
 struct obj *obj_invoke(struct obj *, struct vm *, struct vec *);
 struct obj *obj_invoke_attrib(struct obj *, char *, struct vm *, struct vec *);
+bool obj_is(struct obj *, struct obj *);
 void obj_set_attrib(struct obj *, char *, struct obj *);
 void obj_store_index(struct obj *, struct obj *, struct obj *, struct vm *);
 struct obj *obj_to_string(struct obj *, struct vm *);

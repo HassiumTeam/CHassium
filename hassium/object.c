@@ -9,7 +9,7 @@ struct obj *obj_new(obj_ctx_type_t type, void *ctx, struct obj *obj_type) {
   obj->type = type;
   obj->ctx = ctx;
   obj->obj_type = obj_inc_ref(obj_type);
-  obj->parent = NULL;
+  obj->parent = &object_type_obj;
   obj->attribs = obj_hashmap_new();
   obj->weak_refs = NULL;
 
@@ -196,10 +196,15 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
     ret = builtin->func(self, vm, args);
   } else if (obj->type == OBJ_FUNC) {
     struct func_obj_ctx *func = obj->ctx;
+
     struct hashmap *frame = obj_hashmap_new();
     for (int i = 0; i < func->params->len; i++) {
-      obj_hashmap_set(frame, vec_get(func->params, i),
-                      obj_inc_ref(vec_get(args, i)));
+      struct func_param *func_param = vec_get(func->params, i);
+      struct obj *func_arg = vec_get(args, i);
+      if (func_param->type != NULL && !obj_is(func_arg, func_param->type)) {
+        printf("Arg must be of type %s\n", (char *)func_param->type->ctx);
+      }
+      obj_hashmap_set(frame, func_param->id, obj_inc_ref(func_arg));
     }
     struct obj *self = func->self;
     if (self != NULL && self->type == OBJ_WEAKREF) self = self->ctx;
@@ -230,6 +235,18 @@ struct obj *obj_invoke_attrib(struct obj *obj, char *attrib, struct vm *vm,
     exit(-1);
   }
   return obj_invoke(func, vm, args);
+}
+
+bool obj_is(struct obj *obj, struct obj *type_obj) {
+  if (obj == type_obj || obj->obj_type == type_obj) return true;
+  if (type_obj->type != OBJ_TYPE) return false;
+
+  struct obj *parent = obj->parent;
+  while (parent != &none_obj && parent != NULL) {
+    if (parent->obj_type == type_obj) return true;
+    parent = parent->parent;
+  }
+  return false;
 }
 
 void obj_set_attrib(struct obj *obj, char *name, struct obj *val) {
@@ -332,7 +349,7 @@ struct obj object_type_obj = {
     .ctx = "object",
     .ref_immune = true,
     .type = OBJ_TYPE,
-    .parent = &object_type_obj,
+    .parent = NULL,
     .obj_type = &type_type_obj,
     .attribs = NULL,
 };

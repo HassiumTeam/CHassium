@@ -109,6 +109,7 @@ struct func_decl_node {
 
 struct id_node {
   char *id;
+  struct ast_node *type;
 };
 
 struct if_node {
@@ -189,7 +190,7 @@ struct ast_node *for_node_new(struct ast_node *, struct ast_node *,
 struct ast_node *foreach_node_new(char *, struct ast_node *, struct ast_node *);
 struct ast_node *func_decl_node_new(char *, struct vec *, struct ast_node *,
                                     struct ast_node *);
-struct ast_node *id_node_new(char *);
+struct ast_node *id_node_new(char *, struct ast_node *);
 struct ast_node *if_node_new(struct ast_node *, struct ast_node *,
                              struct ast_node *);
 struct ast_node *import_node_new(struct vec *, struct vec *);

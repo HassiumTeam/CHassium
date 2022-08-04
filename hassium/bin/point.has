@@ -1,6 +1,6 @@
 class Point {
     some = 2;
-    func new (x, y) {
+    func new (x: number, y: number) {
         self.x = x;
         self.y = y;
     }
@@ -16,5 +16,12 @@ class Point {
 
     func addY (i) {
         self.y += i;
+    }
+
+    func __add__ (p: Point) {
+        ret = Point(self.x, self.y);
+        ret.addX(p.x);
+        ret.addY(p.y);
+        return ret;
     }
 }

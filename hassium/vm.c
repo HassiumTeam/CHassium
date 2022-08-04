@@ -52,15 +52,21 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
         struct build_class_inst *build_class = inst->inner;
         struct obj *class =
             obj_new(OBJ_TYPE, build_class->code_obj->name, &type_type_obj);
+        obj_hashmap_set(vec_peek(vm->frames), build_class->code_obj->name,
+                        obj_inc_ref(class));
         vec_push(vm->frames, class->attribs);
         vm_run(self, vm, build_class->code_obj);
         vec_pop(vm->frames);
-        obj_hashmap_set(vec_peek(vm->frames), build_class->code_obj->name,
-                        obj_inc_ref(class));
 
       } break;
       case INST_BUILD_FUNC: {
         struct build_func_inst *build_func = inst->inner;
+        for (int i = 0; i < build_func->params->len; i++) {
+          struct func_param *func_param = vec_get(build_func->params, i);
+          if (func_param->code_obj != NULL) {
+            func_param->type = vm_run(NULL, vm, func_param->code_obj);
+          }
+        }
         struct hashmap *frame = vec_peek(vm->frames);
         vec_push(stack, obj_inc_ref(obj_func_new(build_func->code_obj,
                                                  build_func->params, NULL)));
@@ -287,7 +293,18 @@ static void vm_inst_free(struct vm_inst *inst) {
     case INST_BUILD_FUNC: {
       struct build_func_inst *build_func = inst->inner;
       code_obj_free(build_func->code_obj);
-      vec_free_deep(build_func->params);
+      for (int i = 0; i < build_func->params->len; i++) {
+        struct func_param *func_param = vec_get(build_func->params, i);
+        free(func_param->id);
+        if (func_param->code_obj != NULL) {
+          code_obj_free(func_param->code_obj);
+        }
+        if (func_param->type != NULL) {
+          obj_dec_ref(func_param->type);
+        }
+        free(func_param);
+      }
+      vec_free(build_func->params);
     } break;
     case INST_BUILD_OBJ:
       vec_free_deep(((struct build_obj_inst *)inst->inner)->keys);
