@@ -48,6 +48,7 @@ typedef enum {
   INST_STORE_ID,
   INST_STORE_SUBSCRIPT,
   INST_SUPER,
+  INST_TYPECHECK,
   INST_UNARY_OP,
 } vm_inst_t;
 

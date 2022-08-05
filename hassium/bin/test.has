@@ -1,4 +1,4 @@
-func myFunc(x) {
+func myFunc(x: string) {
     println (x);
 }
 

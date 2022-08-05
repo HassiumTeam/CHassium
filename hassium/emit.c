@@ -252,20 +252,26 @@ static void visit_func_decl_node(struct emit *emit,
                                  struct func_decl_node *node) {
   if (node->ret_type != NULL) visit_ast_node(emit, node->ret_type);
   struct code_obj *func = code_obj_new(clone_str(node->name));
+  struct vec *func_params = vec_new();
+
   struct code_obj *swp = emit->code_obj;
   emit->code_obj = func;
+  for (int i = 0; i < node->params->len; i++) {
+    struct ast_node *id_ast = vec_get(node->params, i);
+    struct id_node *id_node = id_ast->inner;
+    vec_push(func_params, clone_str(id_node->id));
+    if (id_node->type != NULL) {
+      visit_ast_node(emit, id_node->type);
+      add_inst(emit, vm_inst_new(INST_TYPECHECK, clone_str(id_node->id)));
+    }
+  }
+
   if (node->body->type == CODE_BLOCK_NODE) {
     visit_code_block_node(emit, node->body->inner, false);
   } else {
     visit_ast_node(emit, node->body);
   }
   emit->code_obj = swp;
-
-  struct vec *func_params = vec_new();
-  for (int i = 0; i < node->params->len; i++) {
-    struct ast_node *id_ast = vec_get(node->params, i);
-    vec_push(func_params, clone_str(((struct id_node *)id_ast->inner)->id));
-  }
 
   add_inst(emit,
            build_func_inst_new(func, func_params, node->ret_type != NULL));
