@@ -1,6 +1,5 @@
-class MyClass {
-    func myFunc() {
-        return 1;
-    }
+func myFunc(x) {
+    println (x);
 }
 
+myFunc("a");

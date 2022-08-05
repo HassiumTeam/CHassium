@@ -54,12 +54,6 @@ struct func_obj_ctx {
   struct obj *self;
 };
 
-struct func_param {
-  char *id;
-  struct code_obj *code_obj;
-  struct obj *type;
-};
-
 struct num_obj_ctx {
   bool is_float;
   int val_int;

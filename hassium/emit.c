@@ -51,8 +51,6 @@ static struct vm_inst *store_id_inst_new(char *);
 static struct vm_inst *super_inst_new(int);
 static struct vm_inst *unary_op_inst_new(unary_op_type_t);
 
-static struct func_param *func_param_new(char *, struct code_obj *);
-
 static char *tmp_symbol();
 static void add_inst(struct emit *, struct vm_inst *);
 static int new_label();
@@ -265,18 +263,8 @@ static void visit_func_decl_node(struct emit *emit,
 
   struct vec *func_params = vec_new();
   for (int i = 0; i < node->params->len; i++) {
-    struct ast_node *param_ast = vec_get(node->params, i);
-    struct id_node *id_node = param_ast->inner;
-    struct code_obj *type = NULL;
-    if (id_node->type != NULL) {
-      type = code_obj_new(NULL);
-      struct code_obj *tmp = emit->code_obj;
-      emit->code_obj = type;
-      visit_ast_node(emit, id_node->type);
-      add_inst(emit, vm_inst_new(INST_RETURN, NULL));
-      emit->code_obj = tmp;
-    }
-    vec_push(func_params, func_param_new(clone_str(id_node->id), type));
+    struct ast_node *id_ast = vec_get(node->params, i);
+    vec_push(func_params, clone_str(((struct id_node *)id_ast->inner)->id));
   }
 
   add_inst(emit,
@@ -570,13 +558,4 @@ static struct vm_inst *unary_op_inst_new(unary_op_type_t type) {
       (struct unary_op_inst *)calloc(1, sizeof(struct unary_op_inst));
   inner->type = type;
   return vm_inst_new(INST_UNARY_OP, inner);
-}
-
-static struct func_param *func_param_new(char *id, struct code_obj *code_obj) {
-  struct func_param *func_param =
-      (struct func_param *)malloc(sizeof(struct func_param));
-  func_param->id = id;
-  func_param->code_obj = code_obj;
-  func_param->type = NULL;
-  return func_param;
 }

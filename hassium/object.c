@@ -199,12 +199,8 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
 
     struct hashmap *frame = obj_hashmap_new();
     for (int i = 0; i < func->params->len; i++) {
-      struct func_param *func_param = vec_get(func->params, i);
-      struct obj *func_arg = vec_get(args, i);
-      if (func_param->type != NULL && !obj_is(func_arg, func_param->type)) {
-        printf("Arg must be of type %s\n", (char *)func_param->type->ctx);
-      }
-      obj_hashmap_set(frame, func_param->id, obj_inc_ref(func_arg));
+      obj_hashmap_set(frame, vec_get(func->params, i),
+                      obj_inc_ref(vec_get(args, i)));
     }
     struct obj *self = func->self;
     if (self != NULL && self->type == OBJ_WEAKREF) self = self->ctx;
