@@ -75,18 +75,26 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
         struct import_inst *import = inst->inner;
         struct hashmap *frame = obj_hashmap_new();
         vec_push(vm->frames, frame);
-        vm_run(NULL, vm, import->mod);
+        struct obj *mod_ret = vm_run(NULL, vm, import->mod);
         vec_pop(vm->frames);
+
+        struct hashmap *attribs = frame;
+        if (mod_ret != &none_obj) {
+          attribs = mod_ret->attribs;
+        }
+
         if (import->imports->len == 0) {
-          hashmap_iterate(frame, import_attrib_from_map, vec_peek(vm->frames));
+          hashmap_iterate(attribs, import_attrib_from_map,
+                          vec_peek(vm->frames));
         } else {
           for (int i = 0; i < import->imports->len; i++) {
             char *attrib = vec_get(import->imports, i);
             import_attrib_from_map(attrib, 0,
-                                   (uintptr_t)obj_hashmap_get(frame, attrib),
+                                   (uintptr_t)obj_hashmap_get(attribs, attrib),
                                    vec_peek(vm->frames));
           }
         }
+        obj_dec_ref(mod_ret);
         obj_hashmap_free(frame);
       } break;
       case INST_INVOKE: {
@@ -100,6 +108,12 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
         vec_free(args);
         obj_dec_ref(target);
       } break;
+      case INST_ITER: {
+        struct obj *target = vec_pop(stack);
+        vec_push(stack,
+                 obj_inc_ref(obj_invoke_attrib(target, "__iter__", vm, NULL)));
+        obj_dec_ref(target);
+      } break;
       case INST_JUMP:
         pos = intmap_get(code_obj->labels,
                          ((struct jump_inst *)inst->inner)->label);
@@ -111,12 +125,6 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
                            ((struct jump_inst *)inst->inner)->label);
         }
         obj_dec_ref(val);
-      } break;
-      case INST_ITER: {
-        struct obj *target = vec_pop(stack);
-        vec_push(stack,
-                 obj_inc_ref(obj_invoke_attrib(target, "__iter__", vm, NULL)));
-        obj_dec_ref(target);
       } break;
       case INST_JUMP_IF_FULL: {
         struct obj *iter = vec_pop(stack);
