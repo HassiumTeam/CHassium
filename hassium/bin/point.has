@@ -10,15 +10,15 @@ class Point {
         println (self.y);
     }
 
-    func addX (i) {
+    func addX (i: number) {
         self.x += i;
     }
 
-    func addY (i) {
+    func addY (i: number) {
         self.y += i;
     }
 
-    func __add__ (p: Point) {
+    func __add__ (p: Point): Point {
         ret = Point(self.x, self.y);
         ret.addX(p.x);
         ret.addY(p.y);

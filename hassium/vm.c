@@ -228,14 +228,17 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
       } break;
       case INST_TYPECHECK: {
         struct obj *type = vec_pop(stack);
+        struct obj *target;
         struct hashmap *frame = vec_peek(vm->frames);
-        if (inst->inner != NULL) {
-          struct obj *target = obj_hashmap_get(frame, inst->inner);
-          if (!obj_is(target, type)) {
-            printf("Expected type %s, got type %s\n", (char *)type->ctx,
-                   (char *)target->obj_type->ctx);
-            exit(-1);
-          }
+        if (inst->inner == NULL) {
+          target = vec_peek(stack);
+        } else {
+          target = obj_hashmap_get(frame, inst->inner);
+        }
+        if (!obj_is(target, type)) {
+          printf("Expected type %s, got type %s\n", (char *)type->ctx,
+                 (char *)target->obj_type->ctx);
+          exit(-1);
         }
         obj_dec_ref(type);
       } break;

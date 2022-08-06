@@ -2,6 +2,7 @@
 
 struct emit {
   struct code_obj *code_obj;
+  struct ast_node *ret_type;
 };
 
 static void visit_ast_node(struct emit *, struct ast_node *);
@@ -59,6 +60,7 @@ static void place_label(struct emit *, int);
 struct code_obj *compile_ast(struct ast_node *ast) {
   struct emit emit;
   emit.code_obj = code_obj_new(clone_str("__module__"));
+  emit.ret_type = NULL;
 
   visit_code_block_node(&emit, ast->inner, false);
 
@@ -250,7 +252,6 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
 
 static void visit_func_decl_node(struct emit *emit,
                                  struct func_decl_node *node) {
-  if (node->ret_type != NULL) visit_ast_node(emit, node->ret_type);
   struct code_obj *func = code_obj_new(clone_str(node->name));
   struct vec *func_params = vec_new();
 
@@ -266,12 +267,18 @@ static void visit_func_decl_node(struct emit *emit,
     }
   }
 
+  if (node->ret_type != NULL) {
+    emit->ret_type = node->ret_type;
+  }
+
   if (node->body->type == CODE_BLOCK_NODE) {
     visit_code_block_node(emit, node->body->inner, false);
   } else {
     visit_ast_node(emit, node->body);
   }
+
   emit->code_obj = swp;
+  emit->ret_type = NULL;
 
   add_inst(emit,
            build_func_inst_new(func, func_params, node->ret_type != NULL));
@@ -354,6 +361,10 @@ static void visit_raise_node(struct emit *emit, struct raise_node *node) {
 
 static void visit_return_node(struct emit *emit, struct return_node *node) {
   visit_ast_node(emit, node->value);
+  if (emit->ret_type != NULL) {
+    visit_ast_node(emit, emit->ret_type);
+    add_inst(emit, vm_inst_new(INST_TYPECHECK, NULL));
+  }
   add_inst(emit, vm_inst_new(INST_RETURN, NULL));
 }
 

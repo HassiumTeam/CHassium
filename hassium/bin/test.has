@@ -1,5 +1,8 @@
-func myFunc(x: string) {
-    println (x);
+class MyClass {
+    func new () { }
+    func myFunc (): MyClass {
+        return MyClass();
+    }
 }
 
-myFunc("a");
+MyClass.myFunc ();
