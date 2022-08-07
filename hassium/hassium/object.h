@@ -7,6 +7,7 @@
 
 struct vm {
   struct vec *frames;
+  struct hashmap *globals;
 };
 
 #include <vm.h>
@@ -81,13 +82,13 @@ void obj_free(struct obj *);
 
 static inline struct obj *obj_inc_ref(struct obj *obj) {
   if (obj == NULL || obj->ref_immune) return obj;
-  obj->refs++;
+  ++obj->refs;
   return obj;
 }
 
 static inline struct obj *obj_dec_ref(struct obj *obj) {
   if (obj == NULL || obj->ref_immune) return obj;
-  obj->refs--;
+  --obj->refs;
   if (obj->refs <= 0) obj_free(obj);
   return obj;
 }
@@ -108,6 +109,64 @@ bool obj_is(struct obj *, struct obj *);
 void obj_set_attrib(struct obj *, char *, struct obj *);
 void obj_store_index(struct obj *, struct obj *, struct obj *, struct vm *);
 struct obj *obj_to_string(struct obj *, struct vm *);
+
+struct stackframe {
+  struct obj **locals;
+  struct stackframe *parent;
+  int num_locals;
+  int refs;
+};
+
+static inline struct stackframe *stackframe_inc_ref(struct stackframe *);
+static inline struct stackframe *stackframe_dec_ref(struct stackframe *);
+
+static inline struct stackframe *stackframe_new(int num_locals) {
+  struct stackframe *stackframe = calloc(1, sizeof(struct stackframe));
+  stackframe->locals = calloc(num_locals, sizeof(struct obj *));
+  stackframe->parent = NULL;
+  stackframe->num_locals = num_locals;
+  stackframe->refs = 0;
+  return stackframe;
+}
+
+static inline struct obj *stackframe_free(struct stackframe *stackframe) {
+  for (int i = 0; i < stackframe->num_locals; i++) {
+    if (stackframe->locals[i] != NULL) {
+      obj_dec_ref(stackframe->locals[i]);
+    }
+  }
+  if (stackframe->num_locals > 0) {
+    free(stackframe->locals);
+  }
+  if (stackframe->parent != NULL) {
+    stackframe_dec_ref(stackframe->parent);
+  }
+  free(stackframe);
+}
+
+static inline struct obj *stackframe_get(struct stackframe *stackframe,
+                                         int idx) {
+  return stackframe->locals[idx];
+}
+
+static inline void stackframe_set(struct stackframe *stackframe, int idx,
+                                  struct obj *val) {
+  stackframe->locals[idx] = val;
+}
+
+static inline struct stackframe *stackframe_inc_ref(
+    struct stackframe *stackframe) {
+  ++stackframe->refs;
+}
+
+static inline struct stackframe *stackframe_dec_ref(
+    struct stackframe *stackframe) {
+  if (--stackframe->refs <= 0) {
+    stackframe_free(stackframe);
+    return NULL;
+  }
+  return stackframe;
+}
 
 static inline struct hashmap *obj_hashmap_new() { return hashmap_create(); }
 static inline struct obj *obj_hashmap_get(struct hashmap *map, char *key) {

@@ -197,16 +197,17 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
   } else if (obj->type == OBJ_FUNC) {
     struct func_obj_ctx *func = obj->ctx;
 
-    struct hashmap *frame = obj_hashmap_new();
+    struct stackframe *frame =
+        stackframe_inc_ref(stackframe_new(func->code_obj->locals));
     for (int i = 0; i < func->params->len; i++) {
-      obj_hashmap_set(frame, vec_get(func->params, i),
-                      obj_inc_ref(vec_get(args, i)));
+      stackframe_set(frame, (uintptr_t)vec_get(func->params, i),
+                     obj_inc_ref(vec_get(args, i)));
     }
     struct obj *self = func->self;
     if (self != NULL && self->type == OBJ_WEAKREF) self = self->ctx;
     vec_push(vm->frames, frame);
     ret = vm_run(self, vm, func->code_obj);
-    obj_hashmap_free(vec_pop(vm->frames));
+    stackframe_dec_ref(vec_pop(vm->frames));
     obj_down_ref(ret);
   } else if (obj_hashmap_has(obj->attribs, "new")) {
     struct obj *new = obj_instantiate(obj, vm, args);

@@ -9,6 +9,7 @@ struct code_obj {
   struct vec *instructions;
   struct intmap *labels;
   struct vec *consts;
+  int locals;
 };
 
 struct code_obj *code_obj_new(char *);

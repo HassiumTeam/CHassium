@@ -7,5 +7,6 @@ struct code_obj *code_obj_new(char *name) {
   code_obj->instructions = vec_new();
   code_obj->labels = intmap_new();
   code_obj->consts = vec_new();
+  code_obj->locals = 0;
   return code_obj;
 }

@@ -2,7 +2,9 @@
 
 struct emit {
   struct code_obj *code_obj;
+  struct vec *symtable;
   struct ast_node *ret_type;
+  struct code_obj *func;
 };
 
 static void visit_ast_node(struct emit *, struct ast_node *);
@@ -45,25 +47,37 @@ static struct vm_inst *jump_inst_new(int);
 static struct vm_inst *jump_if_false_inst_new(int);
 static struct vm_inst *jump_if_full_inst_new(int);
 static struct vm_inst *load_attrib_inst_new(char *);
+static struct vm_inst *load_fast_inst_new(int);
 static struct vm_inst *load_id_inst_new(char *);
 static struct vm_inst *load_const_inst_new(int);
 static struct vm_inst *store_attrib_inst_new(char *);
+static struct vm_inst *store_fast_inst_new(int);
 static struct vm_inst *store_id_inst_new(char *);
 static struct vm_inst *super_inst_new(int);
 static struct vm_inst *unary_op_inst_new(unary_op_type_t);
 
+static int next_sym_idx = 0;
 static char *tmp_symbol();
 static void add_inst(struct emit *, struct vm_inst *);
 static int new_label();
 static void place_label(struct emit *, int);
 
+static void enter_scope(struct emit *);
+static void leave_scope(struct emit *);
+static int get_symbol(struct emit *, char *);
+static bool has_symbol(struct emit *, char *);
+static int handle_symbol(struct emit *, char *);
+
 struct code_obj *compile_ast(struct ast_node *ast) {
   struct emit emit;
   emit.code_obj = code_obj_new(clone_str("__module__"));
   emit.ret_type = NULL;
+  emit.symtable = vec_new();
+  emit.func = NULL;
 
-  visit_code_block_node(&emit, ast->inner, false);
+  visit_code_block_node(&emit, ast->inner, true);
 
+  vec_free(emit.symtable);
   return emit.code_obj;
 }
 
@@ -165,7 +179,7 @@ static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node) {
       } break;
       case ID_NODE: {
         struct id_node *id_node = node->left->inner;
-        add_inst(emit, store_id_inst_new(clone_str(id_node->id)));
+        add_inst(emit, store_fast_inst_new(handle_symbol(emit, id_node->id)));
       } break;
       case SUBSCRIPT_NODE: {
         struct subscript_node *subscript_node = node->left->inner;
@@ -194,15 +208,15 @@ static void visit_class_decl_node(struct emit *emit,
 
 static void visit_code_block_node(struct emit *emit,
                                   struct code_block_node *node,
-                                  bool new_frame) {
-  if (new_frame) {
-    add_inst(emit, vm_inst_new(INST_PUSH_FRAME, NULL));
+                                  bool new_scope) {
+  if (new_scope) {
+    enter_scope(emit);
   }
   for (int i = 0; i < node->children->len; i++) {
     visit_ast_node(emit, vec_get(node->children, i));
   }
-  if (new_frame) {
-    add_inst(emit, vm_inst_new(INST_POP_FRAME, NULL));
+  if (new_scope) {
+    leave_scope(emit);
   }
 }
 
@@ -257,13 +271,22 @@ static void visit_func_decl_node(struct emit *emit,
 
   struct code_obj *swp = emit->code_obj;
   emit->code_obj = func;
+
+  int symbol_idx_swp = next_sym_idx;
+  if (emit->func == NULL) {
+    next_sym_idx = 0;
+    emit->func = func;
+  }
+
+  enter_scope(emit);
   for (int i = 0; i < node->params->len; i++) {
     struct ast_node *id_ast = vec_get(node->params, i);
     struct id_node *id_node = id_ast->inner;
-    vec_push(func_params, clone_str(id_node->id));
+    int sym = handle_symbol(emit, id_node->id);
+    vec_push(func_params, (void *)(uintptr_t)sym);
     if (id_node->type != NULL) {
       visit_ast_node(emit, id_node->type);
-      add_inst(emit, vm_inst_new(INST_TYPECHECK, clone_str(id_node->id)));
+      add_inst(emit, vm_inst_new(INST_TYPECHECK, (void *)(uintptr_t)sym));
     }
   }
 
@@ -277,13 +300,18 @@ static void visit_func_decl_node(struct emit *emit,
     visit_ast_node(emit, node->body);
   }
 
+  leave_scope(emit);
   emit->code_obj = swp;
   emit->ret_type = NULL;
+  if (emit->func == func) {
+    emit->func = NULL;
+    next_sym_idx = symbol_idx_swp;
+  }
 
   add_inst(emit,
            build_func_inst_new(func, func_params, node->ret_type != NULL));
   if (node->name != NULL) {
-    add_inst(emit, store_id_inst_new(clone_str(func->name)));
+    add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->name)));
     add_inst(emit, vm_inst_new(INST_POP, NULL));
   }
 }
@@ -297,6 +325,8 @@ static void visit_id_node(struct emit *emit, struct id_node *node) {
     add_inst(emit, vm_inst_new(INST_LOAD_NONE, NULL));
   } else if (strcmp(node->id, "self") == 0) {
     add_inst(emit, vm_inst_new(INST_LOAD_SELF, NULL));
+  } else if (get_symbol(emit, node->id) != -1) {
+    add_inst(emit, load_fast_inst_new(get_symbol(emit, node->id)));
   } else {
     add_inst(emit, load_id_inst_new(clone_str(node->id)));
   }
@@ -399,7 +429,9 @@ static void visit_super_node(struct emit *emit, struct super_node *node) {
 }
 
 static void visit_try_catch_node(struct emit *emit,
-                                 struct try_catch_node *node) {}
+                                 struct try_catch_node *node) {
+  struct code_obj *handler;
+}
 
 static void visit_unary_op_node(struct emit *emit, struct unary_op_node *node) {
   visit_ast_node(emit, node->target);
@@ -417,10 +449,10 @@ static void visit_while_node(struct emit *emit, struct while_node *node) {
   place_label(emit, end);
 }
 
-static int symbol_idx = 0;
+static int tmp_sym_idx = 0;
 static char *tmp_symbol() {
   char *sym = (char *)calloc(8, sizeof(char));
-  sprintf(sym, "%d", symbol_idx++);
+  sprintf(sym, "%d", tmp_sym_idx++);
   return sym;
 }
 
@@ -434,6 +466,34 @@ static int new_label() { return label_idx++; }
 static void place_label(struct emit *emit, int label) {
   intmap_insert(emit->code_obj->labels, label,
                 emit->code_obj->instructions->len - 1);
+}
+
+static void enter_scope(struct emit *emit) {
+  vec_push(emit->symtable, hashmap_create());
+}
+
+static void leave_scope(struct emit *emit) {
+  hashmap_free(vec_pop(emit->symtable));
+}
+
+static int get_symbol(struct emit *emit, char *sym) {
+  for (int i = emit->symtable->len - 1; i >= 0; --i) {
+    uintptr_t idx;
+    struct hashmap *map = vec_get(emit->symtable, i);
+    if (hashmap_get(map, sym, strlen(sym), &idx)) {
+      return (int)idx;
+    }
+  }
+  return -1;
+}
+
+static int handle_symbol(struct emit *emit, char *sym) {
+  int get = get_symbol(emit, sym);
+  if (get != -1) return get;
+  struct hashmap *map = vec_peek(emit->symtable);
+  hashmap_set(map, sym, strlen(sym), next_sym_idx++);
+  ++emit->code_obj->locals;
+  return next_sym_idx - 1;
 }
 
 static struct vm_inst *vm_inst_new(vm_inst_t type, void *inner) {
@@ -500,6 +560,13 @@ static struct vm_inst *invoke_inst_new(int arg_count) {
   return vm_inst_new(INST_INVOKE, inner);
 }
 
+static struct vm_inst *iter_next_inst_new(char *id) {
+  struct iter_next_inst *inner =
+      (struct iter_next_inst *)malloc(sizeof(struct iter_next_inst));
+  inner->id = id;
+  return vm_inst_new(INST_ITER_NEXT, inner);
+}
+
 static struct vm_inst *jump_inst_new(int label) {
   struct jump_inst *inner =
       (struct jump_inst *)calloc(1, sizeof(struct jump_inst));
@@ -528,11 +595,11 @@ static struct vm_inst *load_attrib_inst_new(char *attrib) {
   return vm_inst_new(INST_LOAD_ATTRIB, inner);
 }
 
-static struct vm_inst *iter_next_inst_new(char *id) {
-  struct iter_next_inst *inner =
-      (struct iter_next_inst *)malloc(sizeof(struct iter_next_inst));
-  inner->id = id;
-  return vm_inst_new(INST_ITER_NEXT, inner);
+static struct vm_inst *load_fast_inst_new(int idx) {
+  struct fast_inst *inner =
+      (struct fast_inst *)malloc(sizeof(struct fast_inst));
+  inner->idx = idx;
+  return vm_inst_new(INST_LOAD_FAST, inner);
 }
 
 static struct vm_inst *load_id_inst_new(char *id) {
@@ -554,6 +621,13 @@ static struct vm_inst *store_attrib_inst_new(char *attrib) {
       (struct store_attrib_inst *)calloc(1, sizeof(struct store_attrib_inst));
   inner->attrib = attrib;
   return vm_inst_new(INST_STORE_ATTRIB, inner);
+}
+
+static struct vm_inst *store_fast_inst_new(int idx) {
+  struct fast_inst *inner =
+      (struct fast_inst *)malloc(sizeof(struct fast_inst));
+  inner->idx = idx;
+  return vm_inst_new(INST_STORE_FAST, inner);
 }
 
 static struct vm_inst *store_id_inst_new(char *id) {

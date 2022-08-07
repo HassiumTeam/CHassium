@@ -1,8 +1,19 @@
-class MyClass {
-    func new () { }
-    func myFunc (): MyClass {
-        return MyClass();
-    }
+e = 1;
+{ a = 2;
+}
+{
+  { d = 4 }
+  b = 4;
+}
+gf= 1;
+e;
+
+func main () {
+  g = 1;
 }
 
-MyClass.myFunc ();
+func main2 () {
+  g = 2;
+}
+
+main ();

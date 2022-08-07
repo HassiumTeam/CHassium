@@ -32,6 +32,7 @@ typedef enum {
   INST_JUMP_IF_FULL,
   INST_LOAD_ATTRIB,
   INST_LOAD_FALSE,
+  INST_LOAD_FAST,
   INST_LOAD_ID,
   INST_LOAD_NONE,
   INST_LOAD_CONST,
@@ -46,6 +47,7 @@ typedef enum {
   INST_SELFREF,
   INST_STORE_ATTRIB,
   INST_STORE_ID,
+  INST_STORE_FAST,
   INST_STORE_SUBSCRIPT,
   INST_SUPER,
   INST_TYPECHECK,
@@ -78,6 +80,10 @@ struct build_func_inst {
 
 struct build_obj_inst {
   struct vec *keys;
+};
+
+struct fast_inst {
+  int idx;
 };
 
 struct invoke_inst {
