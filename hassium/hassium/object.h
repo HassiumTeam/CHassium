@@ -121,8 +121,9 @@ static inline struct stackframe *stackframe_inc_ref(struct stackframe *);
 static inline struct stackframe *stackframe_dec_ref(struct stackframe *);
 
 static inline struct stackframe *stackframe_new(int num_locals) {
-  struct stackframe *stackframe = calloc(1, sizeof(struct stackframe));
-  stackframe->locals = calloc(num_locals, sizeof(struct obj *));
+  struct stackframe *stackframe = malloc(sizeof(struct stackframe));
+  stackframe->locals =
+      num_locals > 0 ? calloc(num_locals, sizeof(struct obj *)) : NULL;
   stackframe->parent = NULL;
   stackframe->num_locals = num_locals;
   stackframe->refs = 0;

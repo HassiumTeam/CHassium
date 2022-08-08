@@ -277,7 +277,6 @@ static void visit_func_decl_node(struct emit *emit,
     next_sym_idx = 0;
     emit->func = func;
   }
-
   enter_scope(emit);
   for (int i = 0; i < node->params->len; i++) {
     struct ast_node *id_ast = vec_get(node->params, i);
@@ -286,7 +285,7 @@ static void visit_func_decl_node(struct emit *emit,
     vec_push(func_params, (void *)(uintptr_t)sym);
     if (id_node->type != NULL) {
       visit_ast_node(emit, id_node->type);
-      add_inst(emit, vm_inst_new(INST_TYPECHECK, (void *)(uintptr_t)sym));
+      add_inst(emit, vm_inst_new(INST_TYPECHECK_FAST, (void *)(uintptr_t)sym));
     }
   }
 
@@ -311,7 +310,11 @@ static void visit_func_decl_node(struct emit *emit,
   add_inst(emit,
            build_func_inst_new(func, func_params, node->ret_type != NULL));
   if (node->name != NULL) {
-    add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->name)));
+    if (emit->symtable->len > 1) {
+      add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->name)));
+    } else {
+      add_inst(emit, store_id_inst_new(clone_str(node->name)));
+    }
     add_inst(emit, vm_inst_new(INST_POP, NULL));
   }
 }

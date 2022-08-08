@@ -43,7 +43,6 @@ struct code_obj *compile_module_for_import(struct vec *from) {
 
 void run_module(struct code_obj *mod) {
   struct vm *vm = vm_new();
-  printf("mod has %d\n", mod->locals);
   vec_push(vm->frames, stackframe_inc_ref(stackframe_new(mod->locals)));
   obj_dec_ref(vm_run(NULL, vm, mod));
   code_obj_free(mod);

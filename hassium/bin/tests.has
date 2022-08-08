@@ -3,8 +3,8 @@ import Point from point;
 class MyClass {
     fib_num = 12;
     func fib (n: number): number {
-        if (n == 0) return n;
-        if (n == 1) return n;
+        if (n == 0) return 0;
+        if (n == 1) return 1;
         return MyClass.fib (n - 2) + MyClass.fib (n - 1);
     }
 }
