@@ -34,7 +34,7 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
   int pos = 0;
   while (pos < code_obj->instructions->len) {
     inst = vec_get(code_obj->instructions, pos);
-    // printf("Inst %d\n", inst->type);
+    printf("Inst %d\n", inst->type);
 
     switch (inst->type) {
       case INST_BIN_OP: {
@@ -52,17 +52,27 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
           vec_set(items, i, obj_down_ref(STACK_POP()));
         STACK_PUSH(obj_inc_ref(obj_array_new(items)));
       } break;
-      // case INST_BUILD_CLASS: {
-      //   struct build_class_inst *build_class = inst->inner;
-      //   struct obj *class =
-      //       obj_new(OBJ_TYPE, build_class->code_obj->name, &type_type_obj);
-      //   obj_hashmap_set(vec_peek(vm->frames), build_class->code_obj->name,
-      //                   obj_inc_ref(class));
-      //   vec_push(vm->frames, class->attribs);
-      //   vm_run(self, vm, build_class->code_obj);
-      //   vec_pop(vm->frames);
-
-      // } break;
+      case INST_BUILD_CLASS: {
+        struct build_class_inst *build_class = inst->inner;
+        struct obj *class =
+            obj_new(OBJ_TYPE, build_class->code_obj->name, &type_type_obj);
+        obj_hashmap_set(vm->globals, build_class->code_obj->name,
+                        obj_inc_ref(class));
+        vec_push(
+            vm->frames,
+            stackframe_inc_ref(stackframe_new(build_class->code_obj->locals)));
+        vm_run(self, vm, build_class->code_obj);
+        struct stackframe *class_frame = vec_pop(vm->frames);
+        for (int i = 0; i < class_frame->num_locals; i++) {
+          struct obj *local = stackframe_get(class_frame, i);
+          if (local == NULL) continue;
+          if (local->type == OBJ_FUNC) {
+            struct func_obj_ctx *func_ctx = (struct func_obj_ctx *)local->ctx;
+            obj_set_attrib(class, func_ctx->code_obj->name, local);
+          }
+        }
+        stackframe_dec_ref(class_frame);
+      } break;
       case INST_BUILD_FUNC: {
         struct build_func_inst *build_func = inst->inner;
         STACK_PUSH(obj_inc_ref(
@@ -205,7 +215,7 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
       case INST_STORE_FAST: {
         int idx = ((struct fast_inst *)inst->inner)->idx;
         struct obj *existing = stackframe_get(vec_peek(vm->frames), idx);
-        locals[idx] = STACK_POP();
+        locals[idx] = obj_inc_ref(STACK_PEEK());
         obj_dec_ref(existing);
       } break;
       case INST_STORE_ID: {
@@ -276,6 +286,7 @@ static void import_attrib_from_map(void *key, size_t ksize, uintptr_t value,
 }
 
 static void vm_inst_free(struct vm_inst *);
+
 void code_obj_free(struct code_obj *code_obj) {
   for (int i = 0; i < code_obj->instructions->len; i++) {
     vm_inst_free(vec_get(code_obj->instructions, i));
@@ -300,9 +311,6 @@ static void vm_inst_free(struct vm_inst *inst) {
     case INST_BUILD_FUNC: {
       struct build_func_inst *build_func = inst->inner;
       code_obj_free(build_func->code_obj);
-      for (int i = 0; i < build_func->params->len; i++) {
-        free(vec_get(build_func->params, i));
-      }
       vec_free(build_func->params);
     } break;
     case INST_BUILD_OBJ:
@@ -330,5 +338,6 @@ static void vm_inst_free(struct vm_inst *inst) {
       break;
   }
   if (inst->inner != NULL) free(inst->inner);
+  int type = inst->type;
   free(inst);
 }

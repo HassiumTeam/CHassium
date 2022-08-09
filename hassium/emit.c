@@ -5,6 +5,7 @@ struct emit {
   struct vec *symtable;
   struct ast_node *ret_type;
   struct code_obj *func;
+  struct code_obj *class;
 };
 
 static void visit_ast_node(struct emit *, struct ast_node *);
@@ -74,6 +75,7 @@ struct code_obj *compile_ast(struct ast_node *ast) {
   emit.ret_type = NULL;
   emit.symtable = vec_new();
   emit.func = NULL;
+  emit.class = NULL;
 
   visit_code_block_node(&emit, ast->inner, true);
 
@@ -199,10 +201,23 @@ static void visit_class_decl_node(struct emit *emit,
                                   struct class_decl_node *node) {
   if (node->extends != NULL) visit_ast_node(emit, node->extends);
   struct code_obj *class = code_obj_new(clone_str(node->name));
+
+  int symbol_idx_swp = next_sym_idx;
+  if (emit->class == NULL) {
+    next_sym_idx = 0;
+    emit->class = class;
+  }
+
   struct code_obj *swp = emit->code_obj;
   emit->code_obj = class;
-  visit_code_block_node(emit, node->body->inner, false);
+  visit_ast_node(emit, node->body);
   emit->code_obj = swp;
+
+  if (emit->class == class) {
+    emit->class = NULL;
+    next_sym_idx = symbol_idx_swp;
+  }
+
   add_inst(emit, build_class_inst_new(class, node->extends != NULL));
 }
 
@@ -246,7 +261,7 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
   int end = new_label();
   char *id = tmp_symbol();
 
-  add_inst(emit, vm_inst_new(INST_PUSH_FRAME, NULL));
+  enter_scope(emit);
   visit_ast_node(emit, node->target);
   add_inst(emit, vm_inst_new(INST_ITER, NULL));
   add_inst(emit, store_id_inst_new(id));
@@ -261,7 +276,7 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
   add_inst(emit, jump_inst_new(body));
 
   place_label(emit, end);
-  add_inst(emit, vm_inst_new(INST_POP_FRAME, NULL));
+  leave_scope(emit);
 }
 
 static void visit_func_decl_node(struct emit *emit,
@@ -271,6 +286,9 @@ static void visit_func_decl_node(struct emit *emit,
 
   struct code_obj *swp = emit->code_obj;
   emit->code_obj = func;
+  if (node->ret_type != NULL) {
+    emit->ret_type = node->ret_type;
+  }
 
   int symbol_idx_swp = next_sym_idx;
   if (emit->func == NULL) {
@@ -278,6 +296,7 @@ static void visit_func_decl_node(struct emit *emit,
     emit->func = func;
   }
   enter_scope(emit);
+
   for (int i = 0; i < node->params->len; i++) {
     struct ast_node *id_ast = vec_get(node->params, i);
     struct id_node *id_node = id_ast->inner;
@@ -287,10 +306,6 @@ static void visit_func_decl_node(struct emit *emit,
       visit_ast_node(emit, id_node->type);
       add_inst(emit, vm_inst_new(INST_TYPECHECK_FAST, (void *)(uintptr_t)sym));
     }
-  }
-
-  if (node->ret_type != NULL) {
-    emit->ret_type = node->ret_type;
   }
 
   if (node->body->type == CODE_BLOCK_NODE) {

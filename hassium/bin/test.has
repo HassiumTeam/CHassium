@@ -1,7 +1,23 @@
-func fib (n: number): number {
-  if (n == 0) return n;
-  if (n == 1) return n;
-  return fib (n - 2) + fib (n - 1);
+class MyClass {
+  func new (x, y) {
+    self.x = x;
+    self.y = y;
+  }
+
+  func add () {
+    return self.x + self.y;
+  }
+
+  func __add__ (x: MyClass): MyClass {
+    res = MyClass (self.x, self.y);
+    res.x += x.x;
+    res.y += x.y;
+    return res;
+  }
 }
 
-println (fib (32));
+a = MyClass(3, 6);
+b = MyClass(7, 8);
+c = a + b;
+println (c.x);
+println (c.y);
