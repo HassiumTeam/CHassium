@@ -28,7 +28,8 @@ struct obj *obj_builtin_new(builtin_func_t, struct obj *);
 struct obj *obj_iter_new(struct obj *);
 struct obj *obj_iter_target(struct obj *);
 
-struct obj *obj_func_new(struct code_obj *, struct vec *, struct obj *);
+struct obj *obj_func_new(struct code_obj *, struct vec *, struct obj *,
+                         struct stackframe *);
 
 struct obj *obj_num_new(bool, int, float);
 bool obj_num_is_float(struct obj *);

@@ -10,6 +10,13 @@ struct vm {
   struct hashmap *globals;
 };
 
+struct stackframe {
+  struct obj **locals;
+  struct stackframe *parent;
+  int num_locals;
+  int refs;
+};
+
 #include <vm.h>
 
 typedef struct obj *(*builtin_func_t)(struct obj *, struct vm *, struct vec *);
@@ -53,6 +60,7 @@ struct func_obj_ctx {
   struct code_obj *code_obj;
   struct vec *params;
   struct obj *self;
+  struct stackframe *frame;
 };
 
 struct num_obj_ctx {
@@ -110,13 +118,6 @@ void obj_set_attrib(struct obj *, char *, struct obj *);
 void obj_store_index(struct obj *, struct obj *, struct obj *, struct vm *);
 struct obj *obj_to_string(struct obj *, struct vm *);
 
-struct stackframe {
-  struct obj **locals;
-  struct stackframe *parent;
-  int num_locals;
-  int refs;
-};
-
 static inline struct stackframe *stackframe_inc_ref(struct stackframe *);
 static inline struct stackframe *stackframe_dec_ref(struct stackframe *);
 
@@ -157,14 +158,18 @@ static inline void stackframe_set(struct stackframe *stackframe, int idx,
 
 static inline struct stackframe *stackframe_inc_ref(
     struct stackframe *stackframe) {
-  ++stackframe->refs;
+  if (stackframe != NULL) {
+    ++stackframe->refs;
+  }
 }
 
 static inline struct stackframe *stackframe_dec_ref(
     struct stackframe *stackframe) {
-  if (--stackframe->refs <= 0) {
-    stackframe_free(stackframe);
-    return NULL;
+  if (stackframe != NULL) {
+    if (--stackframe->refs <= 0) {
+      stackframe_free(stackframe);
+      return NULL;
+    }
   }
   return stackframe;
 }

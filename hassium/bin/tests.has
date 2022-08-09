@@ -73,7 +73,7 @@ func main () {
     p3.print();
 }
 
-println (MyClass.fib (MyClass.fib_num));
+println (MyClass.fib (13));
 
 func add (x: any, y: any, z: any): any {
     return x + y + z;

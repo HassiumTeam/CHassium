@@ -45,6 +45,7 @@ void run_module(struct code_obj *mod) {
   struct vm *vm = vm_new();
   vec_push(vm->frames, stackframe_inc_ref(stackframe_new(mod->locals)));
   obj_dec_ref(vm_run(NULL, vm, mod));
+  stackframe_dec_ref(vec_pop(vm->frames));
   code_obj_free(mod);
   vm_free(vm);
 }

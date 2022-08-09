@@ -74,7 +74,7 @@ struct build_class_inst {
 struct build_func_inst {
   struct code_obj *code_obj;
   struct vec *params;
-  bool with_return_type;
+  bool closure;
 };
 
 struct build_obj_inst {

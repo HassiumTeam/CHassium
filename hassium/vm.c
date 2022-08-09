@@ -15,8 +15,9 @@ struct vm *vm_new() {
 }
 
 void vm_free(struct vm *vm) {
-  for (int i = 0; i < vm->frames->len; i++)
+  for (int i = 0; i < vm->frames->len; i++) {
     stackframe_dec_ref(vec_get(vm->frames, i));
+  }
   vec_free(vm->frames);
   obj_hashmap_free(vm->globals);
   obj_bool_free(&true_obj);
@@ -34,7 +35,7 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
   int pos = 0;
   while (pos < code_obj->instructions->len) {
     inst = vec_get(code_obj->instructions, pos);
-    printf("Inst %d\n", inst->type);
+    // printf("Inst %d\n", inst->type);
 
     switch (inst->type) {
       case INST_BIN_OP: {
@@ -58,11 +59,13 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
             obj_new(OBJ_TYPE, build_class->code_obj->name, &type_type_obj);
         obj_hashmap_set(vm->globals, build_class->code_obj->name,
                         obj_inc_ref(class));
-        vec_push(
-            vm->frames,
-            stackframe_inc_ref(stackframe_new(build_class->code_obj->locals)));
+
+        struct stackframe *class_frame =
+            stackframe_new(build_class->code_obj->locals);
+        vec_push(vm->frames, stackframe_inc_ref(class_frame));
         vm_run(self, vm, build_class->code_obj);
-        struct stackframe *class_frame = vec_pop(vm->frames);
+        vec_pop(vm->frames);
+
         for (int i = 0; i < class_frame->num_locals; i++) {
           struct obj *local = stackframe_get(class_frame, i);
           if (local == NULL) continue;
@@ -75,42 +78,45 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
       } break;
       case INST_BUILD_FUNC: {
         struct build_func_inst *build_func = inst->inner;
-        STACK_PUSH(obj_inc_ref(
-            obj_func_new(build_func->code_obj, build_func->params, NULL)));
+        struct stackframe *frame = NULL;
+        if (build_func->closure) {
+          frame = topframe;
+        }
+        STACK_PUSH(obj_inc_ref(obj_func_new(build_func->code_obj,
+                                            build_func->params, NULL, frame)));
       } break;
       case INST_BUILD_OBJ: {
         struct obj *new = obj_new(OBJ_ANON, NULL, &object_type_obj);
         struct vec *keys = ((struct build_obj_inst *)inst->inner)->keys;
-        for (int i = keys->len - 1; i >= 0; i--)
+        for (int i = keys->len - 1; i >= 0; --i)
           obj_set_attrib(new, vec_get(keys, i), obj_down_ref(STACK_POP()));
         STACK_PUSH(obj_inc_ref(new));
       } break;
-      // case INST_IMPORT: {
-      //   struct import_inst *import = inst->inner;
-      //   struct hashmap *frame = obj_hashmap_new();
-      //   vec_push(vm->frames, frame);
-      //   struct obj *mod_ret = vm_run(NULL, vm, import->mod);
-      //   vec_pop(vm->frames);
+      case INST_IMPORT: {
+        struct import_inst *import = inst->inner;
+        struct stackframe *import_frame = stackframe_new(import->mod->locals);
+        vec_push(vm->frames, stackframe_inc_ref(import_frame));
+        struct obj *mod_ret = vm_run(NULL, vm, import->mod);
+        vec_pop(vm->frames);
+        struct hashmap *attribs = NULL;
+        if (mod_ret != &none_obj) {
+          attribs = mod_ret->attribs;
+        }
 
-      //   struct hashmap *attribs = frame;
-      //   if (mod_ret != &none_obj) {
-      //     attribs = mod_ret->attribs;
-      //   }
-
-      //   if (import->imports->len == 0) {
-      //     hashmap_iterate(attribs, import_attrib_from_map,
-      //                     vec_peek(vm->frames));
-      //   } else {
-      //     for (int i = 0; i < import->imports->len; i++) {
-      //       char *attrib = vec_get(import->imports, i);
-      //       import_attrib_from_map(attrib, 0,
-      //                              (uintptr_t)obj_hashmap_get(attribs,
-      //                              attrib), vec_peek(vm->frames));
-      //     }
-      //   }
-      //   obj_dec_ref(mod_ret);
-      //   obj_hashmap_free(frame);
-      // } break;
+        if (import->imports->len == 0) {
+          hashmap_iterate(attribs, import_attrib_from_map,
+                          vec_peek(vm->frames));
+        } else {
+          for (int i = 0; i < import->imports->len; i++) {
+            char *attrib = vec_get(import->imports, i);
+            import_attrib_from_map(attrib, 0,
+                                   (uintptr_t)obj_hashmap_get(attribs, attrib),
+                                   vm->globals);
+          }
+        }
+        stackframe_dec_ref(import_frame);
+        obj_dec_ref(mod_ret);
+      } break;
       case INST_INVOKE: {
         int arg_count = ((struct invoke_inst *)inst->inner)->arg_count;
         struct vec *args = vec_new();
@@ -279,10 +285,10 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
 
 static void import_attrib_from_map(void *key, size_t ksize, uintptr_t value,
                                    void *usr) {
-  struct hashmap *frame = usr;
+  struct hashmap *map = usr;
   struct obj *obj_val = (struct obj *)value;
-  obj_dec_ref(obj_hashmap_get(frame, key));
-  obj_hashmap_set(frame, key, obj_inc_ref(obj_val));
+  obj_dec_ref(obj_hashmap_get(map, key));
+  obj_hashmap_set(map, key, obj_inc_ref(obj_val));
 }
 
 static void vm_inst_free(struct vm_inst *);
@@ -296,8 +302,9 @@ void code_obj_free(struct code_obj *code_obj) {
   }
   vec_free(code_obj->instructions);
   intmap_free(code_obj->labels);
-  for (int i = 0; i < code_obj->consts->len; i++)
+  for (int i = 0; i < code_obj->consts->len; i++) {
     obj_dec_ref(vec_get(code_obj->consts, i));
+  }
   vec_free(code_obj->consts);
   free(code_obj);
 }

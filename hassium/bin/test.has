@@ -1,23 +1,9 @@
-class MyClass {
-  func new (x, y) {
-    self.x = x;
-    self.y = y;
+func main () {
+  x = 1;
+  func sub (a) {
+    return a + x;
   }
-
-  func add () {
-    return self.x + self.y;
-  }
-
-  func __add__ (x: MyClass): MyClass {
-    res = MyClass (self.x, self.y);
-    res.x += x.x;
-    res.y += x.y;
-    return res;
-  }
+  sub (2);
 }
 
-a = MyClass(3, 6);
-b = MyClass(7, 8);
-c = a + b;
-println (c.x);
-println (c.y);
+main ();

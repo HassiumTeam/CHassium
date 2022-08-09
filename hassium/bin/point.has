@@ -25,3 +25,5 @@ class Point {
         return ret;
     }
 }
+
+return { Point };

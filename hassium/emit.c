@@ -264,13 +264,13 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
   enter_scope(emit);
   visit_ast_node(emit, node->target);
   add_inst(emit, vm_inst_new(INST_ITER, NULL));
-  add_inst(emit, store_id_inst_new(id));
+  add_inst(emit, store_fast_inst_new(handle_symbol(emit, id)));
   add_inst(emit, vm_inst_new(INST_POP, NULL));
 
   place_label(emit, body);
-  add_inst(emit, load_id_inst_new(clone_str(id)));
+  add_inst(emit, load_fast_inst_new(get_symbol(emit, id)));
   add_inst(emit, jump_if_full_inst_new(end));  // note to decrement iter if full
-  add_inst(emit, store_id_inst_new(clone_str(node->id)));
+  add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->id)));
   add_inst(emit, vm_inst_new(INST_POP, NULL));
   visit_ast_node(emit, node->body);
   add_inst(emit, jump_inst_new(body));
@@ -282,9 +282,8 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
 static void visit_func_decl_node(struct emit *emit,
                                  struct func_decl_node *node) {
   struct code_obj *func = code_obj_new(clone_str(node->name));
-  struct vec *func_params = vec_new();
-
   struct code_obj *swp = emit->code_obj;
+  bool closure = false;
   emit->code_obj = func;
   if (node->ret_type != NULL) {
     emit->ret_type = node->ret_type;
@@ -295,8 +294,10 @@ static void visit_func_decl_node(struct emit *emit,
     next_sym_idx = 0;
     emit->func = func;
   }
+
   enter_scope(emit);
 
+  struct vec *func_params = vec_new();
   for (int i = 0; i < node->params->len; i++) {
     struct ast_node *id_ast = vec_get(node->params, i);
     struct id_node *id_node = id_ast->inner;
@@ -315,15 +316,18 @@ static void visit_func_decl_node(struct emit *emit,
   }
 
   leave_scope(emit);
+
   emit->code_obj = swp;
   emit->ret_type = NULL;
   if (emit->func == func) {
     emit->func = NULL;
     next_sym_idx = symbol_idx_swp;
+  } else {
+    emit->code_obj->locals += func->locals;
+    closure = true;
   }
 
-  add_inst(emit,
-           build_func_inst_new(func, func_params, node->ret_type != NULL));
+  add_inst(emit, build_func_inst_new(func, func_params, closure));
   if (node->name != NULL) {
     if (emit->symtable->len > 1) {
       add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->name)));
@@ -545,13 +549,12 @@ static struct vm_inst *build_class_inst_new(struct code_obj *code_obj,
 }
 
 static struct vm_inst *build_func_inst_new(struct code_obj *code_obj,
-                                           struct vec *params,
-                                           bool with_return_type) {
+                                           struct vec *params, bool closure) {
   struct build_func_inst *inner =
       (struct build_func_inst *)calloc(1, sizeof(struct build_func_inst));
   inner->code_obj = code_obj;
   inner->params = params;
-  inner->with_return_type = with_return_type;
+  inner->closure = closure;
   return vm_inst_new(INST_BUILD_FUNC, inner);
 }
 

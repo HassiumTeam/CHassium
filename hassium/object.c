@@ -29,7 +29,9 @@ void obj_free(struct obj *obj) {
   switch (obj->type) {
     case OBJ_ARRAY: {
       struct vec *items = obj->ctx;
-      for (int i = 0; i < items->len; i++) obj_dec_ref(vec_get(items, i));
+      for (int i = 0; i < items->len; i++) {
+        obj_dec_ref(vec_get(items, i));
+      }
       vec_free(items);
     } break;
     case OBJ_BUILTIN: {
@@ -40,6 +42,7 @@ void obj_free(struct obj *obj) {
     case OBJ_FUNC: {
       struct func_obj_ctx *func = obj->ctx;
       obj_dec_ref(func->self);
+      stackframe_dec_ref(func->frame);
       free(func);
     } break;
     case OBJ_ITER: {
@@ -160,7 +163,8 @@ static void instantiate_attrib(void *key, size_t ksize, uintptr_t value,
   if (attrib_val->type == OBJ_FUNC) {
     struct func_obj_ctx *func_ctx = attrib_val->ctx;
     struct obj *new_func =
-        obj_func_new(func_ctx->code_obj, func_ctx->params, new);
+        obj_func_new(func_ctx->code_obj, func_ctx->params, new,
+                     stackframe_inc_ref(func_ctx->frame));
     obj_set_attrib(new, key, new_func);
   } else {
     obj_set_attrib(new, key, attrib_val);
@@ -196,18 +200,23 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
     ret = builtin->func(self, vm, args);
   } else if (obj->type == OBJ_FUNC) {
     struct func_obj_ctx *func = obj->ctx;
-
-    struct stackframe *frame =
-        stackframe_inc_ref(stackframe_new(func->code_obj->locals));
+    struct stackframe *frame;
+    if (func->frame == NULL) {
+      frame = stackframe_new(func->code_obj->locals);
+    } else {
+      frame = func->frame;
+    }
     for (int i = 0; i < func->params->len; i++) {
       stackframe_set(frame, (uintptr_t)vec_get(func->params, i),
                      obj_inc_ref(vec_get(args, i)));
     }
     struct obj *self = func->self;
-    if (self != NULL && self->type == OBJ_WEAKREF) self = self->ctx;
-    vec_push(vm->frames, frame);
+    if (self != NULL && self->type == OBJ_WEAKREF) {
+      self = self->ctx;
+    }
+    vec_push(vm->frames, stackframe_inc_ref(frame));
     ret = vm_run(self, vm, func->code_obj);
-    stackframe_dec_ref(vec_pop(vm->frames));
+    struct stackframe *f = stackframe_dec_ref(vec_pop(vm->frames));
     obj_down_ref(ret);
   } else if (obj_hashmap_has(obj->attribs, "new")) {
     struct obj *new = obj_instantiate(obj, vm, args);
