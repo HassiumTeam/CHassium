@@ -215,7 +215,7 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
       self = self->ctx;
     }
     vec_push(vm->frames, stackframe_inc_ref(frame));
-    ret = vm_run(self, vm, func->code_obj);
+    ret = vm_run(vm, func->code_obj, self);
     struct stackframe *f = stackframe_dec_ref(vec_pop(vm->frames));
     obj_down_ref(ret);
   } else if (obj_hashmap_has(obj->attribs, "new")) {

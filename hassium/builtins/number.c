@@ -38,7 +38,7 @@ bool obj_num_is_float(struct obj *obj) {
 
 int obj_num_val(struct obj *obj) {
   struct num_obj_ctx *ctx = obj->ctx;
-  if (ctx->val_float != 0) {
+  if (ctx->is_float) {
     return (int)ctx->val_float;
   }
   return ctx->val_int;
@@ -46,8 +46,8 @@ int obj_num_val(struct obj *obj) {
 
 float obj_num_val_float(struct obj *obj) {
   struct num_obj_ctx *ctx = obj->ctx;
-  if (ctx->val_int != 0) {
-    return (float)ctx->val_float;
+  if (!ctx->is_float) {
+    return (float)ctx->val_int;
   }
   return ctx->val_float;
 }

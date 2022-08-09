@@ -25,7 +25,7 @@ void vm_free(struct vm *vm) {
   free(vm);
 }
 
-struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
+struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
   struct obj *stack[255];
   struct obj **stackptr = stack;
   struct stackframe *topframe = vec_peek(vm->frames);
@@ -63,7 +63,7 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
         struct stackframe *class_frame =
             stackframe_new(build_class->code_obj->locals);
         vec_push(vm->frames, stackframe_inc_ref(class_frame));
-        vm_run(self, vm, build_class->code_obj);
+        vm_run(vm, build_class->code_obj, self);
         vec_pop(vm->frames);
 
         for (int i = 0; i < class_frame->num_locals; i++) {
@@ -96,7 +96,7 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
         struct import_inst *import = inst->inner;
         struct stackframe *import_frame = stackframe_new(import->mod->locals);
         vec_push(vm->frames, stackframe_inc_ref(import_frame));
-        struct obj *mod_ret = vm_run(NULL, vm, import->mod);
+        struct obj *mod_ret = vm_run(vm, import->mod, NULL);
         vec_pop(vm->frames);
         struct hashmap *attribs = NULL;
         if (mod_ret != &none_obj) {
@@ -277,7 +277,7 @@ struct obj *vm_run(struct obj *self, struct vm *vm, struct code_obj *code_obj) {
         break;
     }
 
-    pos++;
+    ++pos;
   }
 
   return &none_obj;
@@ -289,62 +289,4 @@ static void import_attrib_from_map(void *key, size_t ksize, uintptr_t value,
   struct obj *obj_val = (struct obj *)value;
   obj_dec_ref(obj_hashmap_get(map, key));
   obj_hashmap_set(map, key, obj_inc_ref(obj_val));
-}
-
-static void vm_inst_free(struct vm_inst *);
-
-void code_obj_free(struct code_obj *code_obj) {
-  for (int i = 0; i < code_obj->instructions->len; i++) {
-    vm_inst_free(vec_get(code_obj->instructions, i));
-  }
-  if (code_obj->name != NULL) {
-    free(code_obj->name);
-  }
-  vec_free(code_obj->instructions);
-  intmap_free(code_obj->labels);
-  for (int i = 0; i < code_obj->consts->len; i++) {
-    obj_dec_ref(vec_get(code_obj->consts, i));
-  }
-  vec_free(code_obj->consts);
-  free(code_obj);
-}
-
-static void vm_inst_free(struct vm_inst *inst) {
-  // printf("freeing inst %d\n", inst->type);
-  switch (inst->type) {
-    case INST_BUILD_CLASS:
-      code_obj_free(((struct build_class_inst *)inst->inner)->code_obj);
-      break;
-    case INST_BUILD_FUNC: {
-      struct build_func_inst *build_func = inst->inner;
-      code_obj_free(build_func->code_obj);
-      vec_free(build_func->params);
-    } break;
-    case INST_BUILD_OBJ:
-      vec_free_deep(((struct build_obj_inst *)inst->inner)->keys);
-      break;
-    case INST_IMPORT: {
-      struct import_inst *import = inst->inner;
-      vec_free_deep(import->imports);
-      code_obj_free(import->mod);
-    } break;
-    case INST_ITER_NEXT:
-      free(((struct iter_next_inst *)inst->inner)->id);
-      break;
-    case INST_LOAD_ATTRIB:
-      free(((struct load_attrib_inst *)inst->inner)->attrib);
-      break;
-    case INST_LOAD_ID:
-      free(((struct load_id_inst *)inst->inner)->id);
-      break;
-    case INST_STORE_ATTRIB:
-      free(((struct store_attrib_inst *)inst->inner)->attrib);
-      break;
-    case INST_STORE_ID:
-      free(((struct store_id_inst *)inst->inner)->id);
-      break;
-  }
-  if (inst->inner != NULL) free(inst->inner);
-  int type = inst->type;
-  free(inst);
 }

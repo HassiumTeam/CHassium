@@ -3,11 +3,14 @@
 
 #include <ds/intmap.h>
 #include <ds/vec.h>
+#include <vm.h>
 
 struct code_obj {
   char *name;
   struct vec *instructions;
   struct intmap *labels;
+  struct vec *break_labels;
+  struct vec *cont_labels;
   struct vec *consts;
   int locals;
 };

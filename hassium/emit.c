@@ -12,9 +12,11 @@ static void visit_ast_node(struct emit *, struct ast_node *);
 static void visit_array_decl_node(struct emit *, struct array_decl_node *);
 static void visit_attrib_node(struct emit *, struct attrib_node *);
 static void visit_bin_op_node(struct emit *, struct bin_op_node *);
+static void visit_break_node(struct emit *);
 static void visit_class_decl_node(struct emit *, struct class_decl_node *);
 static void visit_code_block_node(struct emit *, struct code_block_node *,
                                   bool);
+static void visit_continue_node(struct emit *);
 static void visit_expr_stmt_node(struct emit *, struct expr_stmt_node *);
 static void visit_for_node(struct emit *, struct for_node *);
 static void visit_foreach_node(struct emit *, struct foreach_node *);
@@ -57,6 +59,12 @@ static struct vm_inst *store_id_inst_new(char *);
 static struct vm_inst *super_inst_new(int);
 static struct vm_inst *unary_op_inst_new(unary_op_type_t);
 
+struct labels_ctx {
+  int break_count;
+  int cont_count;
+};
+static struct labels_ctx save_labels(struct emit *);
+static void restore_labels(struct emit *, struct labels_ctx);
 static int next_sym_idx = 0;
 static char *tmp_symbol();
 static void add_inst(struct emit *, struct vm_inst *);
@@ -94,11 +102,17 @@ static void visit_ast_node(struct emit *emit, struct ast_node *node) {
     case BIN_OP_NODE:
       visit_bin_op_node(emit, node->inner);
       break;
+    case BREAK_NODE:
+      visit_break_node(emit);
+      break;
     case CLASS_DECL_NODE:
       visit_class_decl_node(emit, node->inner);
       break;
     case CODE_BLOCK_NODE:
       visit_code_block_node(emit, node->inner, true);
+      break;
+    case CONTINUE_NODE:
+      visit_continue_node(emit);
       break;
     case EXPR_STMT_NODE:
       visit_expr_stmt_node(emit, node->inner);
@@ -197,6 +211,15 @@ static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node) {
   }
 }
 
+static void visit_break_node(struct emit *emit) {
+  if (emit->code_obj->break_labels->len <= 0) {
+    printf("Invalid use of break\n");
+    exit(-1);
+  }
+  add_inst(emit,
+           jump_inst_new((uintptr_t)vec_pop(emit->code_obj->break_labels)));
+}
+
 static void visit_class_decl_node(struct emit *emit,
                                   struct class_decl_node *node) {
   if (node->extends != NULL) visit_ast_node(emit, node->extends);
@@ -235,6 +258,15 @@ static void visit_code_block_node(struct emit *emit,
   }
 }
 
+static void visit_continue_node(struct emit *emit) {
+  if (emit->code_obj->cont_labels->len <= 0) {
+    printf("Invalid use of continue\n");
+    exit(-1);
+  }
+  add_inst(emit,
+           jump_inst_new((uintptr_t)vec_pop(emit->code_obj->cont_labels)));
+}
+
 static void visit_expr_stmt_node(struct emit *emit,
                                  struct expr_stmt_node *node) {
   visit_ast_node(emit, node->expr);
@@ -244,6 +276,13 @@ static void visit_expr_stmt_node(struct emit *emit,
 static void visit_for_node(struct emit *emit, struct for_node *node) {
   int body = new_label();
   int end = new_label();
+  struct labels_ctx labels = {
+      .break_count = emit->code_obj->break_labels->len,
+      .cont_count = emit->code_obj->cont_labels->len,
+  };
+  vec_push(emit->code_obj->break_labels, (void *)(uintptr_t)end);
+  vec_push(emit->code_obj->cont_labels, (void *)(uintptr_t)body);
+
   visit_ast_node(emit, node->initial);
 
   place_label(emit, body);
@@ -254,12 +293,19 @@ static void visit_for_node(struct emit *emit, struct for_node *node) {
   add_inst(emit, jump_inst_new(body));
 
   place_label(emit, end);
+  restore_labels(emit, labels);
 }
 
 static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
   int body = new_label();
   int end = new_label();
   char *id = tmp_symbol();
+  struct labels_ctx labels = {
+      .break_count = emit->code_obj->break_labels->len,
+      .cont_count = emit->code_obj->cont_labels->len,
+  };
+  vec_push(emit->code_obj->break_labels, (void *)(uintptr_t)end);
+  vec_push(emit->code_obj->cont_labels, (void *)(uintptr_t)body);
 
   enter_scope(emit);
   visit_ast_node(emit, node->target);
@@ -277,6 +323,7 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
 
   place_label(emit, end);
   leave_scope(emit);
+  restore_labels(emit, labels);
 }
 
 static void visit_func_decl_node(struct emit *emit,
@@ -328,6 +375,7 @@ static void visit_func_decl_node(struct emit *emit,
   }
 
   add_inst(emit, build_func_inst_new(func, func_params, closure));
+
   if (node->name != NULL) {
     if (emit->symtable->len > 1) {
       add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->name)));
@@ -463,12 +511,33 @@ static void visit_unary_op_node(struct emit *emit, struct unary_op_node *node) {
 static void visit_while_node(struct emit *emit, struct while_node *node) {
   int body = new_label();
   int end = new_label();
+
+  struct labels_ctx labels = {
+      .break_count = emit->code_obj->break_labels->len,
+      .cont_count = emit->code_obj->cont_labels->len,
+  };
+  vec_push(emit->code_obj->break_labels, (void *)(uintptr_t)end);
+  vec_push(emit->code_obj->cont_labels, (void *)(uintptr_t)body);
+
   place_label(emit, body);
   visit_ast_node(emit, node->condition);
   add_inst(emit, jump_if_false_inst_new(end));
   visit_ast_node(emit, node->body);
   add_inst(emit, jump_inst_new(body));
+
   place_label(emit, end);
+  restore_labels(emit, labels);
+}
+
+static void restore_labels(struct emit *emit, struct labels_ctx labels_ctx) {
+  for (int i = emit->code_obj->break_labels->len; i < labels_ctx.break_count;
+       i++) {
+    vec_pop(emit->code_obj->break_labels);
+  }
+  for (int i = emit->code_obj->cont_labels->len; i < labels_ctx.cont_count;
+       i++) {
+    vec_pop(emit->code_obj->cont_labels);
+  }
 }
 
 static int tmp_sym_idx = 0;

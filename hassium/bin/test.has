@@ -1,9 +1,11 @@
 func main () {
-  x = 1;
-  func sub (a) {
-    return a + x;
-  }
-  sub (2);
+    a = 1;
+    while (a < 12) {
+        println (a);
+        if (a == 10) continue;
+        a += 1;
+        
+    }
 }
 
 main ();
