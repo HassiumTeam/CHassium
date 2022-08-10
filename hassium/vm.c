@@ -33,7 +33,8 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
 
   struct vm_inst *inst;
   int pos = 0;
-  while (pos < code_obj->instructions->len) {
+  int len = code_obj->instructions->len;
+  while (pos < len) {
     inst = vec_get(code_obj->instructions, pos);
     // printf("Inst %d\n", inst->type);
 

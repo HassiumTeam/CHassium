@@ -9,6 +9,7 @@ struct obj *obj_new(obj_ctx_type_t type, void *ctx, struct obj *obj_type) {
   obj->type = type;
   obj->ctx = ctx;
   obj->obj_type = obj_inc_ref(obj_type);
+  obj->ops = NULL;
   obj->parent = &object_type_obj;
   obj->attribs = obj_hashmap_new();
   obj->weak_refs = NULL;
@@ -78,47 +79,89 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
 
   switch (type) {
     case BIN_OP_ADD:
-      ret = obj_invoke_attrib(left, "__add__", vm, args);
+      if (left->ops != NULL) {
+        ret = left->ops->__add__(left, vm, args);
+      } else {
+        ret = obj_invoke_attrib(left, "__add__", vm, args);
+      }
       break;
     case BIN_OP_AND:
       ret = bool_to_obj(obj_is_true(left, vm) && obj_is_true(right, vm));
     case BIN_OP_DIV:
-      ret = obj_invoke_attrib(left, "__div__", vm, args);
+      if (left->ops != NULL) {
+        ret = left->ops->__div__(left, vm, args);
+      } else {
+        ret = obj_invoke_attrib(left, "__div__", vm, args);
+      }
       break;
     case BIN_OP_EQ:
-      ret = obj_eq(left, right, vm);
+      if (left == right) {
+        ret = &true_obj;
+      } else if (left->ops != NULL) {
+        ret = left->ops->__eq__(left, vm, args);
+      } else {
+        ret = obj_invoke_attrib(left, "__eq__", vm, args);
+      }
       break;
     case BIN_OP_GREATER:
-      ret = obj_invoke_attrib(left, "__greater__", vm, args);
-      break;
-    case BIN_OP_GREATER_OR_EQ:
-      if (obj_eq(left, right, vm) == &true_obj) {
-        ret = &true_obj;
+      if (left->ops != NULL) {
+        ret = left->ops->__greater__(left, vm, args);
       } else {
         ret = obj_invoke_attrib(left, "__greater__", vm, args);
       }
       break;
-    case BIN_OP_LESSER:
-      ret = obj_invoke_attrib(left, "__lesser__", vm, args);
-      break;
-    case BIN_OP_LESSER_OR_EQ:
-      if (obj_eq(left, right, vm) == &true_obj) {
+    case BIN_OP_GREATER_OR_EQ:
+      if (obj_bin_op(BIN_OP_EQ, left, right, vm) == &true_obj) {
         ret = &true_obj;
+      } else {
+        if (left->ops != NULL) {
+          ret = left->ops->__add__(left, vm, args);
+        } else {
+          ret = obj_invoke_attrib(left, "__add__", vm, args);
+        }
+      }
+      break;
+    case BIN_OP_LESSER:
+      if (left->ops != NULL) {
+        ret = left->ops->__lesser__(left, vm, args);
       } else {
         ret = obj_invoke_attrib(left, "__lesser__", vm, args);
       }
       break;
+    case BIN_OP_LESSER_OR_EQ:
+      if (obj_bin_op(BIN_OP_EQ, left, right, vm) == &true_obj) {
+        ret = &true_obj;
+      } else {
+        if (left->ops != NULL) {
+          ret = left->ops->__lesser__(left, vm, args);
+        } else {
+          ret = obj_invoke_attrib(left, "__lesser__", vm, args);
+        }
+      }
+      break;
     case BIN_OP_MOD:
-      ret = obj_invoke_attrib(left, "__mod__", vm, args);
+      if (left->ops != NULL) {
+        ret = left->ops->__mod__(left, vm, args);
+      } else {
+        ret = obj_invoke_attrib(left, "__mod__", vm, args);
+      }
       break;
     case BIN_OP_MUL:
-      ret = obj_invoke_attrib(left, "__mul__", vm, args);
+      if (left->ops != NULL) {
+        ret = left->ops->__mul__(left, vm, args);
+      } else {
+        ret = obj_invoke_attrib(left, "__mul__", vm, args);
+      }
       break;
     case BIN_OP_OR:
       ret = bool_to_obj(obj_is_true(left, vm) || obj_is_true(right, vm));
       break;
     case BIN_OP_SUB:
-      ret = obj_invoke_attrib(left, "__sub__", vm, args);
+      if (left->ops != NULL) {
+        ret = left->ops->__sub__(left, vm, args);
+      } else {
+        ret = obj_invoke_attrib(left, "__sub__", vm, args);
+      }
       break;
   }
 

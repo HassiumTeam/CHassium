@@ -10,6 +10,17 @@ static struct obj *__mul__(struct obj *, struct vm *, struct vec *);
 static struct obj *__sub__(struct obj *, struct vm *, struct vec *);
 static struct obj *toString(struct obj *, struct vm *, struct vec *);
 
+static struct builtin_ops number_builtin_ops = {
+    .__add__ = __add__,
+    .__div__ = __div__,
+    .__eq__ = __eq__,
+    .__greater__ = __greater__,
+    .__lesser__ = __lesser__,
+    .__mod__ = __mod__,
+    .__mul__ = __mul__,
+    .__sub__ = __sub__,
+};
+
 struct obj *obj_num_new(bool is_float, int val_int, float val_float) {
   struct num_obj_ctx *ctx =
       (struct num_obj_ctx *)malloc(sizeof(struct num_obj_ctx));
@@ -18,14 +29,7 @@ struct obj *obj_num_new(bool is_float, int val_int, float val_float) {
   ctx->val_float = val_float;
 
   struct obj *num = obj_new(OBJ_NUM, ctx, &number_type_obj);
-  obj_set_attrib(num, "__add__", obj_builtin_new(__add__, num));
-  obj_set_attrib(num, "__div__", obj_builtin_new(__div__, num));
-  obj_set_attrib(num, "__eq__", obj_builtin_new(__eq__, num));
-  obj_set_attrib(num, "__greater__", obj_builtin_new(__greater__, num));
-  obj_set_attrib(num, "__lesser__", obj_builtin_new(__lesser__, num));
-  obj_set_attrib(num, "__mod__", obj_builtin_new(__mod__, num));
-  obj_set_attrib(num, "__mul__", obj_builtin_new(__mul__, num));
-  obj_set_attrib(num, "__sub__", obj_builtin_new(__sub__, num));
+  num->ops = &number_builtin_ops;
   obj_set_attrib(num, "toString", obj_builtin_new(toString, num));
 
   return num;

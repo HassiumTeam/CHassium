@@ -1,8 +1,5 @@
-func main () {
-    a = 8
-    do {
-        a += 1;
-        println(a);
-    } while (a < 5);
+func fib(n) {
+    if n < 2 return n
+    return fib(n - 2) + fib(n - 1)
 }
-main ();
+println(fib(32))

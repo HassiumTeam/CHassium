@@ -35,12 +35,24 @@ typedef enum {
   OBJ_WEAKREF,
 } obj_ctx_type_t;
 
+struct builtin_ops {
+  builtin_func_t __add__;
+  builtin_func_t __div__;
+  builtin_func_t __eq__;
+  builtin_func_t __greater__;
+  builtin_func_t __lesser__;
+  builtin_func_t __mod__;
+  builtin_func_t __mul__;
+  builtin_func_t __sub__;
+};
+
 struct obj {
-  int refs;
-  bool ref_immune;
   obj_ctx_type_t type;
-  struct obj *obj_type;
+  bool ref_immune;
+  int refs;
   void *ctx;
+  struct builtin_ops *ops;
+  struct obj *obj_type;
   struct obj *parent;
   struct hashmap *attribs;
   struct vec *weak_refs;
