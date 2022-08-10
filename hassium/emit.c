@@ -17,6 +17,8 @@ static void visit_class_decl_node(struct emit *, struct class_decl_node *);
 static void visit_code_block_node(struct emit *, struct code_block_node *,
                                   bool);
 static void visit_continue_node(struct emit *);
+static void visit_delete_node(struct emit *, struct delete_node *);
+static void visit_do_while_node(struct emit *, struct while_node *);
 static void visit_expr_stmt_node(struct emit *, struct expr_stmt_node *);
 static void visit_for_node(struct emit *, struct for_node *);
 static void visit_foreach_node(struct emit *, struct foreach_node *);
@@ -113,6 +115,12 @@ static void visit_ast_node(struct emit *emit, struct ast_node *node) {
       break;
     case CONTINUE_NODE:
       visit_continue_node(emit);
+      break;
+    case DELETE_NODE:
+      visit_delete_node(emit, node->inner);
+      break;
+    case DO_WHILE_NODE:
+      visit_do_while_node(emit, node->inner);
       break;
     case EXPR_STMT_NODE:
       visit_expr_stmt_node(emit, node->inner);
@@ -265,6 +273,32 @@ static void visit_continue_node(struct emit *emit) {
   }
   add_inst(emit,
            jump_inst_new((uintptr_t)vec_pop(emit->code_obj->cont_labels)));
+}
+
+static void visit_delete_node(struct emit *emit, struct delete_node *node) {
+  visit_ast_node(emit, node->target);
+  add_inst(emit, vm_inst_new(INST_DELETE, NULL));
+}
+
+static void visit_do_while_node(struct emit *emit, struct while_node *node) {
+  int body = new_label();
+  int end = new_label();
+
+  struct labels_ctx labels = {
+      .break_count = emit->code_obj->break_labels->len,
+      .cont_count = emit->code_obj->cont_labels->len,
+  };
+  vec_push(emit->code_obj->break_labels, (void *)(uintptr_t)end);
+  vec_push(emit->code_obj->cont_labels, (void *)(uintptr_t)body);
+
+  place_label(emit, body);
+  visit_ast_node(emit, node->body);
+  visit_ast_node(emit, node->condition);
+  add_inst(emit, jump_if_false_inst_new(end));
+  add_inst(emit, jump_inst_new(body));
+
+  place_label(emit, end);
+  restore_labels(emit, labels);
 }
 
 static void visit_expr_stmt_node(struct emit *emit,

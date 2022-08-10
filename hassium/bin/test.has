@@ -1,11 +1,8 @@
 func main () {
-    a = 1;
-    while (a < 12) {
-        println (a);
-        if (a == 10) continue;
+    a = 8
+    do {
         a += 1;
-        
-    }
+        println(a);
+    } while (a < 5);
 }
-
 main ();

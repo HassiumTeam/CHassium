@@ -12,6 +12,8 @@ typedef enum {
   CLASS_DECL_NODE,
   CONTINUE_NODE,
   CODE_BLOCK_NODE,
+  DELETE_NODE,
+  DO_WHILE_NODE,
   EMPTY_STMT,
   EXPR_STMT_NODE,
   FOR_NODE,
@@ -81,6 +83,10 @@ struct class_decl_node {
 
 struct code_block_node {
   struct vec *children;
+};
+
+struct delete_node {
+  struct ast_node *target;
 };
 
 struct expr_stmt_node {
@@ -184,6 +190,8 @@ struct ast_node *bin_op_node_new(bin_op_type_t, struct ast_node *,
 struct ast_node *class_decl_node_new(char *, struct ast_node *,
                                      struct ast_node *);
 struct ast_node *code_block_node_new(struct vec *);
+struct ast_node *delete_node_new(struct ast_node *);
+struct ast_node *do_while_node_new(struct ast_node *, struct ast_node *);
 struct ast_node *expr_stmt_node_new(struct ast_node *);
 struct ast_node *for_node_new(struct ast_node *, struct ast_node *,
                               struct ast_node *, struct ast_node *);

@@ -92,6 +92,9 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
           obj_set_attrib(new, vec_get(keys, i), obj_down_ref(STACK_POP()));
         STACK_PUSH(obj_inc_ref(new));
       } break;
+      case INST_DELETE: {
+        STACK_POP()->refs = 1;
+      } break;
       case INST_IMPORT: {
         struct import_inst *import = inst->inner;
         struct stackframe *import_frame = stackframe_new(import->mod->locals);
@@ -104,8 +107,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         }
 
         if (import->imports->len == 0) {
-          hashmap_iterate(attribs, import_attrib_from_map,
-                          vec_peek(vm->frames));
+          hashmap_iterate(attribs, import_attrib_from_map, vm->globals);
         } else {
           for (int i = 0; i < import->imports->len; i++) {
             char *attrib = vec_get(import->imports, i);

@@ -49,6 +49,22 @@ struct ast_node *code_block_node_new(struct vec *children) {
   return ast_node_new(CODE_BLOCK_NODE, inner);
 }
 
+struct ast_node *delete_node_new(struct ast_node *target) {
+  struct delete_node *inner =
+      (struct delete_node *)malloc(sizeof(struct delete_node));
+  inner->target = target;
+  return ast_node_new(DELETE_NODE, inner);
+}
+
+struct ast_node *do_while_node_new(struct ast_node *body,
+                                   struct ast_node *condition) {
+  struct while_node *inner =
+      (struct while_node *)malloc(sizeof(struct while_node));
+  inner->condition = condition;
+  inner->body = body;
+  return ast_node_new(DO_WHILE_NODE, inner);
+}
+
 struct ast_node *expr_stmt_node_new(struct ast_node *expr) {
   struct expr_stmt_node *inner =
       (struct expr_stmt_node *)calloc(1, sizeof(struct expr_stmt_node));
@@ -211,6 +227,7 @@ static void attrib_node_free(struct attrib_node *);
 static void bin_op_node_free(struct bin_op_node *);
 static void class_decl_node_free(struct class_decl_node *);
 static void code_block_node_free(struct code_block_node *);
+static void delete_node_free(struct delete_node *);
 static void expr_stmt_node_free(struct expr_stmt_node *);
 static void for_node_free(struct for_node *);
 static void foreach_node_free(struct foreach_node *);
@@ -246,6 +263,9 @@ void ast_node_free(struct ast_node *node) {
       break;
     case CODE_BLOCK_NODE:
       code_block_node_free(node->inner);
+      break;
+    case DELETE_NODE:
+      delete_node_free(node->inner);
       break;
     case EXPR_STMT_NODE:
       expr_stmt_node_free(node->inner);
@@ -296,6 +316,7 @@ void ast_node_free(struct ast_node *node) {
       unary_op_node_free(node->inner);
       break;
     case WHILE_NODE:
+    case DO_WHILE_NODE:
       while_node_free(node->inner);
       break;
     default:
@@ -335,6 +356,10 @@ static void class_decl_node_free(struct class_decl_node *node) {
 
 static void code_block_node_free(struct code_block_node *node) {
   vec_ast_node_free(node->children);
+}
+
+static void delete_node_free(struct delete_node *node) {
+  ast_node_free(node->target);
 }
 
 static void expr_stmt_node_free(struct expr_stmt_node *node) {

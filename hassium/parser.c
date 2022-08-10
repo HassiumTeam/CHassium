@@ -9,6 +9,8 @@ struct parser {
 static struct ast_node *parse_statement(struct parser *);
 static struct ast_node *parse_block(struct parser *);
 static struct ast_node *parse_class(struct parser *);
+static struct ast_node *parse_delete(struct parser *);
+static struct ast_node *parse_do(struct parser *);
 static struct ast_node *parse_for(struct parser *);
 static struct ast_node *parse_foreach(struct parser *);
 static struct ast_node *parse_func(struct parser *);
@@ -20,6 +22,7 @@ static struct ast_node *parse_super(struct parser *);
 static struct ast_node *parse_try(struct parser *);
 static struct ast_node *parse_while(struct parser *);
 static struct ast_node *parse_expr_stmt(struct parser *);
+
 static struct ast_node *parse_expr(struct parser *);
 static struct ast_node *parse_assign(struct parser *);
 static struct ast_node *parse_or(struct parser *);
@@ -59,11 +62,15 @@ static struct ast_node *parse_statement(struct parser *parser) {
   if (matchtok(parser, TOK_OBRACE))
     ret = parse_block(parser);
   else if (accepttokv(parser, TOK_ID, "break"))
-    return ast_node_new(BREAK_NODE, NULL);
+    ret = ast_node_new(BREAK_NODE, NULL);
   else if (matchtokv(parser, TOK_ID, "class"))
     ret = parse_class(parser);
   else if (accepttokv(parser, TOK_ID, "continue"))
-    return ast_node_new(CONTINUE_NODE, NULL);
+    ret = ast_node_new(CONTINUE_NODE, NULL);
+  else if (matchtokv(parser, TOK_ID, "delete"))
+    ret = parse_delete(parser);
+  else if (matchtokv(parser, TOK_ID, "do"))
+    ret = parse_do(parser);
   else if (matchtokv(parser, TOK_ID, "for"))
     ret = parse_for(parser);
   else if (matchtokv(parser, TOK_ID, "foreach"))
@@ -107,6 +114,20 @@ static struct ast_node *parse_class(struct parser *parser) {
   if (accepttokv(parser, TOK_ID, "extends")) extends = parse_expr(parser);
   struct ast_node *body = parse_statement(parser);
   return class_decl_node_new(id, extends, body);
+}
+
+static struct ast_node *parse_delete(struct parser *parser) {
+  expecttokv(parser, TOK_ID, "delete");
+  struct ast_node *target = parse_expr(parser);
+  return delete_node_new(target);
+}
+
+static struct ast_node *parse_do(struct parser *parser) {
+  expecttokv(parser, TOK_ID, "do");
+  struct ast_node *body = parse_statement(parser);
+  expecttokv(parser, TOK_ID, "while");
+  struct ast_node *condition = parse_expr(parser);
+  return do_while_node_new(body, condition);
 }
 
 static struct ast_node *parse_for(struct parser *parser) {
