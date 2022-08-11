@@ -44,7 +44,7 @@ static struct obj *__index__(struct obj *arr, struct vm *vm, struct vec *args) {
     exit(-1);
   }
   int idx = obj_num_val(key);
-  return vec_get(arr->ctx, idx);
+  return vec_get((struct vec *)arr->ctx, idx);
 }
 
 static struct obj *__iter__(struct obj *arr, struct vm *vm, struct vec *args) {
@@ -164,12 +164,12 @@ static struct obj *map(struct obj *arr, struct vm *vm, struct vec *args) {
 
 static struct obj *peek(struct obj *arr, struct vm *vm, struct vec *args) {
   if (obj_array_len(arr) == 0) return &none_obj;
-  return vec_peek(arr->ctx);
+  return vec_peek((struct vec *)arr->ctx);
 }
 
 static struct obj *pop(struct obj *arr, struct vm *vm, struct vec *args) {
   if (obj_array_len(arr) == 0) return &none_obj;
-  return obj_down_ref(vec_pop(arr->ctx));
+  return obj_down_ref(vec_pop((struct vec *)arr->ctx));
 }
 
 static struct obj *push(struct obj *arr, struct vm *vm, struct vec *args) {

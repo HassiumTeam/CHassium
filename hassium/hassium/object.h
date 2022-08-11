@@ -158,21 +158,15 @@ static inline struct obj *stackframe_free(struct stackframe *stackframe) {
   free(stackframe);
 }
 
-static inline struct obj *stackframe_get(struct stackframe *stackframe,
-                                         int idx) {
-  return stackframe->locals[idx];
-}
-
-static inline void stackframe_set(struct stackframe *stackframe, int idx,
-                                  struct obj *val) {
-  stackframe->locals[idx] = val;
-}
+#define stackframe_get(s, i) ((s)->locals[(i)])
+#define stackframe_set(s, i, v) ((s)->locals[(i)] = (v))
 
 static inline struct stackframe *stackframe_inc_ref(
     struct stackframe *stackframe) {
   if (stackframe != NULL) {
     ++stackframe->refs;
   }
+  return stackframe;
 }
 
 static inline struct stackframe *stackframe_dec_ref(
@@ -186,7 +180,8 @@ static inline struct stackframe *stackframe_dec_ref(
   return stackframe;
 }
 
-static inline struct hashmap *obj_hashmap_new() { return hashmap_create(); }
+#define obj_hashmap_new() hashmap_create()
+
 static inline struct obj *obj_hashmap_get(struct hashmap *map, char *key) {
   if (map == NULL) return &none_obj;
 

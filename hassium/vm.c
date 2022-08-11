@@ -169,16 +169,16 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         obj_dec_ref(target);
       } break;
       case INST_LOAD_CONST: {
-        struct obj *const_ = vec_get(
-            code_obj->consts, ((struct load_const_inst *)inst->inner)->idx);
-        STACK_PUSH(obj_inc_ref(const_));
+        STACK_PUSH(obj_inc_ref(vec_get(
+            code_obj->consts, ((struct load_const_inst *)inst->inner)->idx)));
       }; break;
       case INST_LOAD_FALSE:
         STACK_PUSH(&false_obj);
         break;
       case INST_LOAD_FAST: {
-        int idx = ((struct fast_inst *)inst->inner)->idx;
-        STACK_PUSH(obj_inc_ref(stackframe_get(vec_peek(vm->frames), idx)));
+        STACK_PUSH(obj_inc_ref(
+            stackframe_get((struct stackframe *)vec_peek(vm->frames),
+                           ((struct fast_inst *)inst->inner)->idx)));
       } break;
       case INST_LOAD_ID: {
         bool found = false;
@@ -210,10 +210,9 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_POP:
         obj_dec_ref(STACK_POP());
         break;
-      case INST_RETURN: {
-        struct obj *ret = STACK_POP();
-        return ret;
-      } break;
+      case INST_RETURN:
+        return STACK_POP();
+        break;
       case INST_STORE_ATTRIB: {
         struct obj *target = STACK_POP();
         struct obj *val = STACK_PEEK();
@@ -223,7 +222,8 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       }; break;
       case INST_STORE_FAST: {
         int idx = ((struct fast_inst *)inst->inner)->idx;
-        struct obj *existing = stackframe_get(vec_peek(vm->frames), idx);
+        struct obj *existing =
+            stackframe_get((struct stackframe *)vec_peek(vm->frames), idx);
         locals[idx] = obj_inc_ref(STACK_PEEK());
         obj_dec_ref(existing);
       } break;

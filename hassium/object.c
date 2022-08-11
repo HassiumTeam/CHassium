@@ -76,7 +76,6 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
   struct obj *ret;
   struct vec *args = vec_new();
   vec_push(args, right);
-
   switch (type) {
     case BIN_OP_ADD:
       if (left->ops != NULL) {
