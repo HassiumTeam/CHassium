@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+typedef uint64_t vm_inst_t;
+
 struct vm *vm_new();
 void vm_free(struct vm *);
 
@@ -53,83 +55,6 @@ typedef enum {
   INST_TYPECHECK,
   INST_TYPECHECK_FAST,
   INST_UNARY_OP,
-} vm_inst_t;
-
-struct vm_inst {
-  vm_inst_t type;
-  void *inner;
-};
-
-struct bin_op_inst {
-  bin_op_type_t type;
-};
-
-struct build_array_inst {
-  int count;
-};
-
-struct build_class_inst {
-  struct code_obj *code_obj;
-  bool extends;
-};
-
-struct build_func_inst {
-  struct code_obj *code_obj;
-  struct vec *params;
-  bool closure;
-};
-
-struct build_obj_inst {
-  struct vec *keys;
-};
-
-struct fast_inst {
-  int idx;
-};
-
-struct invoke_inst {
-  int arg_count;
-};
-
-struct jump_inst {
-  int label;
-};
-
-struct import_inst {
-  struct vec *imports;
-  struct code_obj *mod;
-};
-
-struct iter_next_inst {
-  char *id;
-};
-
-struct load_attrib_inst {
-  char *attrib;
-};
-
-struct load_id_inst {
-  char *id;
-};
-
-struct load_const_inst {
-  int idx;
-};
-
-struct store_attrib_inst {
-  char *attrib;
-};
-
-struct store_id_inst {
-  char *id;
-};
-
-struct super_inst {
-  int arg_count;
-};
-
-struct unary_op_inst {
-  unary_op_type_t type;
-};
+} vm_opcode_t;
 
 #endif

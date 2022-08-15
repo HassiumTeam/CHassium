@@ -38,28 +38,29 @@ static void visit_try_catch_node(struct emit *, struct try_catch_node *);
 static void visit_unary_op_node(struct emit *, struct unary_op_node *);
 static void visit_while_node(struct emit *, struct while_node *);
 
-static struct vm_inst *vm_inst_new(vm_inst_t, void *);
-static struct vm_inst *bin_op_inst_new(bin_op_type_t);
-static struct vm_inst *build_array_inst_new(int);
-static struct vm_inst *build_class_inst_new(struct code_obj *, bool);
-static struct vm_inst *build_func_inst_new(struct code_obj *, struct vec *,
-                                           bool);
-static struct vm_inst *build_obj_inst_new(struct vec *);
-static struct vm_inst *import_inst_new(struct vec *, struct code_obj *);
-static struct vm_inst *invoke_inst_new(int);
-static struct vm_inst *iter_next_inst_new(char *);
-static struct vm_inst *jump_inst_new(int);
-static struct vm_inst *jump_if_false_inst_new(int);
-static struct vm_inst *jump_if_full_inst_new(int);
-static struct vm_inst *load_attrib_inst_new(char *);
-static struct vm_inst *load_fast_inst_new(int);
-static struct vm_inst *load_id_inst_new(char *);
-static struct vm_inst *load_const_inst_new(int);
-static struct vm_inst *store_attrib_inst_new(char *);
-static struct vm_inst *store_fast_inst_new(int);
-static struct vm_inst *store_id_inst_new(char *);
-static struct vm_inst *super_inst_new(int);
-static struct vm_inst *unary_op_inst_new(unary_op_type_t);
+static vm_inst_t vm_inst_new(uint16_t opcode, uint16_t opshort, uint32_t op);
+static vm_inst_t bin_op_inst_new(bin_op_type_t);
+static vm_inst_t build_array_inst_new(int);
+static vm_inst_t build_class_inst_new(struct emit *, struct code_obj *, bool);
+static vm_inst_t build_func_inst_new(struct emit *, struct code_obj *,
+                                     struct vec *, bool);
+static vm_inst_t build_obj_inst_new(struct emit *, struct vec *);
+static vm_inst_t import_inst_new(struct emit *, struct vec *,
+                                 struct code_obj *);
+static vm_inst_t invoke_inst_new(int);
+static vm_inst_t iter_next_inst_new(struct emit *, char *);
+static vm_inst_t jump_inst_new(int);
+static vm_inst_t jump_if_false_inst_new(int);
+static vm_inst_t jump_if_full_inst_new(int);
+static vm_inst_t load_attrib_inst_new(struct emit *, char *);
+static vm_inst_t load_fast_inst_new(int);
+static vm_inst_t load_id_inst_new(struct emit *, char *);
+static vm_inst_t load_const_inst_new(int);
+static vm_inst_t store_attrib_inst_new(struct emit *, char *);
+static vm_inst_t store_fast_inst_new(int);
+static vm_inst_t store_id_inst_new(struct emit *, char *);
+static vm_inst_t super_inst_new(int);
+static vm_inst_t unary_op_inst_new(unary_op_type_t);
 
 struct labels_ctx {
   int break_count;
@@ -69,7 +70,7 @@ static struct labels_ctx save_labels(struct emit *);
 static void restore_labels(struct emit *, struct labels_ctx);
 static int next_sym_idx = 0;
 static char *tmp_symbol();
-static void add_inst(struct emit *, struct vm_inst *);
+static void add_inst(struct emit *, vm_inst_t);
 static int new_label();
 static void place_label(struct emit *, int);
 
@@ -189,7 +190,7 @@ static void visit_array_decl_node(struct emit *emit,
 
 static void visit_attrib_node(struct emit *emit, struct attrib_node *node) {
   visit_ast_node(emit, node->target);
-  add_inst(emit, load_attrib_inst_new(clone_str(node->attrib)));
+  add_inst(emit, load_attrib_inst_new(emit, clone_str(node->attrib)));
 }
 
 static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node) {
@@ -199,7 +200,8 @@ static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node) {
       case ATTRIB_NODE: {
         struct attrib_node *attrib_node = node->left->inner;
         visit_ast_node(emit, attrib_node->target);
-        add_inst(emit, store_attrib_inst_new(clone_str(attrib_node->attrib)));
+        add_inst(emit,
+                 store_attrib_inst_new(emit, clone_str(attrib_node->attrib)));
       } break;
       case ID_NODE: {
         struct id_node *id_node = node->left->inner;
@@ -209,7 +211,7 @@ static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node) {
         struct subscript_node *subscript_node = node->left->inner;
         visit_ast_node(emit, subscript_node->key);
         visit_ast_node(emit, subscript_node->target);
-        add_inst(emit, vm_inst_new(INST_STORE_SUBSCRIPT, NULL));
+        add_inst(emit, vm_inst_new(INST_STORE_SUBSCRIPT, 0, 0));
       }
     }
   } else {
@@ -249,7 +251,7 @@ static void visit_class_decl_node(struct emit *emit,
     next_sym_idx = symbol_idx_swp;
   }
 
-  add_inst(emit, build_class_inst_new(class, node->extends != NULL));
+  add_inst(emit, build_class_inst_new(emit, class, node->extends != NULL));
 }
 
 static void visit_code_block_node(struct emit *emit,
@@ -277,7 +279,7 @@ static void visit_continue_node(struct emit *emit) {
 
 static void visit_delete_node(struct emit *emit, struct delete_node *node) {
   visit_ast_node(emit, node->target);
-  add_inst(emit, vm_inst_new(INST_DELETE, NULL));
+  add_inst(emit, vm_inst_new(INST_DELETE, 0, 0));
 }
 
 static void visit_do_while_node(struct emit *emit, struct while_node *node) {
@@ -304,7 +306,7 @@ static void visit_do_while_node(struct emit *emit, struct while_node *node) {
 static void visit_expr_stmt_node(struct emit *emit,
                                  struct expr_stmt_node *node) {
   visit_ast_node(emit, node->expr);
-  add_inst(emit, vm_inst_new(INST_POP, NULL));
+  add_inst(emit, vm_inst_new(INST_POP, 0, 0));
 }
 
 static void visit_for_node(struct emit *emit, struct for_node *node) {
@@ -343,15 +345,15 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
 
   enter_scope(emit);
   visit_ast_node(emit, node->target);
-  add_inst(emit, vm_inst_new(INST_ITER, NULL));
+  add_inst(emit, vm_inst_new(INST_ITER, 0, 0));
   add_inst(emit, store_fast_inst_new(handle_symbol(emit, id)));
-  add_inst(emit, vm_inst_new(INST_POP, NULL));
+  add_inst(emit, vm_inst_new(INST_POP, 0, 0));
 
   place_label(emit, body);
   add_inst(emit, load_fast_inst_new(get_symbol(emit, id)));
   add_inst(emit, jump_if_full_inst_new(end));  // note to decrement iter if full
   add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->id)));
-  add_inst(emit, vm_inst_new(INST_POP, NULL));
+  add_inst(emit, vm_inst_new(INST_POP, 0, 0));
   visit_ast_node(emit, node->body);
   add_inst(emit, jump_inst_new(body));
 
@@ -386,7 +388,7 @@ static void visit_func_decl_node(struct emit *emit,
     vec_push(func_params, (void *)(uintptr_t)sym);
     if (id_node->type != NULL) {
       visit_ast_node(emit, id_node->type);
-      add_inst(emit, vm_inst_new(INST_TYPECHECK_FAST, (void *)(uintptr_t)sym));
+      add_inst(emit, vm_inst_new(INST_TYPECHECK_FAST, 0, (uintptr_t)sym));
     }
   }
 
@@ -408,31 +410,31 @@ static void visit_func_decl_node(struct emit *emit,
     closure = true;
   }
 
-  add_inst(emit, build_func_inst_new(func, func_params, closure));
+  add_inst(emit, build_func_inst_new(emit, func, func_params, closure));
 
   if (node->name != NULL) {
     if (emit->symtable->len > 1) {
       add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->name)));
     } else {
-      add_inst(emit, store_id_inst_new(clone_str(node->name)));
+      add_inst(emit, store_id_inst_new(emit, clone_str(node->name)));
     }
-    add_inst(emit, vm_inst_new(INST_POP, NULL));
+    add_inst(emit, vm_inst_new(INST_POP, 0, 0));
   }
 }
 
 static void visit_id_node(struct emit *emit, struct id_node *node) {
   if (strcmp(node->id, "true") == 0) {
-    add_inst(emit, vm_inst_new(INST_LOAD_TRUE, NULL));
+    add_inst(emit, vm_inst_new(INST_LOAD_TRUE, 0, 0));
   } else if (strcmp(node->id, "false") == 0) {
-    add_inst(emit, vm_inst_new(INST_LOAD_FALSE, NULL));
+    add_inst(emit, vm_inst_new(INST_LOAD_FALSE, 0, 0));
   } else if (strcmp(node->id, "none") == 0) {
-    add_inst(emit, vm_inst_new(INST_LOAD_NONE, NULL));
+    add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0));
   } else if (strcmp(node->id, "self") == 0) {
-    add_inst(emit, vm_inst_new(INST_LOAD_SELF, NULL));
+    add_inst(emit, vm_inst_new(INST_LOAD_SELF, 0, 0));
   } else if (get_symbol(emit, node->id) != -1) {
     add_inst(emit, load_fast_inst_new(get_symbol(emit, node->id)));
   } else {
-    add_inst(emit, load_id_inst_new(clone_str(node->id)));
+    add_inst(emit, load_id_inst_new(emit, clone_str(node->id)));
   }
 }
 
@@ -452,7 +454,7 @@ static void visit_if_node(struct emit *emit, struct if_node *node) {
 
 static void visit_import_node(struct emit *emit, struct import_node *node) {
   struct code_obj *mod = compile_module_for_import(node->from);
-  add_inst(emit, import_inst_new(node->imports, mod));
+  add_inst(emit, import_inst_new(emit, node->imports, mod));
 }
 
 static void visit_invoke_node(struct emit *emit, struct invoke_node *node) {
@@ -485,21 +487,21 @@ static void visit_obj_decl_node(struct emit *emit, struct obj_decl_node *node) {
   for (int i = 0; i < node->values->len; i++) {
     visit_ast_node(emit, vec_get(node->values, i));
   }
-  add_inst(emit, build_obj_inst_new(node->keys));
+  add_inst(emit, build_obj_inst_new(emit, node->keys));
 }
 
 static void visit_raise_node(struct emit *emit, struct raise_node *node) {
   visit_ast_node(emit, node->value);
-  add_inst(emit, vm_inst_new(INST_RAISE, NULL));
+  add_inst(emit, vm_inst_new(INST_RAISE, 0, 0));
 }
 
 static void visit_return_node(struct emit *emit, struct return_node *node) {
   visit_ast_node(emit, node->value);
   if (emit->ret_type != NULL) {
     visit_ast_node(emit, emit->ret_type);
-    add_inst(emit, vm_inst_new(INST_TYPECHECK, NULL));
+    add_inst(emit, vm_inst_new(INST_TYPECHECK, 0, 0));
   }
-  add_inst(emit, vm_inst_new(INST_RETURN, NULL));
+  add_inst(emit, vm_inst_new(INST_RETURN, 0, 0));
 }
 
 static void visit_string_node(struct emit *emit, struct string_node *node) {
@@ -523,7 +525,7 @@ static void visit_subscript_node(struct emit *emit,
                                  struct subscript_node *node) {
   visit_ast_node(emit, node->key);
   visit_ast_node(emit, node->target);
-  add_inst(emit, vm_inst_new(INST_LOAD_SUBSCRIPT, NULL));
+  add_inst(emit, vm_inst_new(INST_LOAD_SUBSCRIPT, 0, 0));
 }
 
 static void visit_super_node(struct emit *emit, struct super_node *node) {
@@ -581,8 +583,8 @@ static char *tmp_symbol() {
   return sym;
 }
 
-static void add_inst(struct emit *emit, struct vm_inst *inst) {
-  vec_push(emit->code_obj->instructions, inst);
+static void add_inst(struct emit *emit, vm_inst_t inst) {
+  vec_push(emit->code_obj->instructions, (void *)inst);
 }
 
 static int label_idx = 0;
@@ -621,156 +623,109 @@ static int handle_symbol(struct emit *emit, char *sym) {
   return next_sym_idx - 1;
 }
 
-static struct vm_inst *vm_inst_new(vm_inst_t type, void *inner) {
-  struct vm_inst *inst = (struct vm_inst *)calloc(1, sizeof(struct vm_inst));
-  inst->type = type;
-  inst->inner = inner;
+static vm_inst_t vm_inst_new(uint16_t opcode, uint16_t opshort, uint32_t op) {
+  vm_inst_t inst = 0;
+  inst |= ((uint64_t)opcode) << 48;
+  inst |= ((uint64_t)opshort) << 32;
+  inst |= op;
+
   return inst;
 }
 
-static struct vm_inst *bin_op_inst_new(bin_op_type_t type) {
-  struct bin_op_inst *inner =
-      (struct bin_op_inst *)calloc(1, sizeof(struct bin_op_inst));
-  inner->type = type;
-  return vm_inst_new(INST_BIN_OP, inner);
+static vm_inst_t bin_op_inst_new(bin_op_type_t type) {
+  return vm_inst_new(INST_BIN_OP, type, 0);
 }
 
-static struct vm_inst *build_array_inst_new(int count) {
-  struct build_array_inst *inner =
-      (struct build_array_inst *)malloc(sizeof(struct build_array_inst));
-  inner->count = count;
-  return vm_inst_new(INST_BUILD_ARRAY, inner);
+static vm_inst_t build_array_inst_new(int count) {
+  return vm_inst_new(INST_BUILD_ARRAY, 0, count);
 }
 
-static struct vm_inst *build_class_inst_new(struct code_obj *code_obj,
-                                            bool extends) {
-  struct build_class_inst *inner =
-      (struct build_class_inst *)calloc(1, sizeof(struct build_class_inst));
-  inner->code_obj = code_obj;
-  inner->extends = extends;
-  return vm_inst_new(INST_BUILD_CLASS, inner);
+static vm_inst_t build_class_inst_new(struct emit *emit,
+                                      struct code_obj *code_obj, bool extends) {
+  vec_push(emit->code_obj->code_objs, code_obj);
+  return vm_inst_new(INST_BUILD_CLASS, extends,
+                     emit->code_obj->code_objs->len - 1);
 }
 
-static struct vm_inst *build_func_inst_new(struct code_obj *code_obj,
-                                           struct vec *params, bool closure) {
-  struct build_func_inst *inner =
-      (struct build_func_inst *)calloc(1, sizeof(struct build_func_inst));
-  inner->code_obj = code_obj;
-  inner->params = params;
-  inner->closure = closure;
-  return vm_inst_new(INST_BUILD_FUNC, inner);
+static vm_inst_t build_func_inst_new(struct emit *emit,
+                                     struct code_obj *code_obj,
+                                     struct vec *params, bool closure) {
+  code_obj->params = params;
+  vec_push(emit->code_obj->code_objs, code_obj);
+  return vm_inst_new(INST_BUILD_FUNC, closure,
+                     emit->code_obj->code_objs->len - 1);
 }
 
-static struct vm_inst *build_obj_inst_new(struct vec *keys) {
-  struct build_obj_inst *inner =
-      (struct build_obj_inst *)malloc(sizeof(struct build_obj_inst));
-  inner->keys = keys;
-  return vm_inst_new(INST_BUILD_OBJ, inner);
+static vm_inst_t build_obj_inst_new(struct emit *emit, struct vec *keys) {
+  vec_push(emit->code_obj->vecs, keys);
+  return vm_inst_new(INST_BUILD_OBJ, 0, emit->code_obj->vecs->len - 1);
 }
 
-static struct vm_inst *import_inst_new(struct vec *imports,
-                                       struct code_obj *mod) {
-  struct import_inst *inner =
-      (struct import_inst *)malloc(sizeof(struct import_inst));
-  inner->imports = imports;
-  inner->mod = mod;
-  return vm_inst_new(INST_IMPORT, inner);
+static vm_inst_t import_inst_new(struct emit *emit, struct vec *imports,
+                                 struct code_obj *mod) {
+  vec_push(emit->code_obj->vecs, imports);
+  vec_push(emit->code_obj->code_objs, mod);
+  return vm_inst_new(INST_IMPORT, (uint16_t)emit->code_obj->vecs->len - 1,
+                     emit->code_obj->code_objs->len - 1);
 }
 
-static struct vm_inst *invoke_inst_new(int arg_count) {
-  struct invoke_inst *inner =
-      (struct invoke_inst *)calloc(1, sizeof(struct invoke_inst));
-  inner->arg_count = arg_count;
-  return vm_inst_new(INST_INVOKE, inner);
+static vm_inst_t invoke_inst_new(int arg_count) {
+  return vm_inst_new(INST_INVOKE, 0, arg_count);
 }
 
-static struct vm_inst *iter_next_inst_new(char *id) {
-  struct iter_next_inst *inner =
-      (struct iter_next_inst *)malloc(sizeof(struct iter_next_inst));
-  inner->id = id;
-  return vm_inst_new(INST_ITER_NEXT, inner);
+static vm_inst_t iter_next_inst_new(struct emit *emit, char *id) {
+  vec_push(emit->code_obj->strs, id);
+  return vm_inst_new(INST_ITER_NEXT, 0, emit->code_obj->strs->len - 1);
 }
 
-static struct vm_inst *jump_inst_new(int label) {
-  struct jump_inst *inner =
-      (struct jump_inst *)calloc(1, sizeof(struct jump_inst));
-  inner->label = label;
-  return vm_inst_new(INST_JUMP, inner);
+static vm_inst_t jump_inst_new(int label) {
+  return vm_inst_new(INST_JUMP, 0, label);
 }
 
-static struct vm_inst *jump_if_false_inst_new(int label) {
-  struct jump_inst *inner =
-      (struct jump_inst *)calloc(1, sizeof(struct jump_inst));
-  inner->label = label;
-  return vm_inst_new(INST_JUMP_IF_FALSE, inner);
+static vm_inst_t jump_if_false_inst_new(int label) {
+  return vm_inst_new(INST_JUMP_IF_FALSE, 0, label);
 }
 
-static struct vm_inst *jump_if_full_inst_new(int label) {
-  struct jump_inst *inner =
-      (struct jump_inst *)calloc(1, sizeof(struct jump_inst));
-  inner->label = label;
-  return vm_inst_new(INST_JUMP_IF_FULL, inner);
+static vm_inst_t jump_if_full_inst_new(int label) {
+  return vm_inst_new(INST_JUMP_IF_FULL, 0, label);
 }
 
-static struct vm_inst *load_attrib_inst_new(char *attrib) {
-  struct load_attrib_inst *inner =
-      (struct load_attrib_inst *)calloc(1, sizeof(struct load_attrib_inst));
-  inner->attrib = attrib;
-  return vm_inst_new(INST_LOAD_ATTRIB, inner);
+static vm_inst_t load_attrib_inst_new(struct emit *emit, char *attrib) {
+  vec_push(emit->code_obj->strs, attrib);
+  return vm_inst_new(INST_LOAD_ATTRIB, 0, emit->code_obj->strs->len - 1);
 }
 
-static struct vm_inst *load_fast_inst_new(int idx) {
-  struct fast_inst *inner =
-      (struct fast_inst *)malloc(sizeof(struct fast_inst));
-  inner->idx = idx;
-  return vm_inst_new(INST_LOAD_FAST, inner);
+static vm_inst_t load_fast_inst_new(int idx) {
+  return vm_inst_new(INST_LOAD_FAST, 0, idx);
 }
 
-static struct vm_inst *load_id_inst_new(char *id) {
-  struct load_id_inst *inner =
-      (struct load_id_inst *)calloc(1, sizeof(struct load_id_inst));
-  inner->id = id;
-  return vm_inst_new(INST_LOAD_ID, inner);
+static vm_inst_t load_id_inst_new(struct emit *emit, char *id) {
+  vec_push(emit->code_obj->strs, id);
+  return vm_inst_new(INST_LOAD_ID, 0, emit->code_obj->strs->len - 1);
 }
 
-static struct vm_inst *load_const_inst_new(int idx) {
-  struct load_const_inst *inner =
-      (struct load_const_inst *)calloc(1, sizeof(struct load_const_inst));
-  inner->idx = idx;
-  return vm_inst_new(INST_LOAD_CONST, inner);
+static vm_inst_t load_const_inst_new(int idx) {
+  return vm_inst_new(INST_LOAD_CONST, 0, idx);
 }
 
-static struct vm_inst *store_attrib_inst_new(char *attrib) {
-  struct store_attrib_inst *inner =
-      (struct store_attrib_inst *)calloc(1, sizeof(struct store_attrib_inst));
-  inner->attrib = attrib;
-  return vm_inst_new(INST_STORE_ATTRIB, inner);
+static vm_inst_t store_attrib_inst_new(struct emit *emit, char *attrib) {
+  vec_push(emit->code_obj->strs, attrib);
+  return vm_inst_new(INST_STORE_ATTRIB, 0, emit->code_obj->strs->len - 1);
 }
 
-static struct vm_inst *store_fast_inst_new(int idx) {
-  struct fast_inst *inner =
-      (struct fast_inst *)malloc(sizeof(struct fast_inst));
-  inner->idx = idx;
-  return vm_inst_new(INST_STORE_FAST, inner);
+static vm_inst_t store_fast_inst_new(int idx) {
+  return vm_inst_new(INST_STORE_FAST, 0, idx);
 }
 
-static struct vm_inst *store_id_inst_new(char *id) {
-  struct store_id_inst *inner =
-      (struct store_id_inst *)calloc(1, sizeof(struct store_id_inst));
-  inner->id = id;
-  return vm_inst_new(INST_STORE_ID, inner);
+static vm_inst_t store_id_inst_new(struct emit *emit, char *id) {
+  vec_push(emit->code_obj->strs, id);
+  return vm_inst_new(INST_STORE_ID, 0, emit->code_obj->strs->len - 1);
 }
 
-static struct vm_inst *super_inst_new(int arg_count) {
-  struct super_inst *inner =
-      (struct super_inst *)calloc(1, sizeof(struct super_inst));
-  inner->arg_count = arg_count;
-  return vm_inst_new(INST_SUPER, inner);
+static vm_inst_t super_inst_new(int arg_count) {
+  return vm_inst_new(INST_SUPER, 0, arg_count);
 }
 
-static struct vm_inst *unary_op_inst_new(unary_op_type_t type) {
-  struct unary_op_inst *inner =
-      (struct unary_op_inst *)calloc(1, sizeof(struct unary_op_inst));
-  inner->type = type;
-  return vm_inst_new(INST_UNARY_OP, inner);
+static vm_inst_t unary_op_inst_new(unary_op_type_t type) {
+  return vm_inst_new(INST_UNARY_OP, type, 0);
 }

@@ -8,6 +8,11 @@
 struct code_obj {
   char *name;
   struct vec *instructions;
+  struct vec *code_objs;
+  struct vec *vecs;
+  struct vec *strs;
+  struct vec *params;
+  struct vec *import_attribs;
   struct intmap *labels;
   struct vec *break_labels;
   struct vec *cont_labels;

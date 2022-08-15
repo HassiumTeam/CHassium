@@ -169,7 +169,13 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
 }
 
 struct obj *obj_eq(struct obj *left, struct obj *right, struct vm *vm) {
-  if (obj_hashmap_has(left->attribs, "__eq__")) {
+  if (left->ops != NULL) {
+    struct vec *args = vec_new();
+    vec_push(args, right);
+    struct obj *ret = left->ops->__eq__(left, vm, args);
+    vec_free(args);
+    return ret;
+  } else if (obj_hashmap_has(left->attribs, "__eq__")) {
     struct vec *args = vec_new();
     vec_push(args, right);
     struct obj *ret = obj_invoke_attrib(left, "__eq__", vm, args);
