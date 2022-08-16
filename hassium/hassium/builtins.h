@@ -20,7 +20,6 @@ int obj_array_len(struct obj *);
 void obj_bool_init(struct obj *);
 void obj_bool_free(struct obj *);
 bool obj_is_true(struct obj *, struct vm *);
-bool obj_is_false(struct obj *, struct vm *);
 struct obj *bool_to_obj(bool);
 
 struct obj *obj_builtin_new(builtin_func_t, struct obj *);

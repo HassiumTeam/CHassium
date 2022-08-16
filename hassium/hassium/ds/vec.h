@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define VEC_EXPAND_AT 8
+#define VEC_EXPAND_AT 16
 
 struct vec {
   void **data;

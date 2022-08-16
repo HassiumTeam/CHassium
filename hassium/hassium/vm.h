@@ -18,7 +18,7 @@ struct vm *vm_new();
 void vm_free(struct vm *);
 
 struct obj *vm_run(struct vm *, struct code_obj *, struct obj *);
-
+void debug();
 typedef enum {
   INST_BIN_OP,
   INST_BUILD_ARRAY,
