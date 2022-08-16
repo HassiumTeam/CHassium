@@ -45,11 +45,6 @@ static inline void vec_free_deep(struct vec *vec) {
   vec_free(vec);
 }
 
-// static inline void *vec_pop(struct vec *vec) {
-//   if (vec->len == 0) return NULL;
-//   return vec->data[--vec->len];
-// }
-
 static inline void vec_push(struct vec *vec, void *val) {
   if (vec->len >= vec->size) expand(vec);
   vec->data[vec->len++] = val;

@@ -89,6 +89,8 @@ struct code_obj *compile_ast(struct ast_node *ast) {
   emit.class = NULL;
 
   visit_code_block_node(&emit, ast->inner, true);
+  add_inst(&emit, vm_inst_new(INST_LOAD_NONE, 0, 0));
+  add_inst(&emit, vm_inst_new(INST_RETURN, 0, 0));
 
   vec_free(emit.symtable);
   return emit.code_obj;
@@ -397,6 +399,8 @@ static void visit_func_decl_node(struct emit *emit,
   } else {
     visit_ast_node(emit, node->body);
   }
+  add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0));
+  add_inst(emit, vm_inst_new(INST_RETURN, 0, 0));
 
   leave_scope(emit);
 

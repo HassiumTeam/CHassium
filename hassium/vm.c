@@ -56,31 +56,27 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         }
         STACK_PUSH(obj_inc_ref(obj_array_new(items)));
       } break;
-        //   case INST_BUILD_CLASS: {
-        //     struct build_class_inst *build_class = inst->inner;
-        //     struct obj *class =
-        //         obj_new(OBJ_TYPE, build_class->code_obj->name,
-        //         &type_type_obj);
-        //     obj_hashmap_set(vm->globals, build_class->code_obj->name,
-        //                     obj_inc_ref(class));
+      case INST_BUILD_CLASS: {
+        struct code_obj *class_code_obj = vec_get(code_obj->code_objs, op);
+        struct obj *class =
+            obj_new(OBJ_TYPE, class_code_obj->name, &type_type_obj);
+        obj_hashmap_set(vm->globals, class_code_obj->name, obj_inc_ref(class));
 
-        //     struct stackframe *class_frame =
-        //         stackframe_new(build_class->code_obj->locals);
-        //     vec_push(vm->frames, stackframe_inc_ref(class_frame));
-        //     vm_run(vm, build_class->code_obj, self);
-        //     vec_pop(vm->frames);
+        struct stackframe *class_frame = stackframe_new(class_code_obj->locals);
+        vec_push(vm->frames, stackframe_inc_ref(class_frame));
+        vm_run(vm, class_code_obj, self);
+        vec_pop(vm->frames);
 
-        //     for (int i = 0; i < class_frame->num_locals; i++) {
-        //       struct obj *local = stackframe_get(class_frame, i);
-        //       if (local == NULL) continue;
-        //       if (local->type == OBJ_FUNC) {
-        //         struct func_obj_ctx *func_ctx = (struct func_obj_ctx
-        //         *)local->ctx; obj_set_attrib(class, func_ctx->code_obj->name,
-        //         local);
-        //       }
-        //     }
-        //     stackframe_dec_ref(class_frame);
-        //   } break;
+        for (int i = 0; i < class_frame->num_locals; i++) {
+          struct obj *local = stackframe_get(class_frame, i);
+          if (local == NULL) continue;
+          if (local->type == OBJ_FUNC) {
+            struct func_obj_ctx *func_ctx = (struct func_obj_ctx *)local->ctx;
+            obj_set_attrib(class, func_ctx->code_obj->name, local);
+          }
+        }
+        stackframe_dec_ref(class_frame);
+      } break;
       case INST_BUILD_FUNC: {
         struct stackframe *frame = NULL;
         if (opshort) {
