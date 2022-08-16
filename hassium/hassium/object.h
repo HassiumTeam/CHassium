@@ -55,6 +55,7 @@ struct obj {
   struct obj *obj_type;
   struct obj *parent;
   struct hashmap *attribs;
+  void (*set_attrib_fn)(struct obj *);
   struct vec *weak_refs;
 };
 

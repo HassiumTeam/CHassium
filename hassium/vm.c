@@ -159,6 +159,10 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       } break;
       case INST_LOAD_ATTRIB: {
         struct obj *target = STACK_POP();
+        if (target->set_attrib_fn) {
+          target->set_attrib_fn(target);
+          target->set_attrib_fn = NULL;
+        }
         struct obj *attrib =
             obj_hashmap_get(target->attribs, vec_get(code_obj->strs, op));
         if (attrib == NULL) attrib = &none_obj;

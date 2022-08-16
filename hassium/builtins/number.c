@@ -1,5 +1,7 @@
 #include <builtins.h>
 
+static void obj_num_lazy_load(struct obj *);
+
 static struct obj *__add__(struct obj *, struct vm *, struct vec *);
 static struct obj *__div__(struct obj *, struct vm *, struct vec *);
 static struct obj *__eq__(struct obj *, struct vm *, struct vec *);
@@ -30,9 +32,12 @@ struct obj *obj_num_new(bool is_float, int val_int, float val_float) {
 
   struct obj *num = obj_new(OBJ_NUM, ctx, &number_type_obj);
   num->ops = &number_builtin_ops;
-  obj_set_attrib(num, "toString", obj_builtin_new(toString, num));
-
+  num->set_attrib_fn = obj_num_lazy_load;
   return num;
+}
+
+static void obj_num_lazy_load(struct obj *num) {
+  obj_set_attrib(num, "toString", obj_builtin_new(toString, num));
 }
 
 bool obj_num_is_float(struct obj *obj) {

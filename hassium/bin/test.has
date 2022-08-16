@@ -1,7 +1,6 @@
-class myClass {
-  func new () {
-    
-  }
+func fib (n) {
+  if (n < 2) return n;
+  return fib (n - 1) + fib (n - 2);
 }
 
-c = myClass();
+println (fib (32));
