@@ -53,4 +53,5 @@ void run_module(struct code_obj *mod) {
 void run_string(char *str) {
   struct code_obj *module = compile_module(str);
   run_module(module);
+  debug();
 }

@@ -32,7 +32,7 @@ struct obj *obj_num_new(bool is_float, int val_int, float val_float) {
 
   struct obj *num = obj_new(OBJ_NUM, ctx, &number_type_obj);
   num->ops = &number_builtin_ops;
-  num->set_attrib_fn = obj_num_lazy_load;
+  num->lazy_load_fn = obj_num_lazy_load;
   return num;
 }
 

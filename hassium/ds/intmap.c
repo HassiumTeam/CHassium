@@ -20,8 +20,6 @@ void intmap_insert(struct intmap *intmap, int key, int value) {
   intmap->values[key] = value;
 }
 
-int intmap_get(struct intmap *intmap, int key) { return intmap->values[key]; }
-
 static void resize(struct intmap *intmap) {
   intmap->size += DICT_SIZE;
   intmap->values = realloc(intmap->values, intmap->size * sizeof(void *));

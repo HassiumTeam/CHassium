@@ -246,6 +246,8 @@ static void visit_class_decl_node(struct emit *emit,
   struct code_obj *swp = emit->code_obj;
   emit->code_obj = class;
   visit_ast_node(emit, node->body);
+  add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0));
+  add_inst(emit, vm_inst_new(INST_RETURN, 0, 0));
   emit->code_obj = swp;
 
   if (emit->class == class) {
@@ -362,20 +364,22 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
   place_label(emit, end);
   leave_scope(emit);
   restore_labels(emit, labels);
+
+  free(id);
 }
 
 static void visit_func_decl_node(struct emit *emit,
                                  struct func_decl_node *node) {
   struct code_obj *func = code_obj_new(clone_str(node->name));
   struct code_obj *swp = emit->code_obj;
-  bool closure = false;
+  bool closure = node->name == NULL;
   emit->code_obj = func;
   if (node->ret_type != NULL) {
     emit->ret_type = node->ret_type;
   }
 
   int symbol_idx_swp = next_sym_idx;
-  if (emit->func == NULL) {
+  if (emit->func == NULL && !closure) {
     next_sym_idx = 0;
     emit->func = func;
   }

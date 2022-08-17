@@ -12,7 +12,6 @@ struct code_obj {
   struct vec *vecs;
   struct vec *strs;
   struct vec *params;
-  struct vec *import_attribs;
   struct intmap *labels;
   struct vec *break_labels;
   struct vec *cont_labels;

@@ -12,7 +12,7 @@ struct obj *obj_new(obj_ctx_type_t type, void *ctx, struct obj *obj_type) {
   obj->ops = NULL;
   obj->parent = &object_type_obj;
   obj->attribs = obj_hashmap_new();
-  obj->set_attrib_fn = NULL;
+  obj->lazy_load_fn = NULL;
   obj->weak_refs = NULL;
 
   return obj;
@@ -328,9 +328,9 @@ void obj_store_index(struct obj *obj, struct obj *key, struct obj *val,
 }
 
 struct obj *obj_to_string(struct obj *obj, struct vm *vm) {
-  if (obj->set_attrib_fn) {
-    obj->set_attrib_fn(obj);
-    obj->set_attrib_fn = NULL;
+  if (obj->lazy_load_fn) {
+    obj->lazy_load_fn(obj);
+    obj->lazy_load_fn = NULL;
   }
   struct obj *toString = obj_hashmap_get(obj->attribs, "toString");
   if (toString == &none_obj) {

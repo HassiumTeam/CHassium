@@ -12,7 +12,6 @@ struct vm {
 
 struct stackframe {
   struct obj **locals;
-  struct stackframe *parent;
   int num_locals;
   int refs;
 };
@@ -55,7 +54,7 @@ struct obj {
   struct obj *obj_type;
   struct obj *parent;
   struct hashmap *attribs;
-  void (*set_attrib_fn)(struct obj *);
+  void (*lazy_load_fn)(struct obj *);
   struct vec *weak_refs;
 };
 
@@ -102,7 +101,6 @@ struct obj *obj_new(obj_ctx_type_t, void *, struct obj *);
 void obj_free(struct obj *);
 
 static inline struct obj *obj_inc_ref(struct obj *obj) {
-  if (obj == NULL || obj->ref_immune) return obj;
   ++obj->refs;
   return obj;
 }
@@ -138,7 +136,6 @@ static inline struct stackframe *stackframe_new(int num_locals) {
   struct stackframe *stackframe = malloc(sizeof(struct stackframe));
   stackframe->locals =
       num_locals > 0 ? calloc(num_locals, sizeof(struct obj *)) : NULL;
-  stackframe->parent = NULL;
   stackframe->num_locals = num_locals;
   stackframe->refs = 0;
   return stackframe;
@@ -152,9 +149,6 @@ static inline struct obj *stackframe_free(struct stackframe *stackframe) {
   }
   if (stackframe->num_locals > 0) {
     free(stackframe->locals);
-  }
-  if (stackframe->parent != NULL) {
-    stackframe_dec_ref(stackframe->parent);
   }
   free(stackframe);
 }

@@ -15,6 +15,6 @@ struct intmap *intmap_new();
 void intmap_free(struct intmap *);
 
 void intmap_insert(struct intmap *, int, int);
-int intmap_get(struct intmap *, int);
+#define intmap_get(i, k) ((i)->values[(k)])
 
 #endif

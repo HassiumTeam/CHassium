@@ -9,7 +9,6 @@ struct code_obj *code_obj_new(char *name) {
   code_obj->code_objs = vec_new();
   code_obj->vecs = vec_new();
   code_obj->strs = vec_new();
-  code_obj->import_attribs = vec_new();
   code_obj->labels = intmap_new();
   code_obj->break_labels = vec_new();
   code_obj->cont_labels = vec_new();
@@ -22,9 +21,19 @@ void code_obj_free(struct code_obj *code_obj) {
   if (code_obj->name != NULL) {
     free(code_obj->name);
   }
+  if (code_obj->params != NULL) {
+    vec_free(code_obj->params);
+  }
+  for (int i = 0; i < code_obj->code_objs->len; ++i) {
+    code_obj_free(vec_get(code_obj->code_objs, i));
+  }
   vec_free(code_obj->code_objs);
+  for (int i = 0; i < code_obj->vecs->len; i++) {
+    vec_free_deep((struct vec *)vec_get(code_obj->vecs, i));
+  }
   vec_free(code_obj->vecs);
-  vec_free(code_obj->strs);
+  vec_free_deep(code_obj->strs);
+
   vec_free(code_obj->instructions);
   intmap_free(code_obj->labels);
   vec_free(code_obj->break_labels);

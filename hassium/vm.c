@@ -1,8 +1,12 @@
-// #include <sys/time.h>
+#include <sys/time.h>
 #include <vm.h>
 
-// static long times[34];
-// static long counts[34];
+static long times[34];
+static long counts[34];
+
+#define opcode ((uint16_t)((inst & 0xFFFF000000000000) >> 48))
+#define opshort ((uint16_t)((inst & 0x0000FFFF00000000) >> 32))
+#define op ((uint32_t)(inst & 0x00000000FFFFFFFF))
 
 #define STACK_PEEK() (stackptr[-1])
 #define STACK_POP() (*--stackptr)
@@ -15,8 +19,8 @@ struct vm *vm_new() {
   vm->globals = get_defaults();
   obj_bool_init(&true_obj);
   obj_bool_init(&false_obj);
-  // memset(&times, 0, sizeof(times));
-  // memset(&times, 0, sizeof(counts));
+  memset(&times, 0, sizeof(times));
+  memset(&times, 0, sizeof(counts));
   return vm;
 }
 
@@ -31,19 +35,19 @@ void vm_free(struct vm *vm) {
   free(vm);
 }
 
-// long getMicrotime() {
-//   struct timeval currentTime;
-//   gettimeofday(&currentTime, NULL);
-//   return currentTime.tv_sec * (int)1e6 + currentTime.tv_usec;
-// }
+long getMicrotime() {
+  struct timeval currentTime;
+  gettimeofday(&currentTime, NULL);
+  return currentTime.tv_sec * (int)1e6 + currentTime.tv_usec;
+}
 
-// void debug() {
-//   for (int i = 0; i < 34; i++) {
-//     if (counts[i] == 0) continue;
-//     printf("Opcode: %d ran %ld times, avg: %ld, total: %ld\n", i, counts[i],
-//            times[i] / counts[i], times[i]);
-//   }
-// }
+void debug() {
+  for (int i = 0; i < 34; i++) {
+    if (counts[i] == 0) continue;
+    printf("Opcode: %d ran %ld times, avg: %f, total: %ld\n", i, counts[i],
+           (float)times[i] / (float)counts[i], times[i]);
+  }
+}
 
 struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
   struct obj *stack[255];
@@ -53,14 +57,10 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
   struct vm_inst *inst;
   int pos = 0;
   for (;;) {
-    vm_inst_t s = (vm_inst_t)vec_get(code_obj->instructions, pos);
-    vm_opcode_t opcode = (s & 0xFFFF000000000000) >> 48;
-    uint16_t opshort = (s & 0x0000FFFF00000000) >> 32;
-    uint32_t op = s & 0x00000000FFFFFFFF;
-    // printf("Inst %d %d %d\n", opcode, opshort, op);
+    vm_inst_t inst = (vm_inst_t)vec_get(code_obj->instructions, pos);
 
-    // long startTime = getMicrotime();
-    // ++counts[opcode];
+    long startTime = getMicrotime();
+    ++counts[opcode];
 
     switch (opcode) {
       case INST_BIN_OP: {
@@ -143,13 +143,25 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         obj_dec_ref(mod_ret);
       } break;
       case INST_INVOKE: {
-        struct vec *args = vec_new();
-        for (int i = op - 1; i >= 0; i--) vec_push(args, STACK_POP());
+        struct obj *argstack[255];
+        struct vec args;
+        args.data = (void **)argstack;
+        args.len = op;
+        for (int i = op - 1; i >= 0; --i) {
+          args.data[i] = STACK_POP();
+        }
+
         struct obj *target = STACK_POP();
-        STACK_PUSH(obj_inc_ref(obj_invoke(target, vm, args)));
-        for (int i = 0; i < op; i++) obj_dec_ref(vec_pop(args));
-        vec_free(args);
+        long inbetweenTimeStart = getMicrotime();
+        STACK_PUSH(obj_inc_ref(obj_invoke(target, vm, &args)));
+        long inbetweenTimeEnd = getMicrotime();
+
+        for (int i = 0; i < op; i++) {
+          obj_dec_ref(vec_get(&args, i));
+        }
         obj_dec_ref(target);
+        times[opcode] += getMicrotime() - startTime -
+                         (inbetweenTimeEnd - inbetweenTimeStart);
       } break;
       case INST_ITER: {
         struct obj *target = STACK_POP();
@@ -180,9 +192,9 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       } break;
       case INST_LOAD_ATTRIB: {
         struct obj *target = STACK_POP();
-        if (target->set_attrib_fn) {
-          target->set_attrib_fn(target);
-          target->set_attrib_fn = NULL;
+        if (target->lazy_load_fn) {
+          target->lazy_load_fn(target);
+          target->lazy_load_fn = NULL;
         }
         struct obj *attrib =
             obj_hashmap_get(target->attribs, vec_get(code_obj->strs, op));
@@ -200,15 +212,13 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         STACK_PUSH(obj_inc_ref(stackframe_get(topframe, op)));
       } break;
       case INST_LOAD_ID: {
-        bool found = false;
         char *id = vec_get(code_obj->strs, op);
-        struct obj *val;
         if (obj_hashmap_has(vm->globals, id)) {
-          val = obj_hashmap_get(vm->globals, id);
+          STACK_PUSH(obj_inc_ref(obj_hashmap_get(vm->globals, id)));
         } else {
           printf("Could not load ID %s\n", id);
+          exit(-1);
         }
-        STACK_PUSH(obj_inc_ref(val));
       } break;
       case INST_LOAD_NONE:
         STACK_PUSH(&none_obj);
@@ -219,9 +229,9 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_LOAD_SUBSCRIPT: {
         struct obj *target = STACK_POP();
         struct obj *key = STACK_POP();
-        if (target->set_attrib_fn) {
-          target->set_attrib_fn(target);
-          target->set_attrib_fn = NULL;
+        if (target->lazy_load_fn) {
+          target->lazy_load_fn(target);
+          target->lazy_load_fn = NULL;
         }
         STACK_PUSH(obj_inc_ref(obj_index(target, key, vm)));
         obj_dec_ref(key);
@@ -239,9 +249,9 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_STORE_ATTRIB: {
         struct obj *target = STACK_POP();
         struct obj *val = STACK_PEEK();
-        if (target->set_attrib_fn) {
-          target->set_attrib_fn(target);
-          target->set_attrib_fn = NULL;
+        if (target->lazy_load_fn) {
+          target->lazy_load_fn(target);
+          target->lazy_load_fn = NULL;
         }
         obj_set_attrib(target, vec_get(code_obj->strs, op), val);
         obj_dec_ref(target);
@@ -263,9 +273,9 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         struct obj *target = STACK_POP();
         struct obj *key = STACK_POP();
         struct obj *val = STACK_POP();
-        if (target->set_attrib_fn) {
-          target->set_attrib_fn(target);
-          target->set_attrib_fn = NULL;
+        if (target->lazy_load_fn) {
+          target->lazy_load_fn(target);
+          target->lazy_load_fn = NULL;
         }
         obj_store_index(target, key, val, vm);
         obj_dec_ref(key);
@@ -309,7 +319,9 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         break;
     }
 
-    // times[opcode] += getMicrotime() - startTime;
+    if (opcode != INST_INVOKE) {
+      times[opcode] += getMicrotime() - startTime;
+    }
 
     ++pos;
   }
