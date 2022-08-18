@@ -299,10 +299,9 @@ struct obj *obj_invoke_attrib(struct obj *obj, char *attrib, struct vm *vm,
 bool obj_is(struct obj *obj, struct obj *type_obj) {
   if (obj == type_obj || obj->obj_type == type_obj) return true;
   if (type_obj->type != OBJ_TYPE) return false;
-
-  struct obj *parent = obj->parent;
+  struct obj *parent = obj->obj_type->parent;
   while (parent != &none_obj && parent != NULL) {
-    if (parent->obj_type == type_obj) return true;
+    if (parent == type_obj) return true;
     parent = parent->parent;
   }
   return false;

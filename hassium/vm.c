@@ -12,7 +12,9 @@
 #define STACK_POP() (*--stackptr)
 #define STACK_PUSH(v) (*stackptr++ = (v))
 
+static void extend_attrib_from_map(void *, size_t, uintptr_t, void *);
 static void import_attrib_from_map(void *, size_t, uintptr_t, void *);
+
 struct vm *vm_new() {
   struct vm *vm = (struct vm *)calloc(1, sizeof(struct vm));
   vm->frames = vec_new();
@@ -58,10 +60,13 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
   struct obj **stackptr = stack;
   struct stackframe *topframe = vec_peek(vm->frames);
   struct obj **locals = topframe->locals;
+  int *handler_returns_len = &vm->handler_returns->len;
   struct vm_inst *inst;
+
   int pos = 0;
+
   for (;;) {
-    if (vm->handler_returns->len > 0) {
+    if (*handler_returns_len > 0) {
       struct obj *handler_return = vec_peek(vm->handler_returns);
       struct code_obj *handler_code_obj =
           ((struct func_obj_ctx *)handler_return->ctx)->code_obj;
@@ -105,6 +110,13 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         vec_push(vm->frames, stackframe_inc_ref(class_frame));
         vm_run(vm, class_code_obj, self);
         vec_pop(vm->frames);
+
+        if (opshort) {
+          struct obj *extends = STACK_POP();
+          hashmap_iterate(extends->attribs, extend_attrib_from_map,
+                          class->attribs);
+          class->parent = extends;
+        }
 
         for (int i = 0; i < class_frame->num_locals; i++) {
           struct obj *local = stackframe_get(class_frame, i);
@@ -166,13 +178,9 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         obj_dec_ref(mod_ret);
       } break;
       case INST_INVOKE: {
-        struct obj *argstack[255];
         struct vec args;
-        args.data = (void **)argstack;
+        args.data = (void **)(stackptr -= op);
         args.len = op;
-        for (int i = op - 1; i >= 0; --i) {
-          args.data[i] = STACK_POP();
-        }
 
         struct obj *target = STACK_POP();
         // long inbetweenTimeStart = getMicrotime();
@@ -379,6 +387,20 @@ static void import_attrib_from_map(void *key, size_t ksize, uintptr_t value,
                                    void *usr) {
   struct hashmap *map = usr;
   struct obj *obj_val = (struct obj *)value;
-  obj_dec_ref(obj_hashmap_get(map, key));
+  struct obj *existing = obj_hashmap_get(map, key);
   obj_hashmap_set(map, key, obj_inc_ref(obj_val));
+  obj_dec_ref(existing);
+}
+
+static void extend_attrib_from_map(void *key, size_t ksize, uintptr_t value,
+                                   void *usr) {
+  struct hashmap *map = usr;
+  struct obj *obj_val = (struct obj *)value;
+  struct obj *existing = obj_hashmap_get(map, key);
+  if (strcmp(key, "new") == 0) {
+    obj_hashmap_set(map, "__super__", obj_inc_ref(obj_val));
+  } else {
+    obj_hashmap_set(map, key, obj_inc_ref(obj_val));
+  }
+  obj_dec_ref(existing);
 }

@@ -235,7 +235,11 @@ static struct ast_node *parse_return(struct parser *parser) {
 
 static struct ast_node *parse_super(struct parser *parser) {
   expecttokv(parser, TOK_ID, "super");
-  return super_node_new(parse_arg_list(parser));
+  expecttok(parser, TOK_OPAREN);
+  return expr_stmt_node_new(
+      invoke_node_new(attrib_node_new(id_node_new(clone_str("self"), NULL),
+                                      clone_str("__super__")),
+                      parse_arg_list(parser)));
 }
 
 static struct ast_node *parse_try(struct parser *parser) {

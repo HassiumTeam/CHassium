@@ -1,26 +1,34 @@
+class One {
+  func new (x, y) {
+    println ("Base constructor");
+    self.x = x;
+    self.y = y;
+  }
 
-func nestedException1 () {
-  nestedException2 ();
-  println ("This should not print");
+  func some () {
+    println (self.x + self.y);
+  }
 }
 
-func nestedException2 () {
-  raise "A nested exception";
-  println ("This should not print");
+class Two extends One {
+  func new (x, y, z) {
+    self.__super__ (x, y);
+    self.z = z; 
+    self.foo = "thing"; 
+  }
+
+  func another () {
+    println (self.x + self.y + self.z);
+  }
 }
 
-try {
-  println ("From try");
-  raise "some exception";
-  println ("should not print");
-} catch (e) {
-  println ("Caught: ");
-  println (e);
+func acceptsOne(x: One) {
+
 }
 
-try {
-  nestedException1();
-} catch (e) {
-  println ("Caught ");
-  println (e);
-}
+
+t = Two (1, 2, 3);
+t.some ();
+t.another ();
+
+acceptsOne (t);
