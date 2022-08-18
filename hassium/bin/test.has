@@ -1,6 +1,11 @@
+func someFunc() { anotherFunc(); }
+
+func anotherFunc() { raise "from another func"; }
+
 try {
   println("test");
-  raise "bad";
+  someFunc();
 } catch (e) {
   println("Caught");
+  println(e);
 }

@@ -72,7 +72,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
     }
 
     vm_inst_t inst = (vm_inst_t)vec_get(code_obj->instructions, pos);
-    printf("%d %d %d\n", opcode, opshort, op);
+    // printf("%d %d %d\n", opcode, opshort, op);
 
     // long startTime = getMicrotime();
     // ++counts[opcode];
@@ -264,9 +264,12 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_POP:
         obj_dec_ref(STACK_POP());
         break;
-      case INST_POP_HANDLER: {
+      case INST_POP_HANDLER:
         obj_dec_ref(vec_pop(vm->handlers));
-      } break;
+        break;
+      case INST_RAISE:
+        vm_raise(vm, obj_dec_ref(STACK_POP()));
+        break;
       case INST_RETURN:
         return STACK_POP();
         break;
@@ -359,9 +362,17 @@ void vm_raise(struct vm *vm, struct obj *obj) {
     exit(-1);
   }
 
-  struct code_obj *handler = vec_pop(vm->handlers);
-  vm_run(vm, handler, NULL);
-  vec_push(vm->handler_returns, handler);
+  struct obj *handler = vec_pop(vm->handlers);
+  struct code_obj *parent_code_obj =
+      ((struct func_obj_ctx *)handler->ctx)->code_obj;
+  struct vec args;
+  struct obj *argstack[1];
+  args.data = (void **)argstack;
+  args.data[0] = obj;
+  args.len = 1;
+  obj_invoke(handler, vm, &args);
+  obj_dec_ref(handler);
+  vec_push(vm->handler_returns, parent_code_obj);
 }
 
 static void import_attrib_from_map(void *key, size_t ksize, uintptr_t value,

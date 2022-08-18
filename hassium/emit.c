@@ -565,6 +565,8 @@ static void visit_try_catch_node(struct emit *emit,
   leave_scope(emit);
   emit->code_obj = swp;
   handler->parent = emit->code_obj;
+  emit->code_obj->locals += handler->locals;
+
   int end = new_label();
   handler->caught_label = end;
   add_inst(emit, build_handler_inst_new(emit, handler));
