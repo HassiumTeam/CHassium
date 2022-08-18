@@ -44,6 +44,7 @@ static vm_inst_t build_array_inst_new(int);
 static vm_inst_t build_class_inst_new(struct emit *, struct code_obj *, bool);
 static vm_inst_t build_func_inst_new(struct emit *, struct code_obj *,
                                      struct vec *, bool);
+static vm_inst_t build_handler_inst_new(struct emit *, struct code_obj *);
 static vm_inst_t build_obj_inst_new(struct emit *, struct vec *);
 static vm_inst_t import_inst_new(struct emit *, struct vec *,
                                  struct code_obj *);
@@ -544,7 +545,36 @@ static void visit_super_node(struct emit *emit, struct super_node *node) {
 
 static void visit_try_catch_node(struct emit *emit,
                                  struct try_catch_node *node) {
-  struct code_obj *handler;
+  struct code_obj *handler = code_obj_new(NULL);
+  struct code_obj *swp = emit->code_obj;
+  emit->code_obj = handler;
+
+  enter_scope(emit);
+
+  handler->params = vec_new();
+  int sym = handle_symbol(emit, node->id);
+  vec_push(handler->params, (void *)(uintptr_t)sym);
+  if (node->catch->type == CODE_BLOCK_NODE) {
+    visit_code_block_node(emit, node->catch->inner, false);
+  } else {
+    visit_ast_node(emit, node->catch);
+  }
+  add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0));
+  add_inst(emit, vm_inst_new(INST_RETURN, 0, 0));
+
+  leave_scope(emit);
+  emit->code_obj = swp;
+  handler->parent = emit->code_obj;
+  int end = new_label();
+  handler->caught_label = end;
+  add_inst(emit, build_handler_inst_new(emit, handler));
+
+  enter_scope(emit);
+  visit_ast_node(emit, node->try);
+  leave_scope(emit);
+
+  add_inst(emit, vm_inst_new(INST_POP_HANDLER, 0, 0));
+  place_label(emit, end);
 }
 
 static void visit_unary_op_node(struct emit *emit, struct unary_op_node *node) {
@@ -662,6 +692,12 @@ static vm_inst_t build_func_inst_new(struct emit *emit,
   vec_push(emit->code_obj->code_objs, code_obj);
   return vm_inst_new(INST_BUILD_FUNC, closure,
                      emit->code_obj->code_objs->len - 1);
+}
+
+static vm_inst_t build_handler_inst_new(struct emit *emit,
+                                        struct code_obj *handler) {
+  vec_push(emit->code_obj->code_objs, handler);
+  return vm_inst_new(INST_BUILD_HANDLER, 0, emit->code_obj->code_objs->len - 1);
 }
 
 static vm_inst_t build_obj_inst_new(struct emit *emit, struct vec *keys) {

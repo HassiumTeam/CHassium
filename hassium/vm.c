@@ -1,8 +1,8 @@
 #include <sys/time.h>
 #include <vm.h>
 
-static long times[34];
-static long counts[34];
+// static long times[34];
+// static long counts[34];
 
 #define opcode ((uint16_t)((inst & 0xFFFF000000000000) >> 48))
 #define opshort ((uint16_t)((inst & 0x0000FFFF00000000) >> 32))
@@ -17,10 +17,12 @@ struct vm *vm_new() {
   struct vm *vm = (struct vm *)calloc(1, sizeof(struct vm));
   vm->frames = vec_new();
   vm->globals = get_defaults();
+  vm->handlers = vec_new();
+  vm->handler_returns = vec_new();
   obj_bool_init(&true_obj);
   obj_bool_init(&false_obj);
-  memset(&times, 0, sizeof(times));
-  memset(&times, 0, sizeof(counts));
+  // memset(&times, 0, sizeof(times));
+  // memset(&times, 0, sizeof(counts));
   return vm;
 }
 
@@ -28,6 +30,8 @@ void vm_free(struct vm *vm) {
   for (int i = 0; i < vm->frames->len; i++) {
     stackframe_dec_ref(vec_get(vm->frames, i));
   }
+  vec_free(vm->handlers);
+  vec_free(vm->handler_returns);
   vec_free(vm->frames);
   obj_hashmap_free(vm->globals);
   obj_bool_free(&true_obj);
@@ -35,18 +39,18 @@ void vm_free(struct vm *vm) {
   free(vm);
 }
 
-long getMicrotime() {
-  struct timeval currentTime;
-  gettimeofday(&currentTime, NULL);
-  return currentTime.tv_sec * (int)1e6 + currentTime.tv_usec;
-}
+// long getMicrotime() {
+//   struct timeval currentTime;
+//   gettimeofday(&currentTime, NULL);
+//   return currentTime.tv_sec * (int)1e6 + currentTime.tv_usec;
+// }
 
 void debug() {
-  for (int i = 0; i < 34; i++) {
-    if (counts[i] == 0) continue;
-    printf("Opcode: %d ran %ld times, avg: %f, total: %ld\n", i, counts[i],
-           (float)times[i] / (float)counts[i], times[i]);
-  }
+  // for (int i = 0; i < 34; i++) {
+  //   if (counts[i] == 0) continue;
+  //   printf("Opcode: %d ran %ld times, avg: %f, total: %ld\n", i, counts[i],
+  //          (float)times[i] / (float)counts[i], times[i]);
+  // }
 }
 
 struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
@@ -57,10 +61,21 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
   struct vm_inst *inst;
   int pos = 0;
   for (;;) {
-    vm_inst_t inst = (vm_inst_t)vec_get(code_obj->instructions, pos);
+    if (vm->handler_returns->len > 0) {
+      struct code_obj *handler_return = vec_peek(vm->handler_returns);
+      if (handler_return == code_obj) {
+        pos = handler_return->caught_label;
+        vec_pop(vm->handler_returns);
+      } else {
+        return &none_obj;
+      }
+    }
 
-    long startTime = getMicrotime();
-    ++counts[opcode];
+    vm_inst_t inst = (vm_inst_t)vec_get(code_obj->instructions, pos);
+    printf("%d %d %d\n", opcode, opshort, op);
+
+    // long startTime = getMicrotime();
+    // ++counts[opcode];
 
     switch (opcode) {
       case INST_BIN_OP: {
@@ -104,8 +119,13 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
           frame = topframe;
         }
         struct code_obj *func_code_obj = vec_get(code_obj->code_objs, op);
-        STACK_PUSH(obj_inc_ref(
-            obj_func_new(func_code_obj, func_code_obj->params, NULL, frame)));
+        STACK_PUSH(obj_inc_ref(obj_func_new(
+            func_code_obj, func_code_obj->params, NULL, frame, true)));
+      } break;
+      case INST_BUILD_HANDLER: {
+        struct code_obj *handler = vec_get(code_obj->code_objs, op);
+        vec_push(vm->handlers,
+                 obj_func_new(handler, handler->params, NULL, topframe, true));
       } break;
       case INST_BUILD_OBJ: {
         struct obj *new = obj_new(OBJ_ANON, NULL, &object_type_obj);
@@ -152,16 +172,16 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         }
 
         struct obj *target = STACK_POP();
-        long inbetweenTimeStart = getMicrotime();
+        // long inbetweenTimeStart = getMicrotime();
         STACK_PUSH(obj_inc_ref(obj_invoke(target, vm, &args)));
-        long inbetweenTimeEnd = getMicrotime();
+        // long inbetweenTimeEnd = getMicrotime();
 
         for (int i = 0; i < op; i++) {
           obj_dec_ref(vec_get(&args, i));
         }
         obj_dec_ref(target);
-        times[opcode] += getMicrotime() - startTime -
-                         (inbetweenTimeEnd - inbetweenTimeStart);
+        // times[opcode] += getMicrotime() - startTime -
+        //                  (inbetweenTimeEnd - inbetweenTimeStart);
       } break;
       case INST_ITER: {
         struct obj *target = STACK_POP();
@@ -213,8 +233,9 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       } break;
       case INST_LOAD_ID: {
         char *id = vec_get(code_obj->strs, op);
-        if (obj_hashmap_has(vm->globals, id)) {
-          STACK_PUSH(obj_inc_ref(obj_hashmap_get(vm->globals, id)));
+        struct obj *val;
+        if (obj_hashmap_has_get(vm->globals, id, &val)) {
+          STACK_PUSH(obj_inc_ref(val));
         } else {
           printf("Could not load ID %s\n", id);
           exit(-1);
@@ -243,6 +264,9 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_POP:
         obj_dec_ref(STACK_POP());
         break;
+      case INST_POP_HANDLER: {
+        obj_dec_ref(vec_pop(vm->handlers));
+      } break;
       case INST_RETURN:
         return STACK_POP();
         break;
@@ -319,14 +343,25 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         break;
     }
 
-    if (opcode != INST_INVOKE) {
-      times[opcode] += getMicrotime() - startTime;
-    }
+    // if (opcode != INST_INVOKE) {
+    //   times[opcode] += getMicrotime() - startTime;
+    // }
 
     ++pos;
   }
 
   return &none_obj;
+}
+
+void vm_raise(struct vm *vm, struct obj *obj) {
+  if (vm->handlers->len == 0) {
+    printf("Unhandled exception: %s\n", (char *)obj_to_string(obj, vm)->ctx);
+    exit(-1);
+  }
+
+  struct code_obj *handler = vec_pop(vm->handlers);
+  vm_run(vm, handler, NULL);
+  vec_push(vm->handler_returns, handler);
 }
 
 static void import_attrib_from_map(void *key, size_t ksize, uintptr_t value,

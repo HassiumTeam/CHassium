@@ -64,3 +64,7 @@ leakcheck:
 .PHONY: leakcheck_test
 leakcheck_test:
 	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./bin/hassium.out ./bin/tests.has
+
+.PHONY: time
+time:
+	@time bin/hassium.out "./bin/fib.has"

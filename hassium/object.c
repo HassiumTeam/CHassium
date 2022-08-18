@@ -75,39 +75,44 @@ void obj_free(struct obj *obj) {
 struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
                        struct vm *vm) {
   struct obj *ret;
-  struct vec *args = vec_new();
-  vec_push(args, right);
+  struct obj *argstack[1];
+  struct vec args;
+
+  args.data = (void **)argstack;
+  args.len = 1;
+  args.data[0] = right;
+
   switch (type) {
     case BIN_OP_ADD:
       if (left->ops != NULL) {
-        ret = left->ops->__add__(left, vm, args);
+        ret = left->ops->__add__(left, vm, &args);
       } else {
-        ret = obj_invoke_attrib(left, "__add__", vm, args);
+        ret = obj_invoke_attrib(left, "__add__", vm, &args);
       }
       break;
     case BIN_OP_AND:
       ret = bool_to_obj(obj_is_true(left, vm) && obj_is_true(right, vm));
     case BIN_OP_DIV:
       if (left->ops != NULL) {
-        ret = left->ops->__div__(left, vm, args);
+        ret = left->ops->__div__(left, vm, &args);
       } else {
-        ret = obj_invoke_attrib(left, "__div__", vm, args);
+        ret = obj_invoke_attrib(left, "__div__", vm, &args);
       }
       break;
     case BIN_OP_EQ:
       if (left == right) {
         ret = &true_obj;
       } else if (left->ops != NULL) {
-        ret = left->ops->__eq__(left, vm, args);
+        ret = left->ops->__eq__(left, vm, &args);
       } else {
-        ret = obj_invoke_attrib(left, "__eq__", vm, args);
+        ret = obj_invoke_attrib(left, "__eq__", vm, &args);
       }
       break;
     case BIN_OP_GREATER:
       if (left->ops != NULL) {
-        ret = left->ops->__greater__(left, vm, args);
+        ret = left->ops->__greater__(left, vm, &args);
       } else {
-        ret = obj_invoke_attrib(left, "__greater__", vm, args);
+        ret = obj_invoke_attrib(left, "__greater__", vm, &args);
       }
       break;
     case BIN_OP_GREATER_OR_EQ:
@@ -115,17 +120,17 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
         ret = &true_obj;
       } else {
         if (left->ops != NULL) {
-          ret = left->ops->__add__(left, vm, args);
+          ret = left->ops->__add__(left, vm, &args);
         } else {
-          ret = obj_invoke_attrib(left, "__add__", vm, args);
+          ret = obj_invoke_attrib(left, "__add__", vm, &args);
         }
       }
       break;
     case BIN_OP_LESSER:
       if (left->ops != NULL) {
-        ret = left->ops->__lesser__(left, vm, args);
+        ret = left->ops->__lesser__(left, vm, &args);
       } else {
-        ret = obj_invoke_attrib(left, "__lesser__", vm, args);
+        ret = obj_invoke_attrib(left, "__lesser__", vm, &args);
       }
       break;
     case BIN_OP_LESSER_OR_EQ:
@@ -133,24 +138,24 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
         ret = &true_obj;
       } else {
         if (left->ops != NULL) {
-          ret = left->ops->__lesser__(left, vm, args);
+          ret = left->ops->__lesser__(left, vm, &args);
         } else {
-          ret = obj_invoke_attrib(left, "__lesser__", vm, args);
+          ret = obj_invoke_attrib(left, "__lesser__", vm, &args);
         }
       }
       break;
     case BIN_OP_MOD:
       if (left->ops != NULL) {
-        ret = left->ops->__mod__(left, vm, args);
+        ret = left->ops->__mod__(left, vm, &args);
       } else {
-        ret = obj_invoke_attrib(left, "__mod__", vm, args);
+        ret = obj_invoke_attrib(left, "__mod__", vm, &args);
       }
       break;
     case BIN_OP_MUL:
       if (left->ops != NULL) {
-        ret = left->ops->__mul__(left, vm, args);
+        ret = left->ops->__mul__(left, vm, &args);
       } else {
-        ret = obj_invoke_attrib(left, "__mul__", vm, args);
+        ret = obj_invoke_attrib(left, "__mul__", vm, &args);
       }
       break;
     case BIN_OP_OR:
@@ -158,14 +163,13 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
       break;
     case BIN_OP_SUB:
       if (left->ops != NULL) {
-        ret = left->ops->__sub__(left, vm, args);
+        ret = left->ops->__sub__(left, vm, &args);
       } else {
-        ret = obj_invoke_attrib(left, "__sub__", vm, args);
+        ret = obj_invoke_attrib(left, "__sub__", vm, &args);
       }
       break;
   }
 
-  vec_free(args);
   return ret;
 }
 
@@ -211,9 +215,9 @@ static void instantiate_attrib(void *key, size_t ksize, uintptr_t value,
 
   if (attrib_val->type == OBJ_FUNC) {
     struct func_obj_ctx *func_ctx = attrib_val->ctx;
-    struct obj *new_func =
-        obj_func_new(func_ctx->code_obj, func_ctx->params, new,
-                     stackframe_inc_ref(func_ctx->frame));
+    // At one point there was an extra stackframe_inc_ref on the frame
+    struct obj *new_func = obj_func_new(func_ctx->code_obj, func_ctx->params,
+                                        new, func_ctx->frame, true);
     obj_set_attrib(new, key, new_func);
   } else {
     obj_set_attrib(new, key, attrib_val);

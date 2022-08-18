@@ -7,6 +7,7 @@
 
 struct code_obj {
   char *name;
+  struct code_obj *parent;
   struct vec *instructions;
   struct vec *code_objs;
   struct vec *vecs;
@@ -17,6 +18,7 @@ struct code_obj {
   struct vec *cont_labels;
   struct vec *consts;
   int locals;
+  int caught_label;
 };
 
 struct code_obj *code_obj_new(char *);

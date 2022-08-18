@@ -1,7 +1,8 @@
 #include <builtins.h>
 
 struct obj *obj_func_new(struct code_obj *code_obj, struct vec *params,
-                         struct obj *self, struct stackframe *frame) {
+                         struct obj *self, struct stackframe *frame,
+                         bool closure) {
   struct func_obj_ctx *ctx =
       (struct func_obj_ctx *)malloc(sizeof(struct func_obj_ctx));
   ctx->code_obj = code_obj;
@@ -11,7 +12,11 @@ struct obj *obj_func_new(struct code_obj *code_obj, struct vec *params,
   } else {
     ctx->self = NULL;
   }
-  ctx->frame = stackframe_inc_ref(frame);
+  if (closure) {
+    ctx->frame = stackframe_inc_ref(frame);
+  } else {
+    ctx->frame = frame;
+  }
   struct obj *func = obj_new(OBJ_FUNC, ctx, &func_type_obj);
   return func;
 }

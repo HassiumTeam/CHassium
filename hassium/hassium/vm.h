@@ -14,16 +14,12 @@
 
 typedef uint64_t vm_inst_t;
 
-struct vm *vm_new();
-void vm_free(struct vm *);
-
-struct obj *vm_run(struct vm *, struct code_obj *, struct obj *);
-void debug();
 typedef enum {
   INST_BIN_OP,
   INST_BUILD_ARRAY,
   INST_BUILD_CLASS,
   INST_BUILD_FUNC,
+  INST_BUILD_HANDLER,
   INST_BUILD_OBJ,
   INST_DELETE,
   INST_IMPORT,
@@ -44,6 +40,7 @@ typedef enum {
   INST_LOAD_SUBSCRIPT,
   INST_LOAD_TRUE,
   INST_POP,
+  INST_POP_HANDLER,
   INST_RAISE,
   INST_RETURN,
   INST_SELFREF,
@@ -56,5 +53,17 @@ typedef enum {
   INST_TYPECHECK_FAST,
   INST_UNARY_OP,
 } vm_opcode_t;
+
+struct handler_label {
+  struct code_obj *code_obj;
+  int label;
+};
+
+struct vm *vm_new();
+void vm_free(struct vm *);
+
+struct obj *vm_run(struct vm *, struct code_obj *, struct obj *);
+void vm_raise(struct vm *, struct obj *);
+void debug();
 
 #endif

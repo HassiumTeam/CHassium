@@ -8,6 +8,8 @@
 struct vm {
   struct vec *frames;
   struct hashmap *globals;
+  struct vec *handlers;
+  struct vec *handler_returns;
 };
 
 struct stackframe {
@@ -100,6 +102,9 @@ extern struct obj false_obj;
 struct obj *obj_new(obj_ctx_type_t, void *, struct obj *);
 void obj_free(struct obj *);
 
+#define obj_inc_ref_fast(o) (++((o)->refs))
+#define obj_dec_ref_fast(o) ((o)->refs > 1 ? --(o)->refs : obj_dec_ref(o))
+
 static inline struct obj *obj_inc_ref(struct obj *obj) {
   ++obj->refs;
   return obj;
@@ -186,18 +191,31 @@ static inline struct obj *obj_hashmap_get(struct hashmap *map, char *key) {
   }
   return &none_obj;
 }
+
 static inline bool obj_hashmap_has(struct hashmap *map, char *key) {
   if (map == NULL) return false;
 
   struct obj tmp;
   return hashmap_get(map, key, strlen(key), (uintptr_t *)&tmp);
 }
+
+static inline bool obj_hashmap_has_get(struct hashmap *map, char *key,
+                                       struct obj **out) {
+  if (map == NULL) return false;
+
+  if (hashmap_get(map, key, strlen(key), (uintptr_t *)out)) {
+    return true;
+  }
+  return false;
+}
+
 static inline void obj_hashmap_set(struct hashmap *map, char *key,
                                    struct obj *val) {
   if (map == NULL) return;
 
   hashmap_set(map, key, strlen(key), (uintptr_t)val);
 }
+
 static void obj_hashmap_entry_free(void *key, size_t ksize, uintptr_t value,
                                    void *usr) {
   obj_dec_ref((struct obj *)value);

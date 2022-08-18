@@ -29,11 +29,6 @@ bool obj_is_true(struct obj *obj, struct vm *vm) {
   return obj->type != OBJ_NONE;
 }
 
-struct obj *bool_to_obj(bool b) {
-  if (b) return &true_obj;
-  return &false_obj;
-}
-
 static struct obj *__eq__(struct obj *bool_, struct vm *vm, struct vec *args) {
   return bool_to_obj(obj_is_true(bool_, vm) ==
                      obj_is_true(vec_get(args, 0), vm));

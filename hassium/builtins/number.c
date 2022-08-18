@@ -24,8 +24,7 @@ static struct builtin_ops number_builtin_ops = {
 };
 
 struct obj *obj_num_new(bool is_float, int val_int, float val_float) {
-  struct num_obj_ctx *ctx =
-      (struct num_obj_ctx *)malloc(sizeof(struct num_obj_ctx));
+  struct num_obj_ctx *ctx = malloc(sizeof(struct num_obj_ctx));
   ctx->is_float = is_float;
   ctx->val_int = val_int;
   ctx->val_float = val_float;
@@ -38,11 +37,6 @@ struct obj *obj_num_new(bool is_float, int val_int, float val_float) {
 
 static void obj_num_lazy_load(struct obj *num) {
   obj_set_attrib(num, "toString", obj_builtin_new(toString, num));
-}
-
-bool obj_num_is_float(struct obj *obj) {
-  struct num_obj_ctx *num = obj->ctx;
-  return num->is_float;
 }
 
 int obj_num_val(struct obj *obj) {
