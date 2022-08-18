@@ -62,10 +62,13 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
   int pos = 0;
   for (;;) {
     if (vm->handler_returns->len > 0) {
-      struct code_obj *handler_return = vec_peek(vm->handler_returns);
-      if (handler_return == code_obj) {
-        pos = handler_return->caught_label;
-        vec_pop(vm->handler_returns);
+      struct obj *handler_return = vec_peek(vm->handler_returns);
+      struct code_obj *handler_code_obj =
+          ((struct func_obj_ctx *)handler_return->ctx)->code_obj;
+      struct code_obj *parent_code_obj = handler_code_obj->parent;
+      if (parent_code_obj == code_obj) {
+        pos = ++intmap_get(code_obj->labels, handler_code_obj->caught_label);
+        obj_dec_ref(vec_pop(vm->handler_returns));
       } else {
         return &none_obj;
       }
@@ -363,16 +366,13 @@ void vm_raise(struct vm *vm, struct obj *obj) {
   }
 
   struct obj *handler = vec_pop(vm->handlers);
-  struct code_obj *parent_code_obj =
-      ((struct func_obj_ctx *)handler->ctx)->code_obj;
   struct vec args;
   struct obj *argstack[1];
   args.data = (void **)argstack;
   args.data[0] = obj;
   args.len = 1;
   obj_invoke(handler, vm, &args);
-  obj_dec_ref(handler);
-  vec_push(vm->handler_returns, parent_code_obj);
+  vec_push(vm->handler_returns, handler);
 }
 
 static void import_attrib_from_map(void *key, size_t ksize, uintptr_t value,

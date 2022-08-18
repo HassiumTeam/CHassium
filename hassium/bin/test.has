@@ -1,11 +1,26 @@
-func someFunc() { anotherFunc(); }
 
-func anotherFunc() { raise "from another func"; }
+func nestedException1 () {
+  nestedException2 ();
+  println ("This should not print");
+}
+
+func nestedException2 () {
+  raise "A nested exception";
+  println ("This should not print");
+}
 
 try {
-  println("test");
-  someFunc();
+  println ("From try");
+  raise "some exception";
+  println ("should not print");
 } catch (e) {
-  println("Caught");
-  println(e);
+  println ("Caught: ");
+  println (e);
+}
+
+try {
+  nestedException1();
+} catch (e) {
+  println ("Caught ");
+  println (e);
 }
