@@ -16,6 +16,7 @@ static struct ast_node *parse_foreach(struct parser *);
 static struct ast_node *parse_func(struct parser *);
 static struct ast_node *parse_if(struct parser *);
 static struct ast_node *parse_import(struct parser *);
+static struct ast_node *parse_proto(struct parser *);
 static struct ast_node *parse_raise(struct parser *);
 static struct ast_node *parse_return(struct parser *);
 static struct ast_node *parse_super(struct parser *);
@@ -83,6 +84,8 @@ static struct ast_node *parse_statement(struct parser *parser) {
     ret = parse_if(parser);
   else if (matchtokv(parser, TOK_ID, "import"))
     ret = parse_import(parser);
+  else if (matchtokv(parser, TOK_ID, "proto"))
+    ret = parse_proto(parser);
   else if (matchtokv(parser, TOK_ID, "raise"))
     ret = parse_raise(parser);
   else if (matchtokv(parser, TOK_ID, "return"))
@@ -219,6 +222,18 @@ static struct ast_node *parse_import(struct parser *parser) {
   }
 
   return import_node_new(imports, from);
+}
+
+static struct ast_node *parse_proto(struct parser *parser) {
+  expecttokv(parser, TOK_ID, "proto");
+  char *name = clone_str(expecttok(parser, TOK_ID)->val);
+  expecttok(parser, TOK_OBRACE);
+  struct vec *attribs = vec_new();
+
+  while (!accepttok(parser, TOK_CBRACE)) {
+  }
+
+  return proto_node_new(name, attribs);
 }
 
 static struct ast_node *parse_raise(struct parser *parser) {

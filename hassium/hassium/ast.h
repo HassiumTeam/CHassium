@@ -25,6 +25,7 @@ typedef enum {
   INVOKE_NODE,
   NUM_NODE,
   OBJ_DECL_NODE,
+  PROTO_NODE,
   RAISE_NODE,
   RETURN_NODE,
   STRING_NODE,
@@ -145,6 +146,27 @@ struct obj_decl_node {
   struct vec *values;
 };
 
+struct proto_node {
+  char *name;
+  struct vec *class_attribs;
+  struct vec *instance_attribs;
+};
+
+typedef enum {
+  FUNC,
+  PROTO,
+} proto_node_class_attrib_type_t;
+
+struct proto_node_class_attrib {
+  proto_node_class_attrib_type_t type;
+};
+
+struct proto_node_instance_attrib {
+  struct ast_node *type;
+  char *name;
+  int count;
+};
+
 struct raise_node {
   struct ast_node *value;
 };
@@ -205,6 +227,7 @@ struct ast_node *import_node_new(struct vec *, struct vec *);
 struct ast_node *invoke_node_new(struct ast_node *, struct vec *);
 struct ast_node *num_node_new(bool, int, float);
 struct ast_node *obj_decl_node_new(struct vec *, struct vec *);
+struct ast_node *proto_node_new(char *, struct vec *);
 struct ast_node *raise_node_new(struct ast_node *);
 struct ast_node *return_node_new(struct ast_node *);
 struct ast_node *string_node_new(char *);

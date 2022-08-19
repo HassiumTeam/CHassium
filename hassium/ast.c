@@ -156,6 +156,14 @@ struct ast_node *obj_decl_node_new(struct vec *keys, struct vec *values) {
   return ast_node_new(OBJ_DECL_NODE, inner);
 }
 
+struct ast_node *proto_node_new(char *name, struct vec *instance_attribs) {
+  struct proto_node *inner =
+      (struct proto_node *)malloc(sizeof(struct proto_node));
+  inner->name = name;
+  inner->instance_attribs = instance_attribs;
+  return ast_node_new(PROTO_NODE, inner);
+}
+
 struct ast_node *raise_node_new(struct ast_node *value) {
   struct raise_node *inner =
       (struct raise_node *)calloc(1, sizeof(struct raise_node));
@@ -237,6 +245,7 @@ static void if_node_free(struct if_node *);
 static void import_node_free(struct import_node *);
 static void invoke_node_free(struct invoke_node *);
 static void obj_decl_node_free(struct obj_decl_node *);
+static void proto_node_free(struct proto_node *);
 static void raise_node_free(struct raise_node *);
 static void return_node_free(struct return_node *);
 static void string_node_free(struct string_node *);
@@ -293,6 +302,9 @@ void ast_node_free(struct ast_node *node) {
       break;
     case OBJ_DECL_NODE:
       obj_decl_node_free(node->inner);
+      break;
+    case PROTO_NODE:
+      proto_node_free(node->inner);
       break;
     case RAISE_NODE:
       raise_node_free(node->inner);
@@ -408,6 +420,18 @@ static void invoke_node_free(struct invoke_node *node) {
 
 static void obj_decl_node_free(struct obj_decl_node *node) {
   vec_ast_node_free(node->values);
+}
+
+static void proto_node_free(struct proto_node *node) {
+  free(node->name);
+  for (int i = 0; i < node->instance_attribs->len; ++i) {
+    struct proto_node_instance_attrib *attrib =
+        vec_get(node->instance_attribs, i);
+    ast_node_free(attrib->type);
+    free(attrib->name);
+    free(attrib);
+  }
+  vec_free(node->instance_attribs);
 }
 
 static void raise_node_free(struct raise_node *node) {
