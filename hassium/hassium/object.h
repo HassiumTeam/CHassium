@@ -77,18 +77,6 @@ struct func_obj_ctx {
   struct stackframe *frame;
 };
 
-struct proto_obj_ctx {
-  char *name;
-  struct vec *class_attribs;
-  struct vec *instance_attribs;
-};
-
-struct proto_instance_attrib {
-  char *name;
-  struct obj *type;
-  int count;
-};
-
 extern struct obj array_type_obj;
 extern struct obj bool_type_obj;
 extern struct obj builtin_type_obj;

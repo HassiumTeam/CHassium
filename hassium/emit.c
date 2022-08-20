@@ -29,7 +29,6 @@ static void visit_import_node(struct emit *, struct import_node *);
 static void visit_invoke_node(struct emit *, struct invoke_node *);
 static void visit_num_node(struct emit *, struct num_node *);
 static void visit_obj_decl_node(struct emit *, struct obj_decl_node *);
-static void visit_proto_node(struct emit *, struct proto_node *);
 static void visit_raise_node(struct emit *, struct raise_node *);
 static void visit_return_node(struct emit *, struct return_node *);
 static void visit_string_node(struct emit *, struct string_node *);
@@ -156,9 +155,6 @@ static void visit_ast_node(struct emit *emit, struct ast_node *node) {
       break;
     case OBJ_DECL_NODE:
       visit_obj_decl_node(emit, node->inner);
-      break;
-    case PROTO_NODE:
-      visit_proto_node(emit, node->inner);
       break;
     case RAISE_NODE:
       visit_raise_node(emit, node->inner);
@@ -501,22 +497,6 @@ static void visit_obj_decl_node(struct emit *emit, struct obj_decl_node *node) {
     visit_ast_node(emit, vec_get(node->values, i));
   }
   add_inst(emit, build_obj_inst_new(emit, node->keys));
-}
-
-static void visit_proto_node(struct emit *emit, struct proto_node *node) {
-  struct proto_obj_ctx *proto_ctx = malloc(sizeof(struct proto_obj_ctx));
-  proto_ctx->class_attribs = node->class_attribs;
-  proto_ctx->instance_attribs = vec_new();
-
-  for (int i = 0; i < node->instance_attribs->len; i++) {
-    struct proto_node_instance_attrib *node_attrib =
-        vec_get(node->instance_attribs, i);
-    struct proto_instance_attrib *runtime_attrib =
-        malloc(sizeof(struct proto_instance_attrib));
-    runtime_attrib->name = clone_str(node_attrib->name);
-    runtime_attrib->count = node_attrib->count;
-    runtime_attrib->type = NULL;
-  }
 }
 
 static void visit_raise_node(struct emit *emit, struct raise_node *node) {
