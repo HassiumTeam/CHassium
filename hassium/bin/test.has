@@ -1,34 +1,23 @@
-class One {
-  func new (x, y) {
-    println ("Base constructor");
-    self.x = x;
-    self.y = y;
-  }
-
-  func some () {
-    println (self.x + self.y);
+proto MyProto {
+  func test(2),
+  func test2(0),
+  instance {
+    int foo,
+    string bar,  
   }
 }
 
-class Two extends One {
-  func new (x, y, z) {
-    self.__super__ (x, y);
-    self.z = z; 
-    self.foo = "thing"; 
+class MyClass : MyProto {
+  func new () {
+    self.foo = 3;
+    self.bar = 'Hello, World!';
+  }
+  
+  func test (x, y) {
+
   }
 
-  func another () {
-    println (self.x + self.y + self.z);
+  func test2 () {
+
   }
 }
-
-func acceptsOne(x: One) {
-
-}
-
-
-t = Two (1, 2, 3);
-t.some ();
-t.another ();
-
-acceptsOne (t);

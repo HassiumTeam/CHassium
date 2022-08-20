@@ -77,10 +77,16 @@ struct func_obj_ctx {
   struct stackframe *frame;
 };
 
-struct num_obj_ctx {
-  bool is_float;
-  int val_int;
-  float val_float;
+struct proto_obj_ctx {
+  char *name;
+  struct vec *class_attribs;
+  struct vec *instance_attribs;
+};
+
+struct proto_instance_attrib {
+  char *name;
+  struct obj *type;
+  int count;
 };
 
 extern struct obj array_type_obj;

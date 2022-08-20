@@ -79,6 +79,7 @@ struct bin_op_node {
 struct class_decl_node {
   char *name;
   struct ast_node *extends;
+  struct vec *impls;
   struct ast_node *body;
 };
 
@@ -158,12 +159,14 @@ typedef enum {
 } proto_node_class_attrib_type_t;
 
 struct proto_node_class_attrib {
+  char *name;
   proto_node_class_attrib_type_t type;
+  int count;
 };
 
 struct proto_node_instance_attrib {
-  struct ast_node *type;
   char *name;
+  struct ast_node *type;
   int count;
 };
 
@@ -210,7 +213,7 @@ struct ast_node *attrib_node_new(struct ast_node *, char *);
 struct ast_node *bin_op_node_new(bin_op_type_t, struct ast_node *,
                                  struct ast_node *);
 struct ast_node *class_decl_node_new(char *, struct ast_node *,
-                                     struct ast_node *);
+                                     struct ast_node *, struct vec *);
 struct ast_node *code_block_node_new(struct vec *);
 struct ast_node *delete_node_new(struct ast_node *);
 struct ast_node *do_while_node_new(struct ast_node *, struct ast_node *);
@@ -227,7 +230,7 @@ struct ast_node *import_node_new(struct vec *, struct vec *);
 struct ast_node *invoke_node_new(struct ast_node *, struct vec *);
 struct ast_node *num_node_new(bool, int, float);
 struct ast_node *obj_decl_node_new(struct vec *, struct vec *);
-struct ast_node *proto_node_new(char *, struct vec *);
+struct ast_node *proto_node_new(char *, struct vec *, struct vec *);
 struct ast_node *raise_node_new(struct ast_node *);
 struct ast_node *return_node_new(struct ast_node *);
 struct ast_node *string_node_new(char *);

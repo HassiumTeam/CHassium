@@ -113,10 +113,22 @@ static struct ast_node *parse_block(struct parser *parser) {
 static struct ast_node *parse_class(struct parser *parser) {
   expecttokv(parser, TOK_ID, "class");
   char *id = clone_str(expecttok(parser, TOK_ID)->val);
+
   struct ast_node *extends = NULL;
-  if (accepttokv(parser, TOK_ID, "extends")) extends = parse_expr(parser);
+  if (accepttokv(parser, TOK_ID, "extends")) {
+    extends = parse_expr(parser);
+  }
+
+  struct vec *impls = vec_new();
+  if (accepttok(parser, TOK_COLON)) {
+    while (!matchtok(parser, TOK_OBRACE)) {
+      vec_push(impls, parse_expr(parser));
+    }
+  }
+
   struct ast_node *body = parse_statement(parser);
-  return class_decl_node_new(id, extends, body);
+
+  return class_decl_node_new(id, extends, body, impls);
 }
 
 static struct ast_node *parse_delete(struct parser *parser) {
@@ -194,12 +206,18 @@ static struct ast_node *parse_func(struct parser *parser) {
 
 static struct ast_node *parse_if(struct parser *parser) {
   expecttokv(parser, TOK_ID, "if");
+
   bool using_parens = accepttok(parser, TOK_OPAREN);
   struct ast_node *predicate = parse_expr(parser);
   if (using_parens) expecttok(parser, TOK_CPAREN);
+
   struct ast_node *body = parse_statement(parser);
   struct ast_node *else_body = NULL;
-  if (accepttokv(parser, TOK_ID, "else")) else_body = parse_statement(parser);
+
+  if (accepttokv(parser, TOK_ID, "else")) {
+    else_body = parse_statement(parser);
+  }
+
   return if_node_new(predicate, body, else_body);
 }
 
@@ -227,13 +245,54 @@ static struct ast_node *parse_import(struct parser *parser) {
 static struct ast_node *parse_proto(struct parser *parser) {
   expecttokv(parser, TOK_ID, "proto");
   char *name = clone_str(expecttok(parser, TOK_ID)->val);
-  expecttok(parser, TOK_OBRACE);
-  struct vec *attribs = vec_new();
+  struct vec *class_attribs = vec_new();
+  struct vec *instance_attribs = vec_new();
 
+  expecttok(parser, TOK_OBRACE);
   while (!accepttok(parser, TOK_CBRACE)) {
+    if (accepttokv(parser, TOK_ID, "new")) {
+      expecttok(parser, TOK_OBRACE);
+
+      while (!accepttok(parser, TOK_CBRACE)) {
+        struct proto_node_instance_attrib *instance_attrib =
+            malloc(sizeof(struct proto_node_instance_attrib));
+        instance_attrib->type = parse_expr(parser);
+        instance_attrib->name = clone_str(expecttok(parser, TOK_ID)->val);
+        if (accepttok(parser, TOK_OPAREN)) {
+          instance_attrib->count = atoi(expecttok(parser, TOK_NUM)->val);
+          expecttok(parser, TOK_OPAREN);
+        }
+        accepttok(parser, TOK_COMMA);
+        vec_push(instance_attribs, instance_attrib);
+      }
+
+    } else {
+      struct proto_node_class_attrib *class_attrib =
+          malloc(sizeof(struct proto_node_class_attrib));
+
+      char *typec = expecttok(parser, TOK_ID)->val;
+      if (strcmp(typec, "func") == 0) {
+        class_attrib->type = FUNC;
+      } else if (strcmp(typec, "proto") == 0) {
+        class_attrib->type = PROTO;
+      } else {
+        printf("Invalid use of %s in proto!\n", typec);
+        exit(-1);
+      }
+
+      class_attrib->name = clone_str(expecttok(parser, TOK_ID)->val);
+
+      if (class_attrib->type == FUNC && accepttok(parser, TOK_OPAREN)) {
+        class_attrib->count = atoi(expecttok(parser, TOK_NUM)->val);
+        expecttok(parser, TOK_CPAREN);
+      }
+
+      accepttok(parser, TOK_COMMA);
+      vec_push(class_attribs, class_attrib);
+    }
   }
 
-  return proto_node_new(name, attribs);
+  return proto_node_new(name, class_attribs, instance_attribs);
 }
 
 static struct ast_node *parse_raise(struct parser *parser) {

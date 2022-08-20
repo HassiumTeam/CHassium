@@ -31,8 +31,8 @@ struct obj *obj_func_new(struct code_obj *, struct vec *, struct obj *,
                          struct stackframe *, bool);
 
 struct obj *obj_num_new(bool, int, float);
-#define obj_num_is_float(o) (((struct num_obj_ctx *)o->ctx)->is_float)
-int obj_num_val(struct obj *);
+// int obj_num_val(struct obj *);
+#define obj_num_val(o) ((uintptr_t)((o)->ctx))
 
 struct obj *obj_string_new(char *);
 char *obj_string_val(struct obj *);

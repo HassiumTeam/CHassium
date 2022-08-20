@@ -75,7 +75,7 @@ static struct obj *__iter____iternext__(struct obj *iter_, struct vm *vm,
 static struct obj *__storeindex__(struct obj *arr, struct vm *vm,
                                   struct vec *args) {
   struct vec *vec = arr->ctx;
-  int key = obj_num_val(vec_get(args, 0));
+  int key = obj_num_val((struct obj *)vec_get(args, 0));
   struct obj *val = vec_get(args, 1);
 
   if (key < vec->len) {

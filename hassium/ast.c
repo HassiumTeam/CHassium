@@ -33,12 +33,13 @@ struct ast_node *bin_op_node_new(bin_op_type_t type, struct ast_node *left,
 }
 
 struct ast_node *class_decl_node_new(char *name, struct ast_node *extends,
-                                     struct ast_node *body) {
+                                     struct ast_node *body, struct vec *impls) {
   struct class_decl_node *inner =
       (struct class_decl_node *)calloc(1, sizeof(struct class_decl_node));
   inner->name = name;
   inner->extends = extends;
   inner->body = body;
+  inner->impls = impls;
   return ast_node_new(CLASS_DECL_NODE, inner);
 }
 
@@ -156,10 +157,12 @@ struct ast_node *obj_decl_node_new(struct vec *keys, struct vec *values) {
   return ast_node_new(OBJ_DECL_NODE, inner);
 }
 
-struct ast_node *proto_node_new(char *name, struct vec *instance_attribs) {
+struct ast_node *proto_node_new(char *name, struct vec *class_attribs,
+                                struct vec *instance_attribs) {
   struct proto_node *inner =
       (struct proto_node *)malloc(sizeof(struct proto_node));
   inner->name = name;
+  inner->class_attribs = class_attribs;
   inner->instance_attribs = instance_attribs;
   return ast_node_new(PROTO_NODE, inner);
 }
@@ -363,6 +366,7 @@ static void bin_op_node_free(struct bin_op_node *node) {
 static void class_decl_node_free(struct class_decl_node *node) {
   ast_node_free(node->body);
   ast_node_free(node->extends);
+  vec_ast_node_free(node->impls);
   free(node->name);
 }
 

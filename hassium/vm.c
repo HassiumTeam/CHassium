@@ -156,9 +156,11 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         struct code_obj *mod = vec_get(code_obj->code_objs, op);
         struct vec *imports = vec_get(code_obj->vecs, opshort);
         struct stackframe *import_frame = stackframe_new(mod->locals);
+
         vec_push(vm->frames, stackframe_inc_ref(import_frame));
         struct obj *mod_ret = vm_run(vm, mod, NULL);
         vec_pop(vm->frames);
+
         struct hashmap *attribs = NULL;
         if (mod_ret != &none_obj) {
           attribs = mod_ret->attribs;
@@ -174,6 +176,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
                                    vm->globals);
           }
         }
+
         stackframe_dec_ref(import_frame);
         obj_dec_ref(mod_ret);
       } break;
@@ -239,9 +242,9 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_LOAD_FALSE:
         STACK_PUSH(&false_obj);
         break;
-      case INST_LOAD_FAST: {
+      case INST_LOAD_FAST:
         STACK_PUSH(obj_inc_ref(stackframe_get(topframe, op)));
-      } break;
+        break;
       case INST_LOAD_ID: {
         char *id = vec_get(code_obj->strs, op);
         struct obj *val;
