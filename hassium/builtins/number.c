@@ -26,8 +26,10 @@ static struct builtin_ops number_builtin_ops = {
 struct obj *obj_num_new(bool is_float, int val_int, float val_float) {
   struct obj *num =
       obj_new(OBJ_NUM, (void *)(uintptr_t)val_int, &number_type_obj);
+
   num->ops = &number_builtin_ops;
   num->lazy_load_fn = obj_num_lazy_load;
+
   return num;
 }
 

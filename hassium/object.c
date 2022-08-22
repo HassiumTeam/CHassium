@@ -3,7 +3,7 @@
 static struct obj *toString(struct obj *, struct vm *, struct vec *);
 
 struct obj *obj_new(obj_ctx_type_t type, void *ctx, struct obj *obj_type) {
-  struct obj *obj = (struct obj *)malloc(sizeof(struct obj));
+  struct obj *obj = malloc(sizeof(struct obj));
   obj->refs = 0;
   obj->ref_immune = false;
   obj->type = type;

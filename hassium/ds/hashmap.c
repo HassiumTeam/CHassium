@@ -9,7 +9,7 @@
 #include <string.h>
 //#include <stdio.h>
 
-#define HASHMAP_DEFAULT_CAPACITY 20
+#define HASHMAP_DEFAULT_CAPACITY 8
 #define HASHMAP_MAX_LOAD 0.75f
 #define HASHMAP_RESIZE_FACTOR 2
 

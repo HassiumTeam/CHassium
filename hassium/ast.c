@@ -181,6 +181,15 @@ struct ast_node *return_node_new(struct ast_node *value) {
   return ast_node_new(RETURN_NODE, inner);
 }
 
+struct ast_node *slice_node_new(struct ast_node *target, struct ast_node *start,
+                                struct ast_node *end) {
+  struct slice_node *inner = malloc(sizeof(struct slice_node));
+  inner->target = target;
+  inner->start = start;
+  inner->end = end;
+  return ast_node_new(SLICE_NODE, inner);
+}
+
 struct ast_node *string_node_new(char *value) {
   struct string_node *inner =
       (struct string_node *)calloc(1, sizeof(struct string_node));
@@ -251,6 +260,7 @@ static void obj_decl_node_free(struct obj_decl_node *);
 static void proto_node_free(struct proto_node *);
 static void raise_node_free(struct raise_node *);
 static void return_node_free(struct return_node *);
+static void slice_node_free(struct slice_node *);
 static void string_node_free(struct string_node *);
 static void subscript_node_free(struct subscript_node *);
 static void super_node_free(struct super_node *);
@@ -314,6 +324,9 @@ void ast_node_free(struct ast_node *node) {
       break;
     case RETURN_NODE:
       return_node_free(node->inner);
+      break;
+    case SLICE_NODE:
+      slice_node_free(node->inner);
       break;
     case STRING_NODE:
       string_node_free(node->inner);
@@ -444,6 +457,12 @@ static void raise_node_free(struct raise_node *node) {
 
 static void return_node_free(struct return_node *node) {
   ast_node_free(node->value);
+}
+
+static void slice_node_free(struct slice_node *node) {
+  ast_node_free(node->target);
+  ast_node_free(node->start);
+  ast_node_free(node->end);
 }
 
 static void string_node_free(struct string_node *node) { free(node->value); }

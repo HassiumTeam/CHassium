@@ -445,9 +445,28 @@ static struct ast_node *parse_access(struct parser *parser,
   else if (accepttok(parser, TOK_OPAREN))
     return parse_access(parser, invoke_node_new(left, parse_arg_list(parser)));
   else if (accepttok(parser, TOK_OSQUARE)) {
-    struct ast_node *key = parse_expr(parser);
-    expecttok(parser, TOK_CSQUARE);
-    return parse_access(parser, subscript_node_new(left, key));
+    if (accepttok(parser, TOK_COLON)) {
+      if (accepttok(parser, TOK_CSQUARE)) {
+        return parse_access(parser, slice_node_new(left, NULL, NULL));
+      }
+      struct ast_node *end = parse_expr(parser);
+      expecttok(parser, TOK_CSQUARE);
+      return parse_access(parser, slice_node_new(left, NULL, end));
+    } else {
+      struct ast_node *key_or_start = parse_expr(parser);
+      if (accepttok(parser, TOK_COLON)) {
+        if (accepttok(parser, TOK_CSQUARE)) {
+          return parse_access(parser, slice_node_new(left, key_or_start, NULL));
+        } else {
+          struct ast_node *end = parse_expr(parser);
+          expecttok(parser, TOK_CSQUARE);
+          return parse_access(parser, slice_node_new(left, key_or_start, end));
+        }
+      } else {
+        expecttok(parser, TOK_CSQUARE);
+        return parse_access(parser, subscript_node_new(left, key_or_start));
+      }
+    }
   }
   return left;
 }

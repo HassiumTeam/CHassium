@@ -23,9 +23,16 @@ void strbuf_append(struct strbuf *strbuf, char c) {
   strbuf->buf[strbuf->len++] = c;
 }
 
+void strbuf_append_str(struct strbuf *strbuf, char *s) {
+  int len = strlen(s);
+  for (int i = 0; i < len; i++) {
+    strbuf_append(strbuf, s[i]);
+  }
+}
+
 static void expand_if_needed(struct strbuf *strbuf) {
   if (strbuf->len >= strbuf->size) {
     strbuf->size += STRBUF_EXPAND_AT;
-    strbuf->buf = (char *)realloc(strbuf->buf, sizeof(char) * strbuf->size);
+    strbuf->buf = realloc(strbuf->buf, sizeof(char) * strbuf->size);
   }
 }

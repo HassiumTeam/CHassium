@@ -32,6 +32,7 @@ static void visit_obj_decl_node(struct emit *, struct obj_decl_node *);
 static void visit_proto_node(struct emit *, struct proto_node *);
 static void visit_raise_node(struct emit *, struct raise_node *);
 static void visit_return_node(struct emit *, struct return_node *);
+static void visit_slice_node(struct emit *, struct slice_node *);
 static void visit_string_node(struct emit *, struct string_node *);
 static void visit_subscript_node(struct emit *, struct subscript_node *);
 static void visit_super_node(struct emit *, struct super_node *);
@@ -165,6 +166,9 @@ static void visit_ast_node(struct emit *emit, struct ast_node *node) {
       break;
     case RETURN_NODE:
       visit_return_node(emit, node->inner);
+      break;
+    case SLICE_NODE:
+      visit_slice_node(emit, node->inner);
       break;
     case STRING_NODE:
       visit_string_node(emit, node->inner);
@@ -332,7 +336,7 @@ static void visit_for_node(struct emit *emit, struct for_node *node) {
 
   place_label(emit, body);
   visit_ast_node(emit, node->condition);
-  add_inst(emit, jump_if_full_inst_new(end));
+  add_inst(emit, jump_if_false_inst_new(end));
   visit_ast_node(emit, node->body);
   visit_ast_node(emit, node->repeated);
   add_inst(emit, jump_inst_new(body));
@@ -531,6 +535,21 @@ static void visit_return_node(struct emit *emit, struct return_node *node) {
     add_inst(emit, vm_inst_new(INST_TYPECHECK, 0, 0));
   }
   add_inst(emit, vm_inst_new(INST_RETURN, 0, 0));
+}
+
+static void visit_slice_node(struct emit *emit, struct slice_node *node) {
+  visit_ast_node(emit, node->target);
+  if (node->start != NULL) {
+    visit_ast_node(emit, node->start);
+  } else {
+    add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0));
+  }
+  if (node->end != NULL) {
+    visit_ast_node(emit, node->end);
+  } else {
+    add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0));
+  }
+  add_inst(emit, vm_inst_new(INST_SLICE, 0, 0));
 }
 
 static void visit_string_node(struct emit *emit, struct string_node *node) {

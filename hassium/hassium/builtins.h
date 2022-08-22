@@ -3,6 +3,7 @@
 
 #include <codeobj.h>
 #include <ds/hashmap.h>
+#include <ds/strbuf.h>
 #include <ds/vec.h>
 #include <object.h>
 #include <stdbool.h>

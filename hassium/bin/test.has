@@ -1,23 +1,2 @@
-proto MyProto {
-  func test(2),
-  func test2(0),
-  instance {
-    int foo,
-    string bar,  
-  }
-}
-
-class MyClass : MyProto {
-  func new () {
-    self.foo = 3;
-    self.bar = 'Hello, World!';
-  }
-  
-  func test (x, y) {
-
-  }
-
-  func test2 () {
-
-  }
-}
+a = ['hello', 'world'];
+println (a.join (', '));

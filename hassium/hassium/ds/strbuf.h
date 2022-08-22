@@ -15,5 +15,6 @@ struct strbuf {
 struct strbuf *strbuf_new();
 char *strbuf_done(struct strbuf *);
 void strbuf_append(struct strbuf *, char);
+void strbuf_append_str(struct strbuf *, char *);
 
 #endif

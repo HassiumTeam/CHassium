@@ -28,6 +28,7 @@ typedef enum {
   PROTO_NODE,
   RAISE_NODE,
   RETURN_NODE,
+  SLICE_NODE,
   STRING_NODE,
   SUBSCRIPT_NODE,
   SUPER_NODE,
@@ -178,6 +179,12 @@ struct return_node {
   struct ast_node *value;
 };
 
+struct slice_node {
+  struct ast_node *target;
+  struct ast_node *start;
+  struct ast_node *end;
+};
+
 struct string_node {
   char *value;
 };
@@ -233,6 +240,8 @@ struct ast_node *obj_decl_node_new(struct vec *, struct vec *);
 struct ast_node *proto_node_new(char *, struct vec *, struct vec *);
 struct ast_node *raise_node_new(struct ast_node *);
 struct ast_node *return_node_new(struct ast_node *);
+struct ast_node *slice_node_new(struct ast_node *, struct ast_node *,
+                                struct ast_node *);
 struct ast_node *string_node_new(char *);
 struct ast_node *subscript_node_new(struct ast_node *, struct ast_node *);
 struct ast_node *super_node_new(struct vec *);

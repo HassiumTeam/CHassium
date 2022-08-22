@@ -71,6 +71,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       struct code_obj *handler_code_obj =
           ((struct func_obj_ctx *)handler_return->ctx)->code_obj;
       struct code_obj *parent_code_obj = handler_code_obj->parent;
+
       if (parent_code_obj == code_obj) {
         pos = ++intmap_get(code_obj->labels, handler_code_obj->caught_label);
         obj_dec_ref(vec_pop(vm->handler_returns));
@@ -89,7 +90,9 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_BIN_OP: {
         struct obj *right = STACK_POP();
         struct obj *left = STACK_POP();
+
         STACK_PUSH(obj_inc_ref(obj_bin_op(opshort, left, right, vm)));
+
         obj_dec_ref(left);
         obj_dec_ref(right);
       } break;
@@ -98,15 +101,16 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         for (int i = op - 1; i >= 0; i--) {
           vec_set(items, i, obj_down_ref(STACK_POP()));
         }
+
         STACK_PUSH(obj_inc_ref(obj_array_new(items)));
       } break;
       case INST_BUILD_CLASS: {
         struct code_obj *class_code_obj = vec_get(code_obj->code_objs, op);
+        struct stackframe *class_frame = stackframe_new(class_code_obj->locals);
         struct obj *class =
             obj_new(OBJ_TYPE, class_code_obj->name, &type_type_obj);
-        obj_hashmap_set(vm->globals, class_code_obj->name, obj_inc_ref(class));
 
-        struct stackframe *class_frame = stackframe_new(class_code_obj->locals);
+        obj_hashmap_set(vm->globals, class_code_obj->name, obj_inc_ref(class));
         vec_push(vm->frames, stackframe_inc_ref(class_frame));
         vm_run(vm, class_code_obj, self);
         vec_pop(vm->frames);
@@ -133,6 +137,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         if (opshort) {
           frame = topframe;
         }
+
         struct code_obj *func_code_obj = vec_get(code_obj->code_objs, op);
         STACK_PUSH(obj_inc_ref(obj_func_new(
             func_code_obj, func_code_obj->params, NULL, frame, true)));
@@ -145,8 +150,11 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_BUILD_OBJ: {
         struct obj *new = obj_new(OBJ_ANON, NULL, &object_type_obj);
         struct vec *keys = vec_get(code_obj->vecs, op);
-        for (int i = keys->len - 1; i >= 0; --i)
+
+        for (int i = keys->len - 1; i >= 0; --i) {
           obj_set_attrib(new, vec_get(keys, i), obj_down_ref(STACK_POP()));
+        }
+
         STACK_PUSH(obj_inc_ref(new));
       } break;
       case INST_DELETE: {
@@ -226,14 +234,20 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       } break;
       case INST_LOAD_ATTRIB: {
         struct obj *target = STACK_POP();
+
         if (target->lazy_load_fn) {
           target->lazy_load_fn(target);
           target->lazy_load_fn = NULL;
         }
+
         struct obj *attrib =
             obj_hashmap_get(target->attribs, vec_get(code_obj->strs, op));
-        if (attrib == NULL) attrib = &none_obj;
+        if (attrib == NULL) {
+          attrib = &none_obj;
+        }
+
         STACK_PUSH(obj_inc_ref(attrib));
+
         obj_dec_ref(target);
       } break;
       case INST_LOAD_CONST:
@@ -264,10 +278,12 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_LOAD_SUBSCRIPT: {
         struct obj *target = STACK_POP();
         struct obj *key = STACK_POP();
+
         if (target->lazy_load_fn) {
           target->lazy_load_fn(target);
           target->lazy_load_fn = NULL;
         }
+
         STACK_PUSH(obj_inc_ref(obj_index(target, key, vm)));
         obj_dec_ref(key);
         obj_dec_ref(target);
@@ -287,13 +303,34 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_RETURN:
         return STACK_POP();
         break;
+      case INST_SLICE: {
+        struct obj *end = STACK_POP();
+        struct obj *start = STACK_POP();
+        struct obj *target = STACK_POP();
+
+        struct obj *argstack[2];
+        argstack[0] = start;
+        argstack[1] = end;
+        struct vec args;
+        args.data = (void **)argstack;
+        args.len = 2;
+
+        STACK_PUSH(
+            obj_inc_ref(obj_invoke_attrib(target, "__slice__", vm, &args)));
+
+        obj_dec_ref(start);
+        obj_dec_ref(end);
+        obj_dec_ref(target);
+      } break;
       case INST_STORE_ATTRIB: {
         struct obj *target = STACK_POP();
         struct obj *val = STACK_PEEK();
+
         if (target->lazy_load_fn) {
           target->lazy_load_fn(target);
           target->lazy_load_fn = NULL;
         }
+
         obj_set_attrib(target, vec_get(code_obj->strs, op), val);
         obj_dec_ref(target);
       }; break;
@@ -307,6 +344,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         char *id = vec_get(code_obj->strs, op);
         struct obj *val = STACK_PEEK();
         struct obj *existing = obj_hashmap_get(vm->globals, id);
+
         obj_hashmap_set(vm->globals, id, obj_inc_ref(val));
         obj_dec_ref(existing);
       } break;
@@ -314,10 +352,12 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         struct obj *target = STACK_POP();
         struct obj *key = STACK_POP();
         struct obj *val = STACK_POP();
+
         if (target->lazy_load_fn) {
           target->lazy_load_fn(target);
           target->lazy_load_fn = NULL;
         }
+
         obj_store_index(target, key, val, vm);
         obj_dec_ref(key);
         obj_dec_ref(target);
@@ -326,21 +366,25 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_TYPECHECK: {
         struct obj *type = STACK_POP();
         struct obj *target = STACK_PEEK();
+
         if (!obj_is(target, type)) {
           printf("Expected type %s, got type %s\n", (char *)type->ctx,
                  (char *)target->obj_type->ctx);
           exit(-1);
         }
+
         obj_dec_ref(type);
       } break;
       case INST_TYPECHECK_FAST: {
         struct obj *type = STACK_POP();
         struct obj *target = locals[op];
+
         if (!obj_is(target, type)) {
           printf("Expected type %s, got type %s\n", (char *)type->ctx,
                  (char *)target->obj_type->ctx);
           exit(-1);
         }
+
         obj_dec_ref(type);
       } break;
       case INST_UNARY_OP: {
@@ -377,11 +421,13 @@ void vm_raise(struct vm *vm, struct obj *obj) {
   }
 
   struct obj *handler = vec_pop(vm->handlers);
+
   struct vec args;
   struct obj *argstack[1];
   args.data = (void **)argstack;
   args.data[0] = obj;
   args.len = 1;
+
   obj_invoke(handler, vm, &args);
   vec_push(vm->handler_returns, handler);
 }
