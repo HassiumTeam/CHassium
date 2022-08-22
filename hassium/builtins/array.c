@@ -254,19 +254,20 @@ static struct obj *toString(struct obj *arr, struct vm *vm, struct vec *args) {
       item->lazy_load_fn = NULL;
     }
 
-    struct obj *toString_res = obj_to_string(item, vm);
-    if (toString_res->type == OBJ_STRING) {
+    struct obj *toString_res = obj_inc_ref(obj_to_string(item, vm));
+
+    if (item->type == OBJ_STRING) {
       strbuf_append(strbuf, '"');
     }
     strbuf_append_str(strbuf, (char *)toString_res->ctx);
-    if (toString_res->type == OBJ_STRING) {
+    if (item->type == OBJ_STRING) {
       strbuf_append(strbuf, '"');
     }
-
     if (i + 1 != vec->len) {
       strbuf_append(strbuf, ',');
       strbuf_append(strbuf, ' ');
     }
+    obj_dec_ref(toString_res);
   }
 
   strbuf_append(strbuf, ']');

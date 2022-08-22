@@ -41,6 +41,9 @@ func main () {
     foreach (z in a) {
         println (z);
     }
+    println (a[1:]);
+    println (a[:1]);
+    println (a[1:3]);
 
     p1 = Point (2, 4);
     p2 = Point (10, 12);
