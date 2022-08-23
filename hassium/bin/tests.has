@@ -41,6 +41,10 @@ func main () {
     foreach (z in a) {
         println (z);
     }
+    for (i = 0; i < a.len(); i += 1) {
+      println (a [i]);
+    }
+
     println (a[1:]);
     println (a[:1]);
     println (a[1:3]);

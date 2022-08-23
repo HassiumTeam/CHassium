@@ -229,11 +229,12 @@ struct obj *obj_eq(struct obj *left, struct obj *right, struct vm *vm) {
 struct obj *obj_index(struct obj *target, struct obj *key, struct vm *vm) {
   struct obj *index = obj_hashmap_get(target->attribs, "__index__");
   if (index != &none_obj) {
-    struct vec *key_args = vec_new();
-    vec_push(key_args, key);
-    struct obj *val = obj_invoke(index, vm, key_args);
-    vec_free(key_args);
-    return val;
+    struct obj *key_argsstack[1];
+    key_argsstack[0] = key;
+    struct vec key_args;
+    key_args.data = (void **)key_argsstack;
+    key_args.len = 1;
+    return obj_invoke(index, vm, &key_args);
   } else {
     if (key->type != OBJ_STRING) {
       printf("Object must be accessed by a string!");
@@ -262,10 +263,12 @@ struct obj *obj_instantiate(struct obj *class, struct vm *vm,
                             struct vec *args) {
   struct obj *new = obj_new(OBJ_ANON, NULL, class);
   hashmap_iterate(class->attribs, instantiate_attrib, new);
+
   if (obj_hashmap_has(new->attribs, "new")) {
     obj_invoke_attrib(obj_inc_ref(new), "new", vm, args);
     obj_down_ref(new);
   }
+
   return new;
 }
 
@@ -294,17 +297,21 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
     } else {
       frame = func->frame;
     }
+
     for (int i = 0; i < func->params->len; i++) {
       stackframe_set(frame, (uintptr_t)vec_get(func->params, i),
                      obj_inc_ref(vec_get(args, i)));
     }
+
     struct obj *self = func->self;
     if (self != NULL && self->type == OBJ_WEAKREF) {
       self = self->ctx;
     }
+
     vec_push(vm->frames, stackframe_inc_ref(frame));
     ret = vm_run(vm, func->code_obj, self);
     stackframe_dec_ref(vec_pop(vm->frames));
+
     obj_down_ref(ret);
   } else if (obj_hashmap_has(obj->attribs, "new")) {
     struct obj *new = obj_instantiate(obj, vm, args);
