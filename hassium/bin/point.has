@@ -26,7 +26,13 @@ class Point {
   func __iter__ () {
     iter = {
       pos: 0,
-      items: [self.x, self.y],
+      items: [{ 
+        type: "X",
+        val: self.x,
+      }, {
+        type: "Y",
+        val: self.y,
+      }],
     };
     iter.__iterfull__ = self.__iterfull__.bind (iter);
     iter.__iternext__ = self.__iternext__.bind (iter);

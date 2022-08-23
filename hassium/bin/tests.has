@@ -9,86 +9,87 @@ class MyClass {
 }
 
 func main () {
-    arr = [1, 2, 3];
-    obj = {
-        arr,
-        num: 5,
-        "str": "s",
-    };
+  arr = [1, 2, 3];
+  obj = {
+    arr,
+    num: 5,
+    "str": "s",
+  };
 
-    foreach (i in arr) {
-        println (i);
-    }
+  foreach (i in arr) {
+    println (i);
+  }
 
-    println (obj.arr [2]);
-    obj.num += 2;
-    println (obj.num);
-    println (10.5);
-    println (add (10, 20, obj.num));
-    println (void ());
-    
-    arr.push ('pushed');
-    println (arr.peek ());
-    println (arr.pop ());
-    println (arr.pop ());
+  println (obj.arr [2]);
+  obj.num += 2;
+  println (obj.num);
+  println (10.5);
+  println (add (10, 20, obj.num));
+  println (void ());
+  
+  arr.push ('pushed');
+  println (arr.peek ());
+  println (arr.pop ());
+  println (arr.pop ());
 
-    println (typeof (2));
-    println (typeof (2) == number);
+  println (typeof (2));
+  println (typeof (2) == number);
 
-    a = [1, "2", 4];
-    a [0] = 2;
-    a [5] = 5;
-    foreach (z in a) {
-        println (z);
-    }
-    for (i = 0; i < a.len(); i += 1) {
-      println (a [i]);
-    }
+  a = [1, "2", 4];
+  a [0] = 2;
+  a [5] = 5;
+  foreach (z in a) {
+    println (z);
+  }
+  for (i = 0; i < a.len(); i += 1) {
+    println (a [i]);
+  }
 
-    println (a[1:]);
-    println (a[:1]);
-    println (a[1:3]);
+  println (a[1:]);
+  println (a[:1]);
+  println (a[1:3]);
 
-    p1 = Point (2, 4);
-    p2 = Point (10, 12);
-    p1.addX (3);
-    p2.addY (4);
+  p1 = Point (2, 4);
+  p2 = Point (10, 12);
+  p1.addX (3);
+  p2.addY (4);
 
-    p1.print ();
-    p2.print ();
-    p3 = p1 + p2;
-    p3.print();
+  p1.print ();
+  p2.print ();
+  p3 = p1 + p2;
+  p3.print();
 
-    foreach (c in p3) {
-      println ("Coord: " + c);
-    }
+  foreach (c in p3) {
+    println ("Coord type: " + c.type);
+    println ("Coord val: " + c.val);
+  }
 
+  try {
+    println ("From try");
     try {
-      println ("From try");
-      try {
-        nestedException1();
-        println ("This should not print");
-      } catch (e) {
-        println ("Caught nested: ");
-        println (e);
-      } 
-      raise "some exception";
-      println ("should not print");
+      nestedException1();
+      println ("This should not print");
     } catch (e) {
-      println ("Caught: ");
+      println ("Caught nested: ");
       println (e);
-    }
+    } 
+    raise "some exception";
+    println ("should not print");
+  } catch (e) {
+    println ("Caught: ");
+    println (e);
+  }
 
-    t = Two (1, 2, 3);
-    t.some ();
-    t.another ();
+  t = Two (1, 2, 3);
+  t.some ();
+  t.another ();
 
-    acceptsOne (t);
+  acceptsOne (t);
 
-    a = {
-      "bar": "biz",
-      "foo": 45,
-    };
+  a = {
+    "bar": "biz",
+    "foo": 45,
+  };
 
   foreach (kv in a) {
     println (kv.key);
@@ -109,7 +110,7 @@ func nestedException2 () {
 println (MyClass.fib (13));
 
 func add (x: any, y: any, z: any): any {
-    return x + y + z;
+  return x + y + z;
 }
 
 func void () {
