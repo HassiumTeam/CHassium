@@ -2,6 +2,16 @@
 
 static struct obj *toString(struct obj *, struct vm *, struct vec *);
 
+static struct obj *__iter__(struct obj *, struct vm *, struct vec *);
+static struct obj *__iter____iterfull__(struct obj *, struct vm *,
+                                        struct vec *);
+static struct obj *__iter____iternext__(struct obj *, struct vm *,
+                                        struct vec *);
+
+static struct builtin_ops object_builtin_ops = {
+    .__iter__ = __iter__,
+};
+
 struct obj *obj_new(obj_ctx_type_t type, void *ctx, struct obj *obj_type) {
   struct obj *obj = malloc(sizeof(struct obj));
   obj->refs = 0;
@@ -9,13 +19,55 @@ struct obj *obj_new(obj_ctx_type_t type, void *ctx, struct obj *obj_type) {
   obj->type = type;
   obj->ctx = ctx;
   obj->obj_type = obj_inc_ref(obj_type);
-  obj->ops = NULL;
+  obj->ops = &object_builtin_ops;
   obj->parent = &object_type_obj;
   obj->attribs = obj_hashmap_new();
   obj->lazy_load_fn = NULL;
   obj->weak_refs = NULL;
 
   return obj;
+}
+
+static struct obj *__iter__(struct obj *obj, struct vm *vm, struct vec *args) {
+  struct obj *keys_argstack[1];
+  keys_argstack[0] = obj;
+  struct vec keys_args;
+  keys_args.data = (void **)keys_argstack;
+  keys_args.len = 1;
+
+  struct obj *keys = object_keys(NULL, vm, &keys_args);
+  keys->parent = obj_inc_ref(obj);
+  struct obj *iter = obj_iter_new(keys);
+
+  obj_set_attrib(iter, "__iterfull__",
+                 obj_builtin_new(__iter____iterfull__, iter));
+  obj_set_attrib(iter, "__iternext__",
+                 obj_builtin_new(__iter____iternext__, iter));
+
+  return iter;
+}
+
+static struct obj *__iter____iterfull__(struct obj *iter_, struct vm *vm,
+                                        struct vec *args) {
+  struct iter_obj_ctx *iter = iter_->ctx;
+  struct vec *arr = iter->target->ctx;
+
+  return bool_to_obj(iter->pos >= arr->len);
+}
+
+static struct obj *__iter____iternext__(struct obj *iter_, struct vm *vm,
+                                        struct vec *args) {
+  struct iter_obj_ctx *iter = iter_->ctx;
+  struct vec *arr = iter->target->ctx;
+
+  struct obj *key = vec_get(arr, iter->pos++);
+  struct obj *ret = obj_new(OBJ_ANON, NULL, &object_type_obj);
+  obj_set_attrib(ret, "key", key);
+  obj_set_attrib(
+      ret, "val",
+      obj_hashmap_get(iter->target->parent->attribs, (char *)key->ctx));
+
+  return ret;
 }
 
 void obj_free(struct obj *obj) {
@@ -84,7 +136,7 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
 
   switch (type) {
     case BIN_OP_ADD:
-      if (left->ops != NULL) {
+      if (left->ops && left->ops->__add__) {
         return left->ops->__add__(left, vm, &args);
       } else {
         return obj_invoke_attrib(left, "__add__", vm, &args);
@@ -92,7 +144,7 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
     case BIN_OP_AND:
       return bool_to_obj(obj_is_true(left, vm) && obj_is_true(right, vm));
     case BIN_OP_DIV:
-      if (left->ops != NULL) {
+      if (left->ops && left->ops->__div__) {
         return left->ops->__div__(left, vm, &args);
       } else {
         return obj_invoke_attrib(left, "__div__", vm, &args);
@@ -100,13 +152,13 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
     case BIN_OP_EQ:
       if (left == right) {
         return &true_obj;
-      } else if (left->ops != NULL) {
+      } else if (left->ops && left->ops->__eq__) {
         return left->ops->__eq__(left, vm, &args);
       } else {
         return obj_invoke_attrib(left, "__eq__", vm, &args);
       }
     case BIN_OP_GREATER:
-      if (left->ops != NULL) {
+      if (left->ops && left->ops->__greater__) {
         return left->ops->__greater__(left, vm, &args);
       } else {
         return obj_invoke_attrib(left, "__greater__", vm, &args);
@@ -114,13 +166,13 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
     case BIN_OP_GREATER_OR_EQ:
       if (obj_bin_op(BIN_OP_EQ, left, right, vm) == &true_obj) {
         return &true_obj;
-      } else if (left->ops != NULL) {
+      } else if (left->ops && left->ops->__greater__) {
         return left->ops->__greater__(left, vm, &args);
       } else {
         return obj_invoke_attrib(left, "__add__", vm, &args);
       }
     case BIN_OP_LESSER:
-      if (left->ops != NULL) {
+      if (left->ops && left->ops->__lesser__) {
         return left->ops->__lesser__(left, vm, &args);
       } else {
         return obj_invoke_attrib(left, "__lesser__", vm, &args);
@@ -128,19 +180,19 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
     case BIN_OP_LESSER_OR_EQ:
       if (obj_bin_op(BIN_OP_EQ, left, right, vm) == &true_obj) {
         return &true_obj;
-      } else if (left->ops != NULL) {
+      } else if (left->ops && left->ops->__lesser__) {
         return left->ops->__lesser__(left, vm, &args);
       } else {
         return obj_invoke_attrib(left, "__lesser__", vm, &args);
       }
     case BIN_OP_MOD:
-      if (left->ops != NULL) {
+      if (left->ops && left->ops->__mod__) {
         return left->ops->__mod__(left, vm, &args);
       } else {
         return obj_invoke_attrib(left, "__mod__", vm, &args);
       }
     case BIN_OP_MUL:
-      if (left->ops != NULL) {
+      if (left->ops && left->ops->__mul__) {
         return left->ops->__mul__(left, vm, &args);
       } else {
         return obj_invoke_attrib(left, "__mul__", vm, &args);
@@ -148,7 +200,7 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
     case BIN_OP_OR:
       return bool_to_obj(obj_is_true(left, vm) || obj_is_true(right, vm));
     case BIN_OP_SUB:
-      if (left->ops != NULL) {
+      if (left->ops && left->ops->__sub__) {
         return left->ops->__sub__(left, vm, &args);
       } else {
         return obj_invoke_attrib(left, "__sub__", vm, &args);

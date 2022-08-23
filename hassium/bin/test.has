@@ -1,1 +1,9 @@
-println ("hello " + 2);
+a = {
+  "bar": "biz",
+  "foo": 45,
+};
+
+foreach (kv in a) {
+  println (kv.key);
+  println (kv.val);
+}

@@ -207,8 +207,13 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       } break;
       case INST_ITER: {
         struct obj *target = STACK_POP();
-        STACK_PUSH(
-            obj_inc_ref(obj_invoke_attrib(target, "__iter__", vm, NULL)));
+        if (target->ops && target->ops->__iter__) {
+          STACK_PUSH(obj_inc_ref(target->ops->__iter__(target, vm, NULL)));
+        } else {
+          STACK_PUSH(
+              obj_inc_ref(obj_invoke_attrib(target, "__iter__", vm, NULL)));
+        }
+
         obj_dec_ref(target);
       } break;
       case INST_JUMP:

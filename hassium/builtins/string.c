@@ -21,6 +21,7 @@ static struct builtin_ops string_builtin_ops = {
     .__add__ = __add__,
     .__eq__ = __eq__,
     .__greater__ = __greater__,
+    .__iter__ = __iter__,
     .__lesser__ = __lesser__,
 };
 
@@ -35,7 +36,6 @@ struct obj *obj_string_new(char *value) {
 
 static void obj_string_lazy_load(struct obj *string) {
   obj_set_attrib(string, "__index__", obj_builtin_new(__index__, string));
-  obj_set_attrib(string, "__iter__", obj_builtin_new(__iter__, string));
   obj_set_attrib(string, "__slice__", obj_builtin_new(__slice__, string));
   obj_set_attrib(string, "len",
                  obj_num_new(false, strlen((char *)string->ctx), 0));

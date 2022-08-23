@@ -44,7 +44,7 @@ func main () {
     println (a[1:]);
     println (a[:1]);
     println (a[1:3]);
-    
+
     p1 = Point (2, 4);
     p2 = Point (10, 12);
     p1.addX (3);
@@ -76,6 +76,16 @@ func main () {
     t.another ();
 
     acceptsOne (t);
+
+    a = {
+      "bar": "biz",
+      "foo": 45,
+    };
+
+  foreach (kv in a) {
+    println (kv.key);
+    println (kv.val);
+  }
 }
 
 func nestedException1 () {

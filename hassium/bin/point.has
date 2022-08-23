@@ -5,7 +5,7 @@ class Point {
     }
 
     func print () {
-        println(self.x + " " + self.y);
+        println(self.x + ", " + self.y);
     }
 
     func addX (i: number) {

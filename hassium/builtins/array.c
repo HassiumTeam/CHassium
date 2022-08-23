@@ -1,5 +1,6 @@
 #include <object.h>
 
+static struct obj *__add__(struct obj *, struct vm *, struct vec *);
 static struct obj *__index__(struct obj *, struct vm *, struct vec *);
 static struct obj *__iter__(struct obj *, struct vm *, struct vec *);
 static struct obj *__iter____iternext__(struct obj *, struct vm *,
@@ -19,6 +20,11 @@ static struct obj *pop(struct obj *, struct vm *, struct vec *);
 static struct obj *push(struct obj *, struct vm *, struct vec *);
 static struct obj *toString(struct obj *, struct vm *, struct vec *);
 
+static struct builtin_ops array_builtin_ops = {
+    .__add__ = __add__,
+    .__iter__ = __iter__,
+};
+
 struct obj *obj_array_new(struct vec *items) {
   items->grow_with = &none_obj;
 
@@ -28,8 +34,9 @@ struct obj *obj_array_new(struct vec *items) {
 
   struct obj *arr = obj_new(OBJ_ARRAY, items, &array_type_obj);
 
+  arr->ops = &array_builtin_ops;
+
   obj_set_attrib(arr, "__index__", obj_builtin_new(__index__, arr));
-  obj_set_attrib(arr, "__iter__", obj_builtin_new(__iter__, arr));
   obj_set_attrib(arr, "__slice__", obj_builtin_new(__slice__, arr));
   obj_set_attrib(arr, "__storeindex__", obj_builtin_new(__storeindex__, arr));
   obj_set_attrib(arr, "each", obj_builtin_new(each, arr));
@@ -47,6 +54,35 @@ struct obj *obj_array_new(struct vec *items) {
 }
 
 int obj_array_len(struct obj *array) { return ((struct vec *)array->ctx)->len; }
+
+static struct obj *__add__(struct obj *array, struct vm *vm, struct vec *args) {
+  struct vec *left = array->ctx;
+  struct obj *arg1 = vec_get(args, 0);
+  if (arg1->type != OBJ_ARRAY) {
+    printf("Cannot use %d with array.__add__\n", arg1->type);
+    exit(-1);
+  }
+  struct vec *right = arg1->ctx;
+  // int new_len = left->len + right->len;
+
+  // struct vec *new_items = malloc(sizeof(struct vec));
+  // new_items->len = new_len;
+  // new_items->size = new_len + VEC_EXPAND_AT;
+  // new_items->data = malloc(new_len * sizeof(struct obj *));
+
+  // memcpy(new_items->data, left->data, left->len);
+  // memcpy(new_items->data + left->len, right->data, right->len);
+
+  struct vec *new_items = vec_new();
+  for (int i = 0; i < left->len; i++) {
+    vec_push(new_items, vec_get(left, i));
+  }
+  for (int i = 0; i < right->len; i++) {
+    vec_push(new_items, vec_get(right, i));
+  }
+
+  return obj_array_new(new_items);
+}
 
 static struct obj *__index__(struct obj *arr, struct vm *vm, struct vec *args) {
   struct obj *key = vec_get(args, 0);

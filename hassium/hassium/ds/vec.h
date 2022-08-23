@@ -22,7 +22,7 @@ static inline struct vec *vec_init(struct vec *vec) {
 }
 
 static inline struct vec *vec_new() {
-  struct vec *vec = (struct vec *)malloc(sizeof(struct vec));
+  struct vec *vec = malloc(sizeof(struct vec));
   return vec_init(vec);
 }
 

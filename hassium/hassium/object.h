@@ -41,6 +41,7 @@ struct builtin_ops {
   builtin_func_t __div__;
   builtin_func_t __eq__;
   builtin_func_t __greater__;
+  builtin_func_t __iter__;
   builtin_func_t __lesser__;
   builtin_func_t __mod__;
   builtin_func_t __mul__;
@@ -124,6 +125,7 @@ struct obj *obj_instantiate(struct obj *, struct vm *, struct vec *);
 struct obj *obj_invoke(struct obj *, struct vm *, struct vec *);
 struct obj *obj_invoke_attrib(struct obj *, char *, struct vm *, struct vec *);
 bool obj_is(struct obj *, struct obj *);
+struct obj *object_keys(struct obj *, struct vm *, struct vec *);
 void obj_set_attrib(struct obj *, char *, struct obj *);
 void obj_store_index(struct obj *, struct obj *, struct obj *, struct vm *);
 struct obj *obj_to_string(struct obj *, struct vm *);

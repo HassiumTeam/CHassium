@@ -44,6 +44,7 @@ static struct obj *__add__(struct obj *num, struct vm *vm, struct vec *args) {
     struct vec args;
     args.len = 0;
     struct obj *toString_res = toString(num, vm, &args);
+
     char *left = toString_res->ctx;
     int left_len = strlen(left);
     char *right = arg1->ctx;

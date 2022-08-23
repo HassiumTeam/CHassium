@@ -1,6 +1,5 @@
 #include <builtins.h>
 
-static struct obj *keys(struct obj *, struct vm *, struct vec *);
 static struct obj *println(struct obj *, struct vm *, struct vec *);
 static struct obj *typeof_(struct obj *, struct vm *, struct vec *);
 static struct obj *values(struct obj *, struct vm *, struct vec *);
@@ -12,7 +11,8 @@ struct hashmap *get_defaults() {
   obj_hashmap_set(defaults, "builtin", &builtin_type_obj);
   obj_hashmap_set(defaults, "func", &func_type_obj);
   obj_hashmap_set(defaults, "iter", &iter_type_obj);
-  obj_hashmap_set(defaults, "keys", obj_inc_ref(obj_builtin_new(keys, NULL)));
+  obj_hashmap_set(defaults, "keys",
+                  obj_inc_ref(obj_builtin_new(object_keys, NULL)));
   obj_hashmap_set(defaults, "none", &none_type_obj);
   obj_hashmap_set(defaults, "number", &number_type_obj);
   obj_hashmap_set(defaults, "object", &object_type_obj);
@@ -33,7 +33,7 @@ static void get_keys(void *key, size_t ksize, uintptr_t value, void *usr) {
   vec_push(vec, obj_string_new(key));
 }
 
-static struct obj *keys(struct obj *_, struct vm *vm, struct vec *args) {
+struct obj *object_keys(struct obj *_, struct vm *vm, struct vec *args) {
   struct obj *target = vec_get(args, 0);
   struct vec *keys = vec_new();
   if (target->attribs != NULL) {
