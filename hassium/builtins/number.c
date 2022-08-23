@@ -38,9 +38,30 @@ static void obj_num_lazy_load(struct obj *num) {
 }
 
 static struct obj *__add__(struct obj *num, struct vm *vm, struct vec *args) {
-  int left = obj_num_val(num);
-  int right = obj_num_val((struct obj *)vec_get(args, 0));
-  return obj_num_new(false, left + right, 0);
+  struct obj *arg1 = vec_get(args, 0);
+
+  if (arg1->type == OBJ_STRING) {
+    struct vec args;
+    args.len = 0;
+    struct obj *toString_res = toString(num, vm, &args);
+    char *left = toString_res->ctx;
+    int left_len = strlen(left);
+    char *right = arg1->ctx;
+    int right_len = strlen(right);
+
+    char new_str[left_len + right_len + 1];
+    memcpy(new_str, left, left_len);
+    memcpy(new_str + left_len, right, right_len);
+    new_str[left_len + right_len] = 0;
+
+    obj_dec_ref(toString_res);
+
+    return obj_string_new(new_str);
+  } else {
+    int left = obj_num_val(num);
+    int right = obj_num_val(arg1);
+    return obj_num_new(false, left + right, 0);
+  }
 }
 
 static struct obj *__div__(struct obj *num, struct vm *vm, struct vec *args) {

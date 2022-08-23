@@ -46,7 +46,7 @@ static void obj_string_lazy_load(struct obj *string) {
 char *obj_string_val(struct obj *string) { return string->ctx; }
 
 static struct obj *__add__(struct obj *left, struct vm *vm, struct vec *args) {
-  struct obj *right = vec_get(args, 0);
+  struct obj *right = obj_inc_ref(obj_to_string(vec_get(args, 0), vm));
 
   char *left_str = (char *)left->ctx;
   char *right_str = (char *)right->ctx;
@@ -57,6 +57,8 @@ static struct obj *__add__(struct obj *left, struct vm *vm, struct vec *args) {
   memcpy(new_str, left_str, left_len);
   memcpy(new_str + left_len, right_str, right_len);
   new_str[left_len + right_len] = 0;
+
+  obj_dec_ref(right);
 
   return obj_string_new(new_str);
 }

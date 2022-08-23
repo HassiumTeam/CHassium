@@ -1,2 +1,1 @@
-a = ['hello', 'world'];
-println (a.join (', '));
+println ("hello " + 2);
