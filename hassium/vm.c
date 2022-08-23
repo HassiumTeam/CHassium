@@ -207,11 +207,13 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       } break;
       case INST_ITER: {
         struct obj *target = STACK_POP();
-        if (target->ops && target->ops->__iter__) {
-          STACK_PUSH(obj_inc_ref(target->ops->__iter__(target, vm, NULL)));
-        } else {
+        if (obj_hashmap_has(target->attribs, "__iter__")) {
           STACK_PUSH(
               obj_inc_ref(obj_invoke_attrib(target, "__iter__", vm, NULL)));
+        } else if (target->ops && target->ops->__iter__) {
+          STACK_PUSH(obj_inc_ref(target->ops->__iter__(target, vm, NULL)));
+        } else {
+          printf("Could not use __iter__ on %d\n", target->type);
         }
 
         obj_dec_ref(target);

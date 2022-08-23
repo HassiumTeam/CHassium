@@ -1,9 +1,31 @@
-a = {
-  "bar": "biz",
-  "foo": 45,
-};
+class MyIterable {
+  func new(arr) {
+    self.arr = arr;
+  }
 
-foreach (kv in a) {
-  println (kv.key);
-  println (kv.val);
+  func __iter__ () {
+    iter = {
+      pos: 0,
+      items: self.arr,
+    };
+    iter.__iterfull__ = self.__iterfull__.bind (iter);
+    iter.__iternext__ = self.__iternext__.bind (iter);
+    return iter;
+  }
+
+  func __iterfull__ () {
+    return self.pos >= self.items.len ();
+  }
+
+  func __iternext__ () {
+    ret = self.items [self.pos];
+    self.pos += 1;
+    return ret;
+  }
+}
+
+a = MyIterable([1, 2, 3]);
+
+foreach (x in a) {
+  println (x);
 }

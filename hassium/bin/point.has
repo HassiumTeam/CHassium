@@ -1,27 +1,47 @@
 class Point {
-    func new (x, y) {
-        self.x = x;
-        self.y = y;
-    }
+  func new (x, y) {
+    self.x = x;
+    self.y = y;
+  }
 
-    func print () {
-        println(self.x + ", " + self.y);
-    }
+  func print () {
+    println(self.x + ", " + self.y);
+  }
 
-    func addX (i: number) {
-        self.x += i;
-    }
+  func addX (i: number) {
+    self.x += i;
+  }
 
-    func addY (i: number) {
-        self.y += i;
-    }
+  func addY (i: number) {
+    self.y += i;
+  }
 
-    func __add__ (p: Point): Point {
-        ret = Point(self.x, self.y);
-        ret.addX(p.x);
-        ret.addY(p.y);
-        return ret;
-    }
+  func __add__ (p: Point): Point {
+    ret = Point(self.x, self.y);
+    ret.addX(p.x);
+    ret.addY(p.y);
+    return ret;
+  }
+
+  func __iter__ () {
+    iter = {
+      pos: 0,
+      items: [self.x, self.y],
+    };
+    iter.__iterfull__ = self.__iterfull__.bind (iter);
+    iter.__iternext__ = self.__iternext__.bind (iter);
+    return iter;
+  }
+
+  func __iterfull__ () {
+    return self.pos >= self.items.len ();
+  }
+
+  func __iternext__ () {
+    ret = self.items [self.pos];
+    self.pos += 1;
+    return ret;
+  }
 }
 
 return { Point };
