@@ -1,31 +1,11 @@
-class MyIterable {
-  func new(arr) {
-    self.arr = arr;
-  }
+func test(x: Number) {
 
-  func __iter__ () {
-    iter = {
-      pos: 0,
-      items: self.arr,
-    };
-    iter.__iterfull__ = self.__iterfull__.bind (iter);
-    iter.__iternext__ = self.__iternext__.bind (iter);
-    return iter;
-  }
-
-  func __iterfull__ () {
-    return self.pos >= self.items.len ();
-  }
-
-  func __iternext__ () {
-    ret = self.items [self.pos];
-    self.pos += 1;
-    return ret;
-  }
 }
 
-a = MyIterable([1, 2, 3]);
+try {
 
-foreach (x in a) {
-  println (x);
+  test ("hello");
+} catch (e) {
+  println ("Caught an error with message " + e.message);
+  println (typeof (e));
 }

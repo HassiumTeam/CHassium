@@ -1,45 +1,99 @@
 #include <builtins.h>
 
+static struct obj *type_toString(struct obj *, struct vm *, struct vec *);
+static struct obj *Array(struct obj *, struct vm *, struct vec *);
+static struct obj *Bool(struct obj *, struct vm *, struct vec *);
+static struct obj *Number(struct obj *, struct vm *, struct vec *);
+static struct obj *String(struct obj *, struct vm *, struct vec *);
+static struct obj *TypeError(struct obj *, struct vm *, struct vec *);
+
 static struct obj *println(struct obj *, struct vm *, struct vec *);
 static struct obj *typeof_(struct obj *, struct vm *, struct vec *);
 static struct obj *values(struct obj *, struct vm *, struct vec *);
 
 struct hashmap *get_defaults() {
+  obj_set_attrib(&array_type_obj, "new", obj_builtin_new(Array, NULL));
+  obj_set_attrib(&array_type_obj, "toString",
+                 obj_builtin_new(type_toString, &array_type_obj));
+
+  obj_set_attrib(&bool_type_obj, "new", obj_builtin_new(Bool, NULL));
+  obj_set_attrib(&bool_type_obj, "toString",
+                 obj_builtin_new(type_toString, &bool_type_obj));
+
+  obj_set_attrib(&string_type_obj, "new", obj_builtin_new(String, NULL));
+  obj_set_attrib(&string_type_obj, "toString",
+                 obj_builtin_new(type_toString, &string_type_obj));
+
+  obj_set_attrib(&type_error_type_obj, "new", obj_builtin_new(TypeError, NULL));
+  obj_set_attrib(&type_error_type_obj, "toString",
+                 obj_builtin_new(type_toString, &type_error_type_obj));
+  obj_bool_init(&true_obj);
+  obj_bool_init(&false_obj);
+
   struct hashmap *defaults = obj_hashmap_new();
-  obj_hashmap_set(defaults, "array", &array_type_obj);
-  obj_hashmap_set(defaults, "bool", &bool_type_obj);
-  obj_hashmap_set(defaults, "builtin", &builtin_type_obj);
-  obj_hashmap_set(defaults, "func", &func_type_obj);
-  obj_hashmap_set(defaults, "iter", &iter_type_obj);
+  obj_hashmap_set(defaults, "Array", &array_type_obj);
+  obj_hashmap_set(defaults, "Bool", &bool_type_obj);
+  obj_hashmap_set(defaults, "Builtin", &builtin_type_obj);
+  obj_hashmap_set(defaults, "Func", &func_type_obj);
+  obj_hashmap_set(defaults, "Iter", &iter_type_obj);
   obj_hashmap_set(defaults, "keys",
                   obj_inc_ref(obj_builtin_new(object_keys, NULL)));
   obj_hashmap_set(defaults, "none", &none_type_obj);
-  obj_hashmap_set(defaults, "number", &number_type_obj);
-  obj_hashmap_set(defaults, "object", &object_type_obj);
+  obj_hashmap_set(defaults, "Number", &number_type_obj);
+  obj_hashmap_set(defaults, "Object", &object_type_obj);
   obj_hashmap_set(defaults, "println",
                   obj_inc_ref(obj_builtin_new(println, NULL)));
-  obj_hashmap_set(defaults, "string", &string_type_obj);
-  obj_hashmap_set(defaults, "type", &type_type_obj);
+  obj_hashmap_set(defaults, "String", &string_type_obj);
+  obj_hashmap_set(defaults, "Type", &type_type_obj);
   obj_hashmap_set(defaults, "typeof",
                   obj_inc_ref(obj_builtin_new(typeof_, NULL)));
   obj_hashmap_set(defaults, "values",
                   obj_inc_ref(obj_builtin_new(values, NULL)));
-  obj_hashmap_set(defaults, "weakref", &weakref_type_obj);
+  obj_hashmap_set(defaults, "Weakref", &weakref_type_obj);
   return defaults;
+}
+
+void destruct_defaults() {
+  obj_hashmap_free(array_type_obj.attribs);
+  vec_free(array_type_obj.weak_refs);
+  obj_hashmap_free(bool_type_obj.attribs);
+  vec_free(bool_type_obj.weak_refs);
+  obj_hashmap_free(string_type_obj.attribs);
+  vec_free(string_type_obj.weak_refs);
+  obj_hashmap_free(type_error_type_obj.attribs);
+  vec_free(type_error_type_obj.weak_refs);
+  obj_bool_free(&true_obj);
+  obj_bool_free(&false_obj);
 }
 
 static void get_keys(void *key, size_t ksize, uintptr_t value, void *usr) {
   struct vec *vec = usr;
   vec_push(vec, obj_string_new(key));
 }
-
 struct obj *object_keys(struct obj *_, struct vm *vm, struct vec *args) {
   struct obj *target = vec_get(args, 0);
+  if (target->lazy_load_fn) {
+    target->lazy_load_fn(target);
+    target->lazy_load_fn = NULL;
+  }
+
   struct vec *keys = vec_new();
   if (target->attribs != NULL) {
     hashmap_iterate(target->attribs, get_keys, keys);
   }
   return obj_array_new(keys);
+}
+
+static struct obj *Array(struct obj *_, struct vm *vm, struct vec *args) {
+  struct vec *vec = vec_new();
+  for (int i = 0; i < args->len; i++) {
+    vec_push(vec, vec_get(args, i));
+  }
+  return obj_array_new(vec);
+}
+
+static struct obj *Bool(struct obj *_, struct vm *vm, struct vec *args) {
+  return bool_to_obj(obj_is_true(vec_get(args, 0), vm));
 }
 
 static struct obj *println(struct obj *_, struct vm *vm, struct vec *args) {
@@ -63,6 +117,23 @@ static struct obj *println(struct obj *_, struct vm *vm, struct vec *args) {
   }
   printf("\n");
   return &none_obj;
+}
+
+static struct obj *String(struct obj *_, struct vm *vm, struct vec *args) {
+  return obj_to_string(vec_get(args, 0), vm);
+}
+
+static struct obj *TypeError(struct obj *_, struct vm *vm, struct vec *args) {
+  struct obj *target = vec_get(args, 0);
+  struct obj *expecting = vec_get(args, 1);
+  struct obj *got = vec_get(args, 2);
+
+  return obj_type_error_new(target, expecting, got);
+}
+
+static struct obj *type_toString(struct obj *type, struct vm *vm,
+                                 struct vec *args) {
+  return obj_string_new(type->ctx);
 }
 
 static struct obj *typeof_(struct obj *_, struct vm *vm, struct vec *args) {

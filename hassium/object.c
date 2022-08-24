@@ -261,13 +261,15 @@ static void instantiate_attrib(void *key, size_t ksize, uintptr_t value,
 }
 struct obj *obj_instantiate(struct obj *class, struct vm *vm,
                             struct vec *args) {
+  if (class->ref_immune) {
+    return obj_invoke_attrib(class, "new", vm, args);
+  }
+
   struct obj *new = obj_new(OBJ_ANON, NULL, class);
   hashmap_iterate(class->attribs, instantiate_attrib, new);
 
-  if (obj_hashmap_has(new->attribs, "new")) {
-    obj_invoke_attrib(obj_inc_ref(new), "new", vm, args);
-    obj_down_ref(new);
-  }
+  obj_invoke_attrib(obj_inc_ref(new), "new", vm, args);
+  obj_down_ref(new);
 
   return new;
 }
@@ -318,6 +320,7 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
     ret = new;
   } else {
     printf("object %d was not invokable!\n", obj->type);
+    struct obj *thing = obj_hashmap_get(obj->attribs, "new");
     exit(-1);
   }
 
@@ -350,6 +353,9 @@ bool obj_is(struct obj *obj, struct obj *type_obj) {
 }
 
 void obj_set_attrib(struct obj *obj, char *name, struct obj *val) {
+  if (obj->attribs == NULL) {
+    obj->attribs = obj_hashmap_new();
+  }
   obj_dec_ref(obj_hashmap_get(obj->attribs, name));
   obj_hashmap_set(obj->attribs, name, obj_inc_ref(val));
 }
@@ -381,9 +387,9 @@ struct obj *obj_to_string(struct obj *obj, struct vm *vm) {
   if (toString == &none_obj) {
     return obj_string_new(obj->obj_type->ctx);
   }
-  struct vec *args = vec_new();
-  struct obj *ret = obj_invoke(toString, vm, args);
-  vec_free(args);
+  struct vec args;
+  args.len = 0;
+  struct obj *ret = obj_invoke(toString, vm, &args);
   return ret;
 }
 
@@ -396,7 +402,7 @@ struct obj array_type_obj = {
 };
 
 struct obj bool_type_obj = {
-    .ctx = "bool",
+    .ctx = "Bool",
     .ref_immune = true,
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
@@ -405,7 +411,7 @@ struct obj bool_type_obj = {
 };
 
 struct obj builtin_type_obj = {
-    .ctx = "builtin",
+    .ctx = "Builtin",
     .ref_immune = true,
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
@@ -413,8 +419,17 @@ struct obj builtin_type_obj = {
     .attribs = NULL,
 };
 
+struct obj error_type_obj = {
+    .ctx = "Error",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &object_type_obj,
+    .obj_type = &error_type_obj,
+    .attribs = NULL,
+};
+
 struct obj func_type_obj = {
-    .ctx = "func",
+    .ctx = "Func",
     .ref_immune = true,
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
@@ -441,7 +456,7 @@ struct obj none_type_obj = {
 };
 
 struct obj number_type_obj = {
-    .ctx = "number",
+    .ctx = "Number",
     .ref_immune = true,
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
@@ -450,7 +465,7 @@ struct obj number_type_obj = {
 };
 
 struct obj object_type_obj = {
-    .ctx = "object",
+    .ctx = "Object",
     .ref_immune = true,
     .type = OBJ_TYPE,
     .parent = NULL,
@@ -468,7 +483,7 @@ struct obj string_type_obj = {
 };
 
 struct obj type_type_obj = {
-    .ctx = "type",
+    .ctx = "Type",
     .ref_immune = true,
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
@@ -477,7 +492,7 @@ struct obj type_type_obj = {
 };
 
 struct obj weakref_type_obj = {
-    .ctx = "weakref",
+    .ctx = "Weakref",
     .ref_immune = true,
     .type = OBJ_TYPE,
     .parent = &object_type_obj,
@@ -485,7 +500,16 @@ struct obj weakref_type_obj = {
     .attribs = NULL,
 };
 
+struct obj type_error_type_obj = {
+    .ctx = "TypeError",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &error_type_obj,
+    .obj_type = &type_type_obj,
+};
+
 struct obj none_obj = {
+    .ctx = "none",
     .ref_immune = true,
     .type = OBJ_NONE,
     .parent = NULL,
@@ -494,6 +518,7 @@ struct obj none_obj = {
 };
 
 struct obj true_obj = {
+    .ctx = "true",
     .ref_immune = true,
     .type = OBJ_BOOL,
     .parent = &object_type_obj,
@@ -501,6 +526,7 @@ struct obj true_obj = {
 };
 
 struct obj false_obj = {
+    .ctx = "false",
     .ref_immune = true,
     .type = OBJ_BOOL,
     .parent = &object_type_obj,

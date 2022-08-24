@@ -21,8 +21,6 @@ struct vm *vm_new() {
   vm->globals = get_defaults();
   vm->handlers = vec_new();
   vm->handler_returns = vec_new();
-  obj_bool_init(&true_obj);
-  obj_bool_init(&false_obj);
   // memset(&times, 0, sizeof(times));
   // memset(&times, 0, sizeof(counts));
   return vm;
@@ -36,8 +34,7 @@ void vm_free(struct vm *vm) {
   vec_free(vm->handler_returns);
   vec_free(vm->frames);
   obj_hashmap_free(vm->globals);
-  obj_bool_free(&true_obj);
-  obj_bool_free(&false_obj);
+  destruct_defaults();
   free(vm);
 }
 
@@ -375,9 +372,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         struct obj *target = STACK_PEEK();
 
         if (!obj_is(target, type)) {
-          printf("Expected type %s, got type %s\n", (char *)type->ctx,
-                 (char *)target->obj_type->ctx);
-          exit(-1);
+          vm_raise(vm, obj_type_error_new(target, type, target->obj_type));
         }
 
         obj_dec_ref(type);
@@ -387,9 +382,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         struct obj *target = locals[op];
 
         if (!obj_is(target, type)) {
-          printf("Expected type %s, got type %s\n", (char *)type->ctx,
-                 (char *)target->obj_type->ctx);
-          exit(-1);
+          vm_raise(vm, obj_type_error_new(target, type, target->obj_type));
         }
 
         obj_dec_ref(type);
@@ -402,7 +395,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
             obj_dec_ref(target);
           } break;
           default: {
-            printf("Unknown unary op!");
+            printf("Bad unary op, something has gone terribly wrong....");
             exit(-1);
           }
         }
@@ -423,7 +416,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
 
 void vm_raise(struct vm *vm, struct obj *obj) {
   if (vm->handlers->len == 0) {
-    printf("Unhandled exception: %s\n", (char *)obj_to_string(obj, vm)->ctx);
+    printf("Unhandled exception:\n%s\n", (char *)obj_to_string(obj, vm)->ctx);
     exit(-1);
   }
 

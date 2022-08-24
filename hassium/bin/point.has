@@ -4,22 +4,22 @@ class Point {
     self.y = y;
   }
 
-  func print () {
-    println(self.x + ", " + self.y);
+  func print (): none {
+    println (self.x + ", " + self.y);
   }
 
-  func addX (i: number) {
+  func addX (i: Number): none {
     self.x += i;
   }
 
-  func addY (i: number) {
+  func addY (i: Number): none {
     self.y += i;
   }
 
   func __add__ (p: Point): Point {
-    ret = Point(self.x, self.y);
-    ret.addX(p.x);
-    ret.addY(p.y);
+    ret = Point (self.x, self.y);
+    ret.addX (p.x);
+    ret.addY (p.y);
     return ret;
   }
 

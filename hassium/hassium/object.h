@@ -81,6 +81,7 @@ struct func_obj_ctx {
 extern struct obj array_type_obj;
 extern struct obj bool_type_obj;
 extern struct obj builtin_type_obj;
+extern struct obj error_type_obj;
 extern struct obj func_type_obj;
 extern struct obj iter_type_obj;
 extern struct obj none_type_obj;
@@ -89,6 +90,8 @@ extern struct obj object_type_obj;
 extern struct obj string_type_obj;
 extern struct obj type_type_obj;
 extern struct obj weakref_type_obj;
+
+extern struct obj type_error_type_obj;
 
 extern struct obj none_obj;
 extern struct obj true_obj;

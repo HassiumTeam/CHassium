@@ -13,6 +13,7 @@ OBJECTS += builtins/array.o
 OBJECTS += builtins/bool.o
 OBJECTS += builtins/builtin.o
 OBJECTS += builtins/defaults.o
+OBJECTS += builtins/error.o
 OBJECTS += builtins/func.o
 OBJECTS += builtins/iter.o
 OBJECTS += builtins/number.o
