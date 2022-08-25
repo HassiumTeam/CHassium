@@ -16,7 +16,7 @@ static void extend_attrib_from_map(void *, size_t, uintptr_t, void *);
 static void import_attrib_from_map(void *, size_t, uintptr_t, void *);
 
 struct vm *vm_new() {
-  struct vm *vm = (struct vm *)calloc(1, sizeof(struct vm));
+  struct vm *vm = calloc(1, sizeof(struct vm));
   vm->frames = vec_new();
   vm->globals = get_defaults();
   vm->handlers = vec_new();
@@ -103,9 +103,10 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       } break;
       case INST_BUILD_CLASS: {
         struct code_obj *class_code_obj = vec_get(code_obj->code_objs, op);
-        struct stackframe *class_frame = stackframe_new(class_code_obj->locals);
         struct obj *class =
             obj_new(OBJ_TYPE, class_code_obj->name, &type_type_obj);
+        struct stackframe *class_frame =
+            stackframe_new(class_code_obj->locals, class);
 
         obj_hashmap_set(vm->globals, class_code_obj->name, obj_inc_ref(class));
         vec_push(vm->frames, stackframe_inc_ref(class_frame));
@@ -160,7 +161,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_IMPORT: {
         struct code_obj *mod = vec_get(code_obj->code_objs, op);
         struct vec *imports = vec_get(code_obj->vecs, opshort);
-        struct stackframe *import_frame = stackframe_new(mod->locals);
+        struct stackframe *import_frame = stackframe_new(mod->locals, NULL);
 
         vec_push(vm->frames, stackframe_inc_ref(import_frame));
         struct obj *mod_ret = vm_run(vm, mod, NULL);
@@ -415,8 +416,26 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
 }
 
 void vm_raise(struct vm *vm, struct obj *obj) {
+  struct strbuf *stacktrace = strbuf_new();
+  bool has_some_trace = false;
+  for (int i = vm->frames->len - 1; i >= 0; --i) {
+    struct stackframe *frame = vec_get(vm->frames, i);
+    if (frame->invokee != NULL) {
+      strbuf_append_str(stacktrace, "  at ");
+      struct obj *toString_res = obj_to_string(frame->invokee, vm);
+      strbuf_append_str(stacktrace, (char *)toString_res->ctx);
+      obj_dec_ref(toString_res);
+      has_some_trace = true;
+    }
+  }
+  char *trace = strbuf_done(stacktrace);
+  if (has_some_trace) {
+    obj_set_attrib(obj, "trace", obj_string_new(trace));
+  }
+  free(trace);
+
   if (vm->handlers->len == 0) {
-    printf("Unhandled exception:\n%s\n", (char *)obj_to_string(obj, vm)->ctx);
+    printf("Unhandled exception: %s\n", (char *)obj_to_string(obj, vm)->ctx);
     exit(-1);
   }
 

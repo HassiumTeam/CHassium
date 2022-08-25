@@ -13,6 +13,7 @@ struct vm {
 };
 
 struct stackframe {
+  struct obj *invokee;
   struct obj **locals;
   int num_locals;
   int refs;
@@ -64,6 +65,7 @@ struct obj {
 struct builtin_obj_ctx {
   builtin_func_t func;
   struct obj *self;
+  char *name;
 };
 
 struct iter_obj_ctx {
@@ -136,12 +138,14 @@ struct obj *obj_to_string(struct obj *, struct vm *);
 static inline struct stackframe *stackframe_inc_ref(struct stackframe *);
 static inline struct stackframe *stackframe_dec_ref(struct stackframe *);
 
-static inline struct stackframe *stackframe_new(int num_locals) {
+static inline struct stackframe *stackframe_new(int num_locals,
+                                                struct obj *invokee) {
   struct stackframe *stackframe = malloc(sizeof(struct stackframe));
   stackframe->locals =
       num_locals > 0 ? calloc(num_locals, sizeof(struct obj *)) : NULL;
   stackframe->num_locals = num_locals;
   stackframe->refs = 0;
+  stackframe->invokee = invokee;
   return stackframe;
 }
 

@@ -27,7 +27,7 @@ static inline struct vec *vec_new() {
 }
 
 static inline void expand(struct vec *vec) {
-  vec->size += VEC_EXPAND_AT;
+  vec->size *= 2;
   vec->data = realloc(vec->data, sizeof(void *) * vec->size);
 }
 

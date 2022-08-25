@@ -3,6 +3,7 @@
 static void obj_func_lazy_load(struct obj *);
 
 static struct obj *bind(struct obj *, struct vm *, struct vec *);
+static struct obj *toString(struct obj *, struct vm *, struct vec *);
 
 struct obj *obj_func_new(struct code_obj *code_obj, struct vec *params,
                          struct obj *self, struct stackframe *frame,
@@ -28,6 +29,7 @@ struct obj *obj_func_new(struct code_obj *code_obj, struct vec *params,
 
 static void obj_func_lazy_load(struct obj *func) {
   obj_set_attrib(func, "bind", obj_builtin_new(bind, func));
+  obj_set_attrib(func, "toString", obj_builtin_new(toString, func));
 }
 
 static struct obj *bind(struct obj *func, struct vm *vm, struct vec *args) {
@@ -37,4 +39,10 @@ static struct obj *bind(struct obj *func, struct vm *vm, struct vec *args) {
   struct obj *new = obj_func_new(ctx->code_obj, ctx->params, arg1, ctx->frame,
                                  ctx->frame != NULL);
   return new;
+}
+
+static struct obj *toString(struct obj *obj, struct vm *vm, struct vec *args) {
+  struct func_obj_ctx *func = obj->ctx;
+
+  return obj_string_new(func->code_obj->name);
 }

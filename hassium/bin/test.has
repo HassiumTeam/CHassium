@@ -1,11 +1,4 @@
-func test(x: Number) {
-
+func main (s: Number) {
 }
 
-try {
-
-  test ("hello");
-} catch (e) {
-  println ("Caught an error with message " + e.message);
-  println (typeof (e));
-}
+main ("test");

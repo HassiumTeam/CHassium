@@ -20,6 +20,18 @@ struct hashmap *get_defaults() {
   obj_set_attrib(&bool_type_obj, "toString",
                  obj_builtin_new(type_toString, &bool_type_obj));
 
+  obj_set_attrib(&builtin_type_obj, "toString",
+                 obj_builtin_new(type_toString, &builtin_type_obj));
+
+  obj_set_attrib(&func_type_obj, "toString",
+                 obj_builtin_new(type_toString, &func_type_obj));
+
+  obj_set_attrib(&iter_type_obj, "toString",
+                 obj_builtin_new(type_toString, &iter_type_obj));
+
+  obj_set_attrib(&number_type_obj, "toString",
+                 obj_builtin_new(type_toString, &number_type_obj));
+
   obj_set_attrib(&string_type_obj, "new", obj_builtin_new(String, NULL));
   obj_set_attrib(&string_type_obj, "toString",
                  obj_builtin_new(type_toString, &string_type_obj));
@@ -45,6 +57,7 @@ struct hashmap *get_defaults() {
                   obj_inc_ref(obj_builtin_new(println, NULL)));
   obj_hashmap_set(defaults, "String", &string_type_obj);
   obj_hashmap_set(defaults, "Type", &type_type_obj);
+  obj_hashmap_set(defaults, "TypeError", &type_error_type_obj);
   obj_hashmap_set(defaults, "typeof",
                   obj_inc_ref(obj_builtin_new(typeof_, NULL)));
   obj_hashmap_set(defaults, "values",
@@ -58,6 +71,14 @@ void destruct_defaults() {
   vec_free(array_type_obj.weak_refs);
   obj_hashmap_free(bool_type_obj.attribs);
   vec_free(bool_type_obj.weak_refs);
+  obj_hashmap_free(builtin_type_obj.attribs);
+  vec_free(builtin_type_obj.weak_refs);
+  obj_hashmap_free(func_type_obj.attribs);
+  vec_free(func_type_obj.weak_refs);
+  obj_hashmap_free(iter_type_obj.attribs);
+  vec_free(iter_type_obj.weak_refs);
+  obj_hashmap_free(number_type_obj.attribs);
+  vec_free(number_type_obj.weak_refs);
   obj_hashmap_free(string_type_obj.attribs);
   vec_free(string_type_obj.weak_refs);
   obj_hashmap_free(type_error_type_obj.attribs);

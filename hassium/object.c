@@ -290,12 +290,16 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
     if (self != NULL && self->type == OBJ_WEAKREF) {
       self = self->ctx;
     }
+    struct stackframe frame;
+    frame.invokee = obj;
+    vec_push(vm->frames, &frame);
     ret = builtin->func(self, vm, args);
+    vec_pop(vm->frames);
   } else if (obj->type == OBJ_FUNC) {
     struct func_obj_ctx *func = obj->ctx;
     struct stackframe *frame;
     if (func->frame == NULL) {
-      frame = stackframe_new(func->code_obj->locals);
+      frame = stackframe_new(func->code_obj->locals, obj);
     } else {
       frame = func->frame;
     }
@@ -356,6 +360,14 @@ void obj_set_attrib(struct obj *obj, char *name, struct obj *val) {
   if (obj->attribs == NULL) {
     obj->attribs = obj_hashmap_new();
   }
+
+  if (obj->type == OBJ_BUILTIN) {
+    struct builtin_obj_ctx *ctx = obj->ctx;
+    if (ctx->name == NULL) {
+      ctx->name = name;
+    }
+  }
+
   obj_dec_ref(obj_hashmap_get(obj->attribs, name));
   obj_hashmap_set(obj->attribs, name, obj_inc_ref(val));
 }
