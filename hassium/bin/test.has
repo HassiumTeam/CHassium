@@ -1,4 +1,4 @@
 func main (s: Number) {
 }
 
-main ("test");
+main (2);

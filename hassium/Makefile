@@ -31,6 +31,7 @@ OBJECTS += lexer.o
 OBJECTS += main.o
 OBJECTS += object.o
 OBJECTS += parser.o
+OBJECTS += sourcefile.o
 OBJECTS += util.o
 OBJECTS += vm.o
 rm       = rm -f

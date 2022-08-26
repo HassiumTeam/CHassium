@@ -1,9 +1,12 @@
 #include <lexer.h>
 
 struct lexer {
+  struct sourcefile *sourcefile;
   char *code;
   size_t pos;
   size_t len;
+  int row;
+  int col;
   struct vec *toks;
 };
 
@@ -16,24 +19,30 @@ static int peeknc(struct lexer *);
 static int readc(struct lexer *);
 static void addtok(struct lexer *, toktype_t, char *val);
 
-struct tok *tok_new(toktype_t type, char *val) {
-  struct tok *tok = (struct tok *)calloc(1, sizeof(struct tok));
+struct tok *tok_new(toktype_t type, char *val, struct sourcepos *sourcepos) {
+  struct tok *tok = malloc(sizeof(struct tok));
   tok->type = type;
   tok->val = val;
+  tok->sourcepos = sourcepos_inc_ref(sourcepos);
+
   return tok;
 }
 
 void tok_free(struct tok *tok) {
+  sourcepos_dec_ref(tok->sourcepos);
   free(tok->val);
   free(tok);
 }
 
-struct vec *lexer_tokenize(char *code) {
+struct vec *lexer_tokenize(struct sourcefile *sourcefile) {
   struct lexer lexer;
-  lexer.code = code;
+  lexer.sourcefile = sourcefile;
+  lexer.code = sourcefile->contents;
   lexer.pos = 0;
-  lexer.len = strlen(code);
+  lexer.len = strlen(sourcefile->contents);
   lexer.toks = vec_new();
+  lexer.row = 0;
+  lexer.col = 0;
 
   while (lexer.pos < lexer.len) {
     whitespace(&lexer);
@@ -41,13 +50,13 @@ struct vec *lexer_tokenize(char *code) {
     int next = peeknc(&lexer);
     if (cur == -1) break;
 
-    if (cur == '"' || cur == '\'')
+    if (cur == '"' || cur == '\'') {
       readstr(&lexer, cur);
-    else if (isalpha(cur) || cur == '_')
+    } else if (isalpha(cur) || cur == '_') {
       readid(&lexer);
-    else if (isdigit(cur))
+    } else if (isdigit(cur)) {
       readnum(&lexer);
-    else {
+    } else {
       switch (cur) {
         case '+':
         case '-':
@@ -131,8 +140,7 @@ static void readid(struct lexer *lexer) {
   while (peekc(lexer) != -1 &&
          (isalnum((char)peekc(lexer)) || (char)peekc(lexer) == '_'))
     strbuf_append(strbuf, (char)readc(lexer));
-  char *val = strbuf_done(strbuf);
-  vec_push(lexer->toks, tok_new(TOK_ID, val));
+  addtok(lexer, TOK_ID, strbuf_done(strbuf));
 }
 
 static void readnum(struct lexer *lexer) {
@@ -141,8 +149,7 @@ static void readnum(struct lexer *lexer) {
   while (peekc(lexer) != -1 && (isdigit((char)peekc(lexer)) ||
                                 (!has_dot && (char)peekc(lexer) == '.')))
     strbuf_append(strbuf, (char)readc(lexer));
-  char *val = strbuf_done(strbuf);
-  vec_push(lexer->toks, tok_new(TOK_NUM, val));
+  addtok(lexer, TOK_NUM, strbuf_done(strbuf));
 }
 
 static void readstr(struct lexer *lexer, char delin) {
@@ -152,7 +159,7 @@ static void readstr(struct lexer *lexer, char delin) {
     strbuf_append(strbuf, (char)readc(lexer));
   readc(lexer);
   char *val = strbuf_done(strbuf);
-  vec_push(lexer->toks, tok_new(TOK_STRING, val));
+  addtok(lexer, TOK_STRING, val);
 }
 
 static void whitespace(struct lexer *lexer) {
@@ -171,15 +178,28 @@ static int peeknc(struct lexer *lexer) {
 
 static int readc(struct lexer *lexer) {
   if (lexer->pos >= lexer->len) return -1;
-  return lexer->code[lexer->pos++];
+  char ret = lexer->code[lexer->pos++];
+
+  if (ret == '\n') {
+    lexer->row++;
+    lexer->col = 0;
+  } else {
+    lexer->col++;
+  }
+
+  return ret;
 }
 
 static void addtok(struct lexer *lexer, toktype_t type, char *val) {
-  vec_push(lexer->toks, tok_new(type, val));
+  vec_push(lexer->toks,
+           tok_new(type, val,
+                   sourcepos_new(lexer->row, lexer->col, lexer->sourcefile)));
 }
 
 void free_toks(struct vec *toks) {
-  for (int i = 0; i < toks->len; i++) tok_free(vec_get(toks, i));
+  for (int i = 0; i < toks->len; i++) {
+    tok_free(vec_get(toks, i));
+  }
   vec_free(toks);
 }
 

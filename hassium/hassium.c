@@ -4,8 +4,8 @@ struct hassium_ctx hassium_ctx = {
     .prog_path = NULL,
 };
 
-struct code_obj *compile_module(char *str) {
-  struct vec *toks = lexer_tokenize(str);
+struct code_obj *compile_module(struct sourcefile *sourcefile) {
+  struct vec *toks = lexer_tokenize(sourcefile);
   // debug_toks(toks);
   struct ast_node *ast = parser_parse(toks);
   struct code_obj *module = compile_ast(ast);
@@ -33,11 +33,11 @@ struct code_obj *compile_module_for_import(struct vec *from) {
     exit(-1);
   }
 
-  char *code = file_to_str(rel_path);
-  struct code_obj *mod = compile_module(code);
-
-  free(code);
+  struct sourcefile *mod_file = sourcefile_new(rel_path);
   free(rel_path);
+  struct code_obj *mod = compile_module(mod_file);
+  sourcefile_free(mod_file);
+
   return mod;
 }
 
@@ -50,8 +50,10 @@ void run_module(struct code_obj *mod) {
   vm_free(vm);
 }
 
-void run_string(char *str) {
-  struct code_obj *module = compile_module(str);
+void run_file(char *fpath) {
+  struct sourcefile *sourcefile = sourcefile_new(fpath);
+  struct code_obj *module = compile_module(sourcefile);
   run_module(module);
+  sourcefile_free(sourcefile);
   debug();
 }

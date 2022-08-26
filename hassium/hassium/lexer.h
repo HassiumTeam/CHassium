@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <ds/strbuf.h>
 #include <ds/vec.h>
+#include <sourcefile.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,12 +31,13 @@ typedef enum {
 struct tok {
   toktype_t type;
   char *val;
+  struct sourcepos *sourcepos;
 };
 
-struct tok *tok_new(toktype_t, char *);
+struct tok *tok_new(toktype_t, char *, struct sourcepos *);
 void tok_free(struct tok *);
 
-struct vec *lexer_tokenize(char *);
+struct vec *lexer_tokenize(struct sourcefile *);
 void free_toks(struct vec *);
 void debug_toks(struct vec *);
 
