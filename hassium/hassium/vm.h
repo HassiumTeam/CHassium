@@ -10,7 +10,9 @@
 #include <object.h>
 #include <parser.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef uint64_t vm_inst_t;
 

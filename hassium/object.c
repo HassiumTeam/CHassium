@@ -24,50 +24,9 @@ struct obj *obj_new(obj_ctx_type_t type, void *ctx, struct obj *obj_type) {
   obj->attribs = obj_hashmap_new();
   obj->lazy_load_fn = NULL;
   obj->weak_refs = NULL;
+  obj->sourcepos = NULL;
 
   return obj;
-}
-
-static struct obj *__iter__(struct obj *obj, struct vm *vm, struct vec *args) {
-  struct obj *keys_argstack[1];
-  keys_argstack[0] = obj;
-  struct vec keys_args;
-  keys_args.data = (void **)keys_argstack;
-  keys_args.len = 1;
-
-  struct obj *keys = object_keys(NULL, vm, &keys_args);
-  keys->parent = obj_inc_ref(obj);
-  struct obj *iter = obj_iter_new(keys);
-
-  obj_set_attrib(iter, "__iterfull__",
-                 obj_builtin_new(__iter____iterfull__, iter));
-  obj_set_attrib(iter, "__iternext__",
-                 obj_builtin_new(__iter____iternext__, iter));
-
-  return iter;
-}
-
-static struct obj *__iter____iterfull__(struct obj *iter_, struct vm *vm,
-                                        struct vec *args) {
-  struct iter_obj_ctx *iter = iter_->ctx;
-  struct vec *arr = iter->target->ctx;
-
-  return bool_to_obj(iter->pos >= arr->len);
-}
-
-static struct obj *__iter____iternext__(struct obj *iter_, struct vm *vm,
-                                        struct vec *args) {
-  struct iter_obj_ctx *iter = iter_->ctx;
-  struct vec *arr = iter->target->ctx;
-
-  struct obj *key = vec_get(arr, iter->pos++);
-  struct obj *ret = obj_new(OBJ_ANON, NULL, &object_type_obj);
-  obj_set_attrib(ret, "key", key);
-  obj_set_attrib(
-      ret, "val",
-      obj_hashmap_get(iter->target->parent->attribs, (char *)key->ctx));
-
-  return ret;
 }
 
 void obj_free(struct obj *obj) {
@@ -122,8 +81,51 @@ void obj_free(struct obj *obj) {
   if (obj->attribs != NULL) obj_hashmap_free(obj->attribs);
   if (obj->parent != NULL) obj_dec_ref(obj->parent);
   if (obj->obj_type != NULL) obj_dec_ref(obj->obj_type);
+  if (obj->sourcepos != NULL) sourcepos_dec_ref(obj->sourcepos);
 
   free(obj);
+}
+
+static struct obj *__iter__(struct obj *obj, struct vm *vm, struct vec *args) {
+  struct obj *keys_argstack[1];
+  keys_argstack[0] = obj;
+  struct vec keys_args;
+  keys_args.data = (void **)keys_argstack;
+  keys_args.len = 1;
+
+  struct obj *keys = object_keys(NULL, vm, &keys_args);
+  keys->parent = obj_inc_ref(obj);
+  struct obj *iter = obj_iter_new(keys);
+
+  obj_set_attrib(iter, "__iterfull__",
+                 obj_builtin_new(__iter____iterfull__, iter));
+  obj_set_attrib(iter, "__iternext__",
+                 obj_builtin_new(__iter____iternext__, iter));
+
+  return iter;
+}
+
+static struct obj *__iter____iterfull__(struct obj *iter_, struct vm *vm,
+                                        struct vec *args) {
+  struct iter_obj_ctx *iter = iter_->ctx;
+  struct vec *arr = iter->target->ctx;
+
+  return bool_to_obj(iter->pos >= arr->len);
+}
+
+static struct obj *__iter____iternext__(struct obj *iter_, struct vm *vm,
+                                        struct vec *args) {
+  struct iter_obj_ctx *iter = iter_->ctx;
+  struct vec *arr = iter->target->ctx;
+
+  struct obj *key = vec_get(arr, iter->pos++);
+  struct obj *ret = obj_new(OBJ_ANON, NULL, &object_type_obj);
+  obj_set_attrib(ret, "key", key);
+  obj_set_attrib(
+      ret, "val",
+      obj_hashmap_get(iter->target->parent->attribs, (char *)key->ctx));
+
+  return ret;
 }
 
 struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,

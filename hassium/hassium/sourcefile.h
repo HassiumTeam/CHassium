@@ -23,7 +23,7 @@ struct sourcefile *sourcefile_new(char *);
 void sourcefile_free(struct sourcefile *);
 
 struct sourcepos *sourcepos_new(int, int, struct sourcefile *);
-void sourcepos_free(struct sourcepos *);
+void sourcepos_to_strbuf(struct sourcepos *, struct strbuf *);
 
 static inline struct sourcepos *sourcepos_inc_ref(struct sourcepos *sourcepos) {
   sourcepos->refs++;

@@ -1,4 +1,13 @@
 func main (s: Number) {
+  nested1();
+}
+
+func nested1 () {
+  nested2 ();
+}
+
+func nested2 () {
+  raise "Some";
 }
 
 main (2);

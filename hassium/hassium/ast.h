@@ -2,6 +2,7 @@
 #define _AST_H_
 
 #include <ds/vec.h>
+#include <sourcefile.h>
 #include <stdlib.h>
 
 typedef enum {
@@ -60,6 +61,7 @@ typedef enum {
 struct ast_node {
   ast_type_t type;
   void *inner;
+  struct sourcepos *sourcepos;
 };
 
 struct array_decl_node {
@@ -190,40 +192,50 @@ struct while_node {
   struct ast_node *body;
 };
 
-struct ast_node *ast_node_new(ast_type_t, void *);
-struct ast_node *array_decl_node_new(struct vec *);
-struct ast_node *attrib_node_new(struct ast_node *, char *);
+struct ast_node *ast_node_new(ast_type_t, void *, struct sourcepos *);
+struct ast_node *array_decl_node_new(struct vec *, struct sourcepos *);
+struct ast_node *attrib_node_new(struct ast_node *, char *, struct sourcepos *);
 struct ast_node *bin_op_node_new(bin_op_type_t, struct ast_node *,
-                                 struct ast_node *);
+                                 struct ast_node *, struct sourcepos *);
 struct ast_node *class_decl_node_new(char *, struct ast_node *,
-                                     struct ast_node *, struct vec *);
-struct ast_node *code_block_node_new(struct vec *);
-struct ast_node *delete_node_new(struct ast_node *);
-struct ast_node *do_while_node_new(struct ast_node *, struct ast_node *);
-struct ast_node *expr_stmt_node_new(struct ast_node *);
+                                     struct ast_node *, struct vec *,
+                                     struct sourcepos *);
+struct ast_node *code_block_node_new(struct vec *, struct sourcepos *);
+struct ast_node *delete_node_new(struct ast_node *, struct sourcepos *);
+struct ast_node *do_while_node_new(struct ast_node *, struct ast_node *,
+                                   struct sourcepos *);
+struct ast_node *expr_stmt_node_new(struct ast_node *, struct sourcepos *);
 struct ast_node *for_node_new(struct ast_node *, struct ast_node *,
-                              struct ast_node *, struct ast_node *);
-struct ast_node *foreach_node_new(char *, struct ast_node *, struct ast_node *);
+                              struct ast_node *, struct ast_node *,
+                              struct sourcepos *);
+struct ast_node *foreach_node_new(char *, struct ast_node *, struct ast_node *,
+                                  struct sourcepos *);
 struct ast_node *func_decl_node_new(char *, struct vec *, struct ast_node *,
-                                    struct ast_node *);
-struct ast_node *id_node_new(char *, struct ast_node *);
+                                    struct ast_node *, struct sourcepos *);
+struct ast_node *id_node_new(char *, struct ast_node *, struct sourcepos *);
 struct ast_node *if_node_new(struct ast_node *, struct ast_node *,
-                             struct ast_node *);
-struct ast_node *import_node_new(struct vec *, struct vec *);
-struct ast_node *invoke_node_new(struct ast_node *, struct vec *);
-struct ast_node *num_node_new(bool, int, float);
-struct ast_node *obj_decl_node_new(struct vec *, struct vec *);
-struct ast_node *raise_node_new(struct ast_node *);
-struct ast_node *return_node_new(struct ast_node *);
+                             struct ast_node *, struct sourcepos *);
+struct ast_node *import_node_new(struct vec *, struct vec *,
+                                 struct sourcepos *);
+struct ast_node *invoke_node_new(struct ast_node *, struct vec *,
+                                 struct sourcepos *);
+struct ast_node *num_node_new(bool, int, float, struct sourcepos *);
+struct ast_node *obj_decl_node_new(struct vec *, struct vec *,
+                                   struct sourcepos *);
+struct ast_node *raise_node_new(struct ast_node *, struct sourcepos *);
+struct ast_node *return_node_new(struct ast_node *, struct sourcepos *);
 struct ast_node *slice_node_new(struct ast_node *, struct ast_node *,
-                                struct ast_node *);
-struct ast_node *string_node_new(char *);
-struct ast_node *subscript_node_new(struct ast_node *, struct ast_node *);
-struct ast_node *super_node_new(struct vec *);
+                                struct ast_node *, struct sourcepos *);
+struct ast_node *string_node_new(char *, struct sourcepos *);
+struct ast_node *subscript_node_new(struct ast_node *, struct ast_node *,
+                                    struct sourcepos *);
+struct ast_node *super_node_new(struct vec *, struct sourcepos *);
 struct ast_node *try_catch_node_new(struct ast_node *, struct ast_node *,
-                                    char *);
-struct ast_node *unary_op_node_new(unary_op_type_t, struct ast_node *);
-struct ast_node *while_node_new(struct ast_node *, struct ast_node *);
+                                    char *, struct sourcepos *);
+struct ast_node *unary_op_node_new(unary_op_type_t, struct ast_node *,
+                                   struct sourcepos *);
+struct ast_node *while_node_new(struct ast_node *, struct ast_node *,
+                                struct sourcepos *);
 
 void ast_node_free(struct ast_node *);
 void debug_ast(struct ast_node *);

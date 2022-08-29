@@ -61,6 +61,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
   struct vm_inst *inst;
 
   int pos = 0;
+  code_obj->pos = &pos;
 
   for (;;) {
     if (*handler_returns_len > 0) {
@@ -70,7 +71,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       struct code_obj *parent_code_obj = handler_code_obj->parent;
 
       if (parent_code_obj == code_obj) {
-        pos = ++intmap_get(code_obj->labels, handler_code_obj->caught_label);
+        pos = intmap_get(code_obj->labels, handler_code_obj->caught_label) + 1;
         obj_dec_ref(vec_pop(vm->handler_returns));
       } else {
         return &none_obj;
@@ -78,6 +79,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
     }
 
     vm_inst_t inst = (vm_inst_t)vec_get(code_obj->instructions, pos);
+
     // printf("%d %d %d\n", opcode, opshort, op);
 
     // long startTime = getMicrotime();
@@ -137,8 +139,11 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         }
 
         struct code_obj *func_code_obj = vec_get(code_obj->code_objs, op);
-        STACK_PUSH(obj_inc_ref(obj_func_new(
-            func_code_obj, func_code_obj->params, NULL, frame, true)));
+        struct obj *func_obj = obj_func_new(
+            func_code_obj, func_code_obj->params, NULL, frame, true);
+        func_obj->sourcepos = sourcepos_inc_ref(
+            (struct sourcepos *)vec_get(code_obj->sourceposes, pos));
+        STACK_PUSH(obj_inc_ref(func_obj));
       } break;
       case INST_BUILD_HANDLER: {
         struct code_obj *handler = vec_get(code_obj->code_objs, op);
@@ -418,16 +423,46 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
 void vm_raise(struct vm *vm, struct obj *obj) {
   struct strbuf *stacktrace = strbuf_new();
   bool has_some_trace = false;
+  bool found_top = false;
+
   for (int i = vm->frames->len - 1; i >= 0; --i) {
     struct stackframe *frame = vec_get(vm->frames, i);
     if (frame->invokee != NULL) {
+      if (frame->invokee->type == OBJ_FUNC && !found_top) {
+        struct func_obj_ctx *func_ctx = frame->invokee->ctx;
+        struct sourcepos *curpos =
+            vec_get(func_ctx->code_obj->sourceposes, *func_ctx->code_obj->pos);
+        strbuf_append_str(stacktrace, "in: ");
+        sourcepos_to_strbuf(curpos, stacktrace);
+        strbuf_append_str(stacktrace, ":\n");
+        strbuf_append_str(stacktrace, (char *)vec_get(curpos->sourcefile->lines,
+                                                      curpos->row));
+        strbuf_append(stacktrace, '\n');
+        for (int i = 0; i < curpos->row - 1; ++i) {
+          strbuf_append(stacktrace, ' ');
+        }
+        strbuf_append_str(stacktrace, "^\n");
+        found_top = true;
+      }
+
       strbuf_append_str(stacktrace, "  at ");
       struct obj *toString_res = obj_to_string(frame->invokee, vm);
       strbuf_append_str(stacktrace, (char *)toString_res->ctx);
+
+      struct sourcepos *sourcepos = frame->invokee->sourcepos;
+      if (sourcepos != NULL) {
+        strbuf_append(stacktrace, '(');
+        sourcepos_to_strbuf(sourcepos, stacktrace);
+        strbuf_append(stacktrace, ')');
+      }
+
+      strbuf_append(stacktrace, '\n');
+
       obj_dec_ref(toString_res);
       has_some_trace = true;
     }
   }
+
   char *trace = strbuf_done(stacktrace);
   if (has_some_trace) {
     obj_set_attrib(obj, "trace", obj_string_new(trace));
@@ -435,7 +470,10 @@ void vm_raise(struct vm *vm, struct obj *obj) {
   free(trace);
 
   if (vm->handlers->len == 0) {
-    printf("Unhandled exception: %s\n", (char *)obj_to_string(obj, vm)->ctx);
+    printf("Unhandled exception:\n%s\n", (char *)obj_to_string(obj, vm)->ctx);
+    if (has_some_trace) {
+      printf("%s", (char *)obj_hashmap_get(obj->attribs, "trace")->ctx);
+    }
     exit(-1);
   }
 

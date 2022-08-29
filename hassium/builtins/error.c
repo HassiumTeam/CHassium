@@ -13,11 +13,6 @@ struct obj *Error_toString(struct obj *error, struct vm *vm, struct vec *args) {
     strbuf_append_str(strbuf, "Message:\n");
     strbuf_append_str(strbuf, (char *)message->ctx);
   }
-  if (obj_hashmap_has(error->attribs, "trace")) {
-    strbuf_append_str(strbuf, "\nTrace:\n");
-    strbuf_append_str(strbuf,
-                      (char *)obj_hashmap_get(error->attribs, "trace")->ctx);
-  }
 
   char *error_str = strbuf_done(strbuf);
   struct obj *ret = obj_string_new(error_str);

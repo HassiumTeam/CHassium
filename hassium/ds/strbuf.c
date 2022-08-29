@@ -32,7 +32,7 @@ void strbuf_append_str(struct strbuf *strbuf, char *s) {
 
 static void expand_if_needed(struct strbuf *strbuf) {
   if (strbuf->len >= strbuf->size) {
-    strbuf->size += STRBUF_EXPAND_AT;
+    strbuf->size *= 2;
     strbuf->buf = realloc(strbuf->buf, sizeof(char) * strbuf->size);
   }
 }

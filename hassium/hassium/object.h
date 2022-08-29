@@ -2,6 +2,7 @@
 #define _OBJECT_H_
 
 #include <ds/hashmap.h>
+#include <sourcefile.h>
 #include <stdlib.h>
 #include <util.h>
 
@@ -60,6 +61,7 @@ struct obj {
   struct hashmap *attribs;
   void (*lazy_load_fn)(struct obj *);
   struct vec *weak_refs;
+  struct sourcepos *sourcepos;
 };
 
 struct builtin_obj_ctx {

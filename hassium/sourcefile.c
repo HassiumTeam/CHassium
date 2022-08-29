@@ -40,3 +40,15 @@ struct sourcepos *sourcepos_new(int row, int col,
 
   return sourcepos;
 }
+
+void sourcepos_to_strbuf(struct sourcepos *sourcepos, struct strbuf *strbuf) {
+  strbuf_append_str(strbuf, sourcepos->sourcefile->fileName);
+  strbuf_append(strbuf, ':');
+  char row[0xF];
+  char col[0xF];
+  sprintf(row, "%d", sourcepos->row + 1);
+  sprintf(col, "%d", sourcepos->col + 1);
+  strbuf_append_str(strbuf, row);
+  strbuf_append(strbuf, ':');
+  strbuf_append_str(strbuf, col);
+}

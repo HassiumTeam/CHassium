@@ -12,11 +12,13 @@ struct code_obj {
   struct vec *code_objs;
   struct vec *vecs;
   struct vec *strs;
+  struct vec *sourceposes;
   struct vec *params;
   struct intmap *labels;
   struct vec *break_labels;
   struct vec *cont_labels;
   struct vec *consts;
+  int *pos;
   int locals;
   int caught_label;
 };

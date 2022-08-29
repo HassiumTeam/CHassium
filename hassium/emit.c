@@ -9,35 +9,58 @@ struct emit {
 };
 
 static void visit_ast_node(struct emit *, struct ast_node *);
-static void visit_array_decl_node(struct emit *, struct array_decl_node *);
-static void visit_attrib_node(struct emit *, struct attrib_node *);
-static void visit_bin_op_node(struct emit *, struct bin_op_node *);
-static void visit_break_node(struct emit *);
-static void visit_class_decl_node(struct emit *, struct class_decl_node *);
+static void visit_array_decl_node(struct emit *, struct array_decl_node *,
+                                  struct sourcepos *);
+static void visit_attrib_node(struct emit *, struct attrib_node *,
+                              struct sourcepos *);
+static void visit_bin_op_node(struct emit *, struct bin_op_node *,
+                              struct sourcepos *);
+static void visit_break_node(struct emit *, struct sourcepos *);
+static void visit_class_decl_node(struct emit *, struct class_decl_node *,
+                                  struct sourcepos *);
 static void visit_code_block_node(struct emit *, struct code_block_node *,
                                   bool);
-static void visit_continue_node(struct emit *);
-static void visit_delete_node(struct emit *, struct delete_node *);
-static void visit_do_while_node(struct emit *, struct while_node *);
-static void visit_expr_stmt_node(struct emit *, struct expr_stmt_node *);
-static void visit_for_node(struct emit *, struct for_node *);
-static void visit_foreach_node(struct emit *, struct foreach_node *);
-static void visit_func_decl_node(struct emit *, struct func_decl_node *);
-static void visit_id_node(struct emit *, struct id_node *);
-static void visit_if_node(struct emit *, struct if_node *);
-static void visit_import_node(struct emit *, struct import_node *);
-static void visit_invoke_node(struct emit *, struct invoke_node *);
-static void visit_num_node(struct emit *, struct num_node *);
-static void visit_obj_decl_node(struct emit *, struct obj_decl_node *);
-static void visit_raise_node(struct emit *, struct raise_node *);
-static void visit_return_node(struct emit *, struct return_node *);
-static void visit_slice_node(struct emit *, struct slice_node *);
-static void visit_string_node(struct emit *, struct string_node *);
-static void visit_subscript_node(struct emit *, struct subscript_node *);
-static void visit_super_node(struct emit *, struct super_node *);
-static void visit_try_catch_node(struct emit *, struct try_catch_node *);
-static void visit_unary_op_node(struct emit *, struct unary_op_node *);
-static void visit_while_node(struct emit *, struct while_node *);
+static void visit_continue_node(struct emit *, struct sourcepos *);
+static void visit_delete_node(struct emit *, struct delete_node *,
+                              struct sourcepos *);
+static void visit_do_while_node(struct emit *, struct while_node *,
+                                struct sourcepos *);
+static void visit_expr_stmt_node(struct emit *, struct expr_stmt_node *,
+                                 struct sourcepos *);
+static void visit_for_node(struct emit *, struct for_node *,
+                           struct sourcepos *);
+static void visit_foreach_node(struct emit *, struct foreach_node *,
+                               struct sourcepos *);
+static void visit_func_decl_node(struct emit *, struct func_decl_node *,
+                                 struct sourcepos *);
+static void visit_id_node(struct emit *, struct id_node *, struct sourcepos *);
+static void visit_if_node(struct emit *, struct if_node *, struct sourcepos *);
+static void visit_import_node(struct emit *, struct import_node *,
+                              struct sourcepos *);
+static void visit_invoke_node(struct emit *, struct invoke_node *,
+                              struct sourcepos *);
+static void visit_num_node(struct emit *, struct num_node *,
+                           struct sourcepos *);
+static void visit_obj_decl_node(struct emit *, struct obj_decl_node *,
+                                struct sourcepos *);
+static void visit_raise_node(struct emit *, struct raise_node *,
+                             struct sourcepos *);
+static void visit_return_node(struct emit *, struct return_node *,
+                              struct sourcepos *);
+static void visit_slice_node(struct emit *, struct slice_node *,
+                             struct sourcepos *);
+static void visit_string_node(struct emit *, struct string_node *,
+                              struct sourcepos *);
+static void visit_subscript_node(struct emit *, struct subscript_node *,
+                                 struct sourcepos *);
+static void visit_super_node(struct emit *, struct super_node *,
+                             struct sourcepos *);
+static void visit_try_catch_node(struct emit *, struct try_catch_node *,
+                                 struct sourcepos *);
+static void visit_unary_op_node(struct emit *, struct unary_op_node *,
+                                struct sourcepos *);
+static void visit_while_node(struct emit *, struct while_node *,
+                             struct sourcepos *);
 
 static vm_inst_t vm_inst_new(uint16_t opcode, uint16_t opshort, uint32_t op);
 static vm_inst_t bin_op_inst_new(bin_op_type_t);
@@ -72,7 +95,7 @@ static struct labels_ctx save_labels(struct emit *);
 static void restore_labels(struct emit *, struct labels_ctx);
 static int next_sym_idx = 0;
 static char *tmp_symbol();
-static void add_inst(struct emit *, vm_inst_t);
+static void add_inst(struct emit *, vm_inst_t, struct sourcepos *);
 static int new_label();
 static void place_label(struct emit *, int);
 
@@ -91,8 +114,8 @@ struct code_obj *compile_ast(struct ast_node *ast) {
   emit.class = NULL;
 
   visit_code_block_node(&emit, ast->inner, true);
-  add_inst(&emit, vm_inst_new(INST_LOAD_NONE, 0, 0));
-  add_inst(&emit, vm_inst_new(INST_RETURN, 0, 0));
+  add_inst(&emit, vm_inst_new(INST_LOAD_NONE, 0, 0), ast->sourcepos);
+  add_inst(&emit, vm_inst_new(INST_RETURN, 0, 0), ast->sourcepos);
 
   vec_free(emit.symtable);
   return emit.code_obj;
@@ -101,106 +124,110 @@ struct code_obj *compile_ast(struct ast_node *ast) {
 static void visit_ast_node(struct emit *emit, struct ast_node *node) {
   switch (node->type) {
     case ARRAY_DECL_NODE:
-      visit_array_decl_node(emit, node->inner);
+      visit_array_decl_node(emit, node->inner, node->sourcepos);
       break;
     case ATTRIB_NODE:
-      visit_attrib_node(emit, node->inner);
+      visit_attrib_node(emit, node->inner, node->sourcepos);
       break;
     case BIN_OP_NODE:
-      visit_bin_op_node(emit, node->inner);
+      visit_bin_op_node(emit, node->inner, node->sourcepos);
       break;
     case BREAK_NODE:
-      visit_break_node(emit);
+      visit_break_node(emit, node->sourcepos);
       break;
     case CLASS_DECL_NODE:
-      visit_class_decl_node(emit, node->inner);
+      visit_class_decl_node(emit, node->inner, node->sourcepos);
       break;
     case CODE_BLOCK_NODE:
       visit_code_block_node(emit, node->inner, true);
       break;
     case CONTINUE_NODE:
-      visit_continue_node(emit);
+      visit_continue_node(emit, node->sourcepos);
       break;
     case DELETE_NODE:
-      visit_delete_node(emit, node->inner);
+      visit_delete_node(emit, node->inner, node->sourcepos);
       break;
     case DO_WHILE_NODE:
-      visit_do_while_node(emit, node->inner);
+      visit_do_while_node(emit, node->inner, node->sourcepos);
       break;
     case EXPR_STMT_NODE:
-      visit_expr_stmt_node(emit, node->inner);
+      visit_expr_stmt_node(emit, node->inner, node->sourcepos);
       break;
     case FOR_NODE:
-      visit_for_node(emit, node->inner);
+      visit_for_node(emit, node->inner, node->sourcepos);
       break;
     case FOREACH_NODE:
-      visit_foreach_node(emit, node->inner);
+      visit_foreach_node(emit, node->inner, node->sourcepos);
       break;
     case FUNC_DECL_NODE:
-      visit_func_decl_node(emit, node->inner);
+      visit_func_decl_node(emit, node->inner, node->sourcepos);
       break;
     case ID_NODE:
-      visit_id_node(emit, node->inner);
+      visit_id_node(emit, node->inner, node->sourcepos);
       break;
     case IF_NODE:
-      visit_if_node(emit, node->inner);
+      visit_if_node(emit, node->inner, node->sourcepos);
       break;
     case IMPORT_NODE:
-      visit_import_node(emit, node->inner);
+      visit_import_node(emit, node->inner, node->sourcepos);
       break;
     case INVOKE_NODE:
-      visit_invoke_node(emit, node->inner);
+      visit_invoke_node(emit, node->inner, node->sourcepos);
       break;
     case NUM_NODE:
-      visit_num_node(emit, node->inner);
+      visit_num_node(emit, node->inner, node->sourcepos);
       break;
     case OBJ_DECL_NODE:
-      visit_obj_decl_node(emit, node->inner);
+      visit_obj_decl_node(emit, node->inner, node->sourcepos);
       break;
     case RAISE_NODE:
-      visit_raise_node(emit, node->inner);
+      visit_raise_node(emit, node->inner, node->sourcepos);
       break;
     case RETURN_NODE:
-      visit_return_node(emit, node->inner);
+      visit_return_node(emit, node->inner, node->sourcepos);
       break;
     case SLICE_NODE:
-      visit_slice_node(emit, node->inner);
+      visit_slice_node(emit, node->inner, node->sourcepos);
       break;
     case STRING_NODE:
-      visit_string_node(emit, node->inner);
+      visit_string_node(emit, node->inner, node->sourcepos);
       break;
     case SUBSCRIPT_NODE:
-      visit_subscript_node(emit, node->inner);
+      visit_subscript_node(emit, node->inner, node->sourcepos);
       break;
     case SUPER_NODE:
-      visit_super_node(emit, node->inner);
+      visit_super_node(emit, node->inner, node->sourcepos);
       break;
     case TRY_CATCH_NODE:
-      visit_try_catch_node(emit, node->inner);
+      visit_try_catch_node(emit, node->inner, node->sourcepos);
       break;
     case UNARY_OP_NODE:
-      visit_unary_op_node(emit, node->inner);
+      visit_unary_op_node(emit, node->inner, node->sourcepos);
       break;
     case WHILE_NODE:
-      visit_while_node(emit, node->inner);
+      visit_while_node(emit, node->inner, node->sourcepos);
       break;
   }
 }
 
 static void visit_array_decl_node(struct emit *emit,
-                                  struct array_decl_node *node) {
+                                  struct array_decl_node *node,
+                                  struct sourcepos *sourcepos) {
   for (int i = 0; i < node->values->len; i++) {
     visit_ast_node(emit, vec_get(node->values, i));
   }
-  add_inst(emit, build_array_inst_new(node->values->len));
+  add_inst(emit, build_array_inst_new(node->values->len), sourcepos);
 }
 
-static void visit_attrib_node(struct emit *emit, struct attrib_node *node) {
+static void visit_attrib_node(struct emit *emit, struct attrib_node *node,
+                              struct sourcepos *sourcepos) {
   visit_ast_node(emit, node->target);
-  add_inst(emit, load_attrib_inst_new(emit, clone_str(node->attrib)));
+  add_inst(emit, load_attrib_inst_new(emit, clone_str(node->attrib)),
+           sourcepos);
 }
 
-static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node) {
+static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node,
+                              struct sourcepos *sourcepos) {
   if (node->type == BIN_OP_ASSIGN || node->type == BIN_OP_ASSIGN_SHORT) {
     visit_ast_node(emit, node->right);
     switch (node->left->type) {
@@ -208,37 +235,41 @@ static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node) {
         struct attrib_node *attrib_node = node->left->inner;
         visit_ast_node(emit, attrib_node->target);
         add_inst(emit,
-                 store_attrib_inst_new(emit, clone_str(attrib_node->attrib)));
+                 store_attrib_inst_new(emit, clone_str(attrib_node->attrib)),
+                 sourcepos);
       } break;
       case ID_NODE: {
         struct id_node *id_node = node->left->inner;
-        add_inst(emit, store_fast_inst_new(handle_symbol(emit, id_node->id)));
+        add_inst(emit, store_fast_inst_new(handle_symbol(emit, id_node->id)),
+                 sourcepos);
       } break;
       case SUBSCRIPT_NODE: {
         struct subscript_node *subscript_node = node->left->inner;
         visit_ast_node(emit, subscript_node->key);
         visit_ast_node(emit, subscript_node->target);
-        add_inst(emit, vm_inst_new(INST_STORE_SUBSCRIPT, 0, 0));
+        add_inst(emit, vm_inst_new(INST_STORE_SUBSCRIPT, 0, 0), sourcepos);
       }
     }
   } else {
     visit_ast_node(emit, node->left);
     visit_ast_node(emit, node->right);
-    add_inst(emit, bin_op_inst_new(node->type));
+    add_inst(emit, bin_op_inst_new(node->type), sourcepos);
   }
 }
 
-static void visit_break_node(struct emit *emit) {
+static void visit_break_node(struct emit *emit, struct sourcepos *sourcepos) {
   if (emit->code_obj->break_labels->len <= 0) {
     printf("Invalid use of break\n");
     exit(-1);
   }
   add_inst(emit,
-           jump_inst_new((uintptr_t)vec_pop(emit->code_obj->break_labels)));
+           jump_inst_new((uintptr_t)vec_pop(emit->code_obj->break_labels)),
+           sourcepos);
 }
 
 static void visit_class_decl_node(struct emit *emit,
-                                  struct class_decl_node *node) {
+                                  struct class_decl_node *node,
+                                  struct sourcepos *sourcepos) {
   if (node->extends != NULL) visit_ast_node(emit, node->extends);
   struct code_obj *class = code_obj_new(clone_str(node->name));
 
@@ -251,8 +282,8 @@ static void visit_class_decl_node(struct emit *emit,
   struct code_obj *swp = emit->code_obj;
   emit->code_obj = class;
   visit_ast_node(emit, node->body);
-  add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0));
-  add_inst(emit, vm_inst_new(INST_RETURN, 0, 0));
+  add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0), sourcepos);
+  add_inst(emit, vm_inst_new(INST_RETURN, 0, 0), sourcepos);
   emit->code_obj = swp;
 
   if (emit->class == class) {
@@ -260,7 +291,8 @@ static void visit_class_decl_node(struct emit *emit,
     next_sym_idx = symbol_idx_swp;
   }
 
-  add_inst(emit, build_class_inst_new(emit, class, node->extends != NULL));
+  add_inst(emit, build_class_inst_new(emit, class, node->extends != NULL),
+           sourcepos);
 }
 
 static void visit_code_block_node(struct emit *emit,
@@ -277,21 +309,24 @@ static void visit_code_block_node(struct emit *emit,
   }
 }
 
-static void visit_continue_node(struct emit *emit) {
+static void visit_continue_node(struct emit *emit,
+                                struct sourcepos *sourcepos) {
   if (emit->code_obj->cont_labels->len <= 0) {
     printf("Invalid use of continue\n");
     exit(-1);
   }
-  add_inst(emit,
-           jump_inst_new((uintptr_t)vec_pop(emit->code_obj->cont_labels)));
+  add_inst(emit, jump_inst_new((uintptr_t)vec_pop(emit->code_obj->cont_labels)),
+           sourcepos);
 }
 
-static void visit_delete_node(struct emit *emit, struct delete_node *node) {
+static void visit_delete_node(struct emit *emit, struct delete_node *node,
+                              struct sourcepos *sourcepos) {
   visit_ast_node(emit, node->target);
-  add_inst(emit, vm_inst_new(INST_DELETE, 0, 0));
+  add_inst(emit, vm_inst_new(INST_DELETE, 0, 0), sourcepos);
 }
 
-static void visit_do_while_node(struct emit *emit, struct while_node *node) {
+static void visit_do_while_node(struct emit *emit, struct while_node *node,
+                                struct sourcepos *sourcepos) {
   int body = new_label();
   int end = new_label();
 
@@ -305,20 +340,21 @@ static void visit_do_while_node(struct emit *emit, struct while_node *node) {
   place_label(emit, body);
   visit_ast_node(emit, node->body);
   visit_ast_node(emit, node->condition);
-  add_inst(emit, jump_if_false_inst_new(end));
-  add_inst(emit, jump_inst_new(body));
+  add_inst(emit, jump_if_false_inst_new(end), sourcepos);
+  add_inst(emit, jump_inst_new(body), sourcepos);
 
   place_label(emit, end);
   restore_labels(emit, labels);
 }
 
-static void visit_expr_stmt_node(struct emit *emit,
-                                 struct expr_stmt_node *node) {
+static void visit_expr_stmt_node(struct emit *emit, struct expr_stmt_node *node,
+                                 struct sourcepos *sourcepos) {
   visit_ast_node(emit, node->expr);
-  add_inst(emit, vm_inst_new(INST_POP, 0, 0));
+  add_inst(emit, vm_inst_new(INST_POP, 0, 0), sourcepos);
 }
 
-static void visit_for_node(struct emit *emit, struct for_node *node) {
+static void visit_for_node(struct emit *emit, struct for_node *node,
+                           struct sourcepos *sourcepos) {
   int body = new_label();
   int end = new_label();
   struct labels_ctx labels = {
@@ -332,16 +368,17 @@ static void visit_for_node(struct emit *emit, struct for_node *node) {
 
   place_label(emit, body);
   visit_ast_node(emit, node->condition);
-  add_inst(emit, jump_if_false_inst_new(end));
+  add_inst(emit, jump_if_false_inst_new(end), sourcepos);
   visit_ast_node(emit, node->body);
   visit_ast_node(emit, node->repeated);
-  add_inst(emit, jump_inst_new(body));
+  add_inst(emit, jump_inst_new(body), sourcepos);
 
   place_label(emit, end);
   restore_labels(emit, labels);
 }
 
-static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
+static void visit_foreach_node(struct emit *emit, struct foreach_node *node,
+                               struct sourcepos *sourcepos) {
   int body = new_label();
   int end = new_label();
   char *id = tmp_symbol();
@@ -354,17 +391,18 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
 
   enter_scope(emit);
   visit_ast_node(emit, node->target);
-  add_inst(emit, vm_inst_new(INST_ITER, 0, 0));
-  add_inst(emit, store_fast_inst_new(handle_symbol(emit, id)));
-  add_inst(emit, vm_inst_new(INST_POP, 0, 0));
+  add_inst(emit, vm_inst_new(INST_ITER, 0, 0), sourcepos);
+  add_inst(emit, store_fast_inst_new(handle_symbol(emit, id)), sourcepos);
+  add_inst(emit, vm_inst_new(INST_POP, 0, 0), sourcepos);
 
   place_label(emit, body);
-  add_inst(emit, load_fast_inst_new(get_symbol(emit, id)));
-  add_inst(emit, jump_if_full_inst_new(end));  // note to decrement iter if full
-  add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->id)));
-  add_inst(emit, vm_inst_new(INST_POP, 0, 0));
+  add_inst(emit, load_fast_inst_new(get_symbol(emit, id)), sourcepos);
+  add_inst(emit, jump_if_full_inst_new(end),
+           sourcepos);  // note to decrement iter if full
+  add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->id)), sourcepos);
+  add_inst(emit, vm_inst_new(INST_POP, 0, 0), sourcepos);
   visit_ast_node(emit, node->body);
-  add_inst(emit, jump_inst_new(body));
+  add_inst(emit, jump_inst_new(body), sourcepos);
 
   place_label(emit, end);
   leave_scope(emit);
@@ -373,8 +411,8 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node) {
   free(id);
 }
 
-static void visit_func_decl_node(struct emit *emit,
-                                 struct func_decl_node *node) {
+static void visit_func_decl_node(struct emit *emit, struct func_decl_node *node,
+                                 struct sourcepos *sourcepos) {
   struct code_obj *func = code_obj_new(clone_str(node->name));
   struct code_obj *swp = emit->code_obj;
   bool closure = node->name == NULL;
@@ -399,7 +437,8 @@ static void visit_func_decl_node(struct emit *emit,
     vec_push(func_params, (void *)(uintptr_t)sym);
     if (id_node->type != NULL) {
       visit_ast_node(emit, id_node->type);
-      add_inst(emit, vm_inst_new(INST_TYPECHECK_FAST, 0, (uintptr_t)sym));
+      add_inst(emit, vm_inst_new(INST_TYPECHECK_FAST, 0, (uintptr_t)sym),
+               sourcepos);
     }
   }
 
@@ -408,8 +447,8 @@ static void visit_func_decl_node(struct emit *emit,
   } else {
     visit_ast_node(emit, node->body);
   }
-  add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0));
-  add_inst(emit, vm_inst_new(INST_RETURN, 0, 0));
+  add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0), sourcepos);
+  add_inst(emit, vm_inst_new(INST_RETURN, 0, 0), sourcepos);
 
   leave_scope(emit);
 
@@ -423,41 +462,45 @@ static void visit_func_decl_node(struct emit *emit,
     closure = true;
   }
 
-  add_inst(emit, build_func_inst_new(emit, func, func_params, closure));
+  add_inst(emit, build_func_inst_new(emit, func, func_params, closure),
+           sourcepos);
 
   if (node->name != NULL) {
     if (emit->symtable->len > 1) {
-      add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->name)));
+      add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->name)),
+               sourcepos);
     } else {
-      add_inst(emit, store_id_inst_new(emit, clone_str(node->name)));
+      add_inst(emit, store_id_inst_new(emit, clone_str(node->name)), sourcepos);
     }
-    add_inst(emit, vm_inst_new(INST_POP, 0, 0));
+    add_inst(emit, vm_inst_new(INST_POP, 0, 0), sourcepos);
   }
 }
 
-static void visit_id_node(struct emit *emit, struct id_node *node) {
+static void visit_id_node(struct emit *emit, struct id_node *node,
+                          struct sourcepos *sourcepos) {
   if (strcmp(node->id, "true") == 0) {
-    add_inst(emit, vm_inst_new(INST_LOAD_TRUE, 0, 0));
+    add_inst(emit, vm_inst_new(INST_LOAD_TRUE, 0, 0), sourcepos);
   } else if (strcmp(node->id, "false") == 0) {
-    add_inst(emit, vm_inst_new(INST_LOAD_FALSE, 0, 0));
+    add_inst(emit, vm_inst_new(INST_LOAD_FALSE, 0, 0), sourcepos);
   } else if (strcmp(node->id, "none") == 0) {
-    add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0));
+    add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0), sourcepos);
   } else if (strcmp(node->id, "self") == 0) {
-    add_inst(emit, vm_inst_new(INST_LOAD_SELF, 0, 0));
+    add_inst(emit, vm_inst_new(INST_LOAD_SELF, 0, 0), sourcepos);
   } else if (get_symbol(emit, node->id) != -1) {
-    add_inst(emit, load_fast_inst_new(get_symbol(emit, node->id)));
+    add_inst(emit, load_fast_inst_new(get_symbol(emit, node->id)), sourcepos);
   } else {
-    add_inst(emit, load_id_inst_new(emit, clone_str(node->id)));
+    add_inst(emit, load_id_inst_new(emit, clone_str(node->id)), sourcepos);
   }
 }
 
-static void visit_if_node(struct emit *emit, struct if_node *node) {
+static void visit_if_node(struct emit *emit, struct if_node *node,
+                          struct sourcepos *sourcepos) {
   int else_ = new_label();
   int end = new_label();
   visit_ast_node(emit, node->predicate);
-  add_inst(emit, jump_if_false_inst_new(else_));
+  add_inst(emit, jump_if_false_inst_new(else_), sourcepos);
   visit_ast_node(emit, node->body);
-  add_inst(emit, jump_inst_new(end));
+  add_inst(emit, jump_inst_new(end), sourcepos);
   place_label(emit, else_);
   if (node->else_body != NULL) {
     visit_ast_node(emit, node->else_body);
@@ -465,19 +508,22 @@ static void visit_if_node(struct emit *emit, struct if_node *node) {
   place_label(emit, end);
 }
 
-static void visit_import_node(struct emit *emit, struct import_node *node) {
+static void visit_import_node(struct emit *emit, struct import_node *node,
+                              struct sourcepos *sourcepos) {
   struct code_obj *mod = compile_module_for_import(node->from);
-  add_inst(emit, import_inst_new(emit, node->imports, mod));
+  add_inst(emit, import_inst_new(emit, node->imports, mod), sourcepos);
 }
 
-static void visit_invoke_node(struct emit *emit, struct invoke_node *node) {
+static void visit_invoke_node(struct emit *emit, struct invoke_node *node,
+                              struct sourcepos *sourcepos) {
   visit_ast_node(emit, node->target);
   for (int i = 0; i < node->args->len; i++)
     visit_ast_node(emit, vec_get(node->args, i));
-  add_inst(emit, invoke_inst_new(node->args->len));
+  add_inst(emit, invoke_inst_new(node->args->len), sourcepos);
 }
 
-static void visit_num_node(struct emit *emit, struct num_node *node) {
+static void visit_num_node(struct emit *emit, struct num_node *node,
+                           struct sourcepos *sourcepos) {
   int idx = -1;
   for (int i = 0; i < emit->code_obj->consts->len; i++) {
     struct obj *const_ = vec_get(emit->code_obj->consts, i);
@@ -493,46 +539,51 @@ static void visit_num_node(struct emit *emit, struct num_node *node) {
                  obj_num_new(node->is_float, node->val_int, node->val_float)));
     idx = emit->code_obj->consts->len - 1;
   }
-  add_inst(emit, load_const_inst_new(idx));
+  add_inst(emit, load_const_inst_new(idx), sourcepos);
 }
 
-static void visit_obj_decl_node(struct emit *emit, struct obj_decl_node *node) {
+static void visit_obj_decl_node(struct emit *emit, struct obj_decl_node *node,
+                                struct sourcepos *sourcepos) {
   for (int i = 0; i < node->values->len; i++) {
     visit_ast_node(emit, vec_get(node->values, i));
   }
-  add_inst(emit, build_obj_inst_new(emit, node->keys));
+  add_inst(emit, build_obj_inst_new(emit, node->keys), sourcepos);
 }
 
-static void visit_raise_node(struct emit *emit, struct raise_node *node) {
+static void visit_raise_node(struct emit *emit, struct raise_node *node,
+                             struct sourcepos *sourcepos) {
   visit_ast_node(emit, node->value);
-  add_inst(emit, vm_inst_new(INST_RAISE, 0, 0));
+  add_inst(emit, vm_inst_new(INST_RAISE, 0, 0), sourcepos);
 }
 
-static void visit_return_node(struct emit *emit, struct return_node *node) {
+static void visit_return_node(struct emit *emit, struct return_node *node,
+                              struct sourcepos *sourcepos) {
   visit_ast_node(emit, node->value);
   if (emit->ret_type != NULL) {
     visit_ast_node(emit, emit->ret_type);
-    add_inst(emit, vm_inst_new(INST_TYPECHECK, 0, 0));
+    add_inst(emit, vm_inst_new(INST_TYPECHECK, 0, 0), sourcepos);
   }
-  add_inst(emit, vm_inst_new(INST_RETURN, 0, 0));
+  add_inst(emit, vm_inst_new(INST_RETURN, 0, 0), sourcepos);
 }
 
-static void visit_slice_node(struct emit *emit, struct slice_node *node) {
+static void visit_slice_node(struct emit *emit, struct slice_node *node,
+                             struct sourcepos *sourcepos) {
   visit_ast_node(emit, node->target);
   if (node->start != NULL) {
     visit_ast_node(emit, node->start);
   } else {
-    add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0));
+    add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0), sourcepos);
   }
   if (node->end != NULL) {
     visit_ast_node(emit, node->end);
   } else {
-    add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0));
+    add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0), sourcepos);
   }
-  add_inst(emit, vm_inst_new(INST_SLICE, 0, 0));
+  add_inst(emit, vm_inst_new(INST_SLICE, 0, 0), sourcepos);
 }
 
-static void visit_string_node(struct emit *emit, struct string_node *node) {
+static void visit_string_node(struct emit *emit, struct string_node *node,
+                              struct sourcepos *sourcepos) {
   int idx = -1;
   for (int i = 0; i < emit->code_obj->consts->len; i++) {
     struct obj *const_ = vec_get(emit->code_obj->consts, i);
@@ -546,24 +597,25 @@ static void visit_string_node(struct emit *emit, struct string_node *node) {
     vec_push(emit->code_obj->consts, obj_inc_ref(obj_string_new(node->value)));
     idx = emit->code_obj->consts->len - 1;
   }
-  add_inst(emit, load_const_inst_new(idx));
+  add_inst(emit, load_const_inst_new(idx), sourcepos);
 }
 
-static void visit_subscript_node(struct emit *emit,
-                                 struct subscript_node *node) {
+static void visit_subscript_node(struct emit *emit, struct subscript_node *node,
+                                 struct sourcepos *sourcepos) {
   visit_ast_node(emit, node->key);
   visit_ast_node(emit, node->target);
-  add_inst(emit, vm_inst_new(INST_LOAD_SUBSCRIPT, 0, 0));
+  add_inst(emit, vm_inst_new(INST_LOAD_SUBSCRIPT, 0, 0), sourcepos);
 }
 
-static void visit_super_node(struct emit *emit, struct super_node *node) {
+static void visit_super_node(struct emit *emit, struct super_node *node,
+                             struct sourcepos *sourcepos) {
   for (int i = 0; i < node->args->len; i++)
     visit_ast_node(emit, vec_get(node->args, i));
-  add_inst(emit, super_inst_new(node->args->len));
+  add_inst(emit, super_inst_new(node->args->len), sourcepos);
 }
 
-static void visit_try_catch_node(struct emit *emit,
-                                 struct try_catch_node *node) {
+static void visit_try_catch_node(struct emit *emit, struct try_catch_node *node,
+                                 struct sourcepos *sourcepos) {
   struct code_obj *handler = code_obj_new(NULL);
   struct code_obj *swp = emit->code_obj;
   emit->code_obj = handler;
@@ -578,8 +630,8 @@ static void visit_try_catch_node(struct emit *emit,
   } else {
     visit_ast_node(emit, node->catch);
   }
-  add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0));
-  add_inst(emit, vm_inst_new(INST_RETURN, 0, 0));
+  add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0), sourcepos);
+  add_inst(emit, vm_inst_new(INST_RETURN, 0, 0), sourcepos);
 
   leave_scope(emit);
   emit->code_obj = swp;
@@ -588,22 +640,24 @@ static void visit_try_catch_node(struct emit *emit,
 
   int end = new_label();
   handler->caught_label = end;
-  add_inst(emit, build_handler_inst_new(emit, handler));
+  add_inst(emit, build_handler_inst_new(emit, handler), sourcepos);
 
   enter_scope(emit);
   visit_ast_node(emit, node->try);
   leave_scope(emit);
 
-  add_inst(emit, vm_inst_new(INST_POP_HANDLER, 0, 0));
+  add_inst(emit, vm_inst_new(INST_POP_HANDLER, 0, 0), sourcepos);
   place_label(emit, end);
 }
 
-static void visit_unary_op_node(struct emit *emit, struct unary_op_node *node) {
+static void visit_unary_op_node(struct emit *emit, struct unary_op_node *node,
+                                struct sourcepos *sourcepos) {
   visit_ast_node(emit, node->target);
-  add_inst(emit, unary_op_inst_new(node->type));
+  add_inst(emit, unary_op_inst_new(node->type), sourcepos);
 }
 
-static void visit_while_node(struct emit *emit, struct while_node *node) {
+static void visit_while_node(struct emit *emit, struct while_node *node,
+                             struct sourcepos *sourcepos) {
   int body = new_label();
   int end = new_label();
 
@@ -616,9 +670,9 @@ static void visit_while_node(struct emit *emit, struct while_node *node) {
 
   place_label(emit, body);
   visit_ast_node(emit, node->condition);
-  add_inst(emit, jump_if_false_inst_new(end));
+  add_inst(emit, jump_if_false_inst_new(end), sourcepos);
   visit_ast_node(emit, node->body);
-  add_inst(emit, jump_inst_new(body));
+  add_inst(emit, jump_inst_new(body), sourcepos);
 
   place_label(emit, end);
   restore_labels(emit, labels);
@@ -642,8 +696,10 @@ static char *tmp_symbol() {
   return sym;
 }
 
-static void add_inst(struct emit *emit, vm_inst_t inst) {
+static void add_inst(struct emit *emit, vm_inst_t inst,
+                     struct sourcepos *sourcepos) {
   vec_push(emit->code_obj->instructions, (void *)inst);
+  vec_push(emit->code_obj->sourceposes, sourcepos_inc_ref(sourcepos));
 }
 
 static int label_idx = 0;
