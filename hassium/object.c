@@ -300,10 +300,17 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
   } else if (obj->type == OBJ_FUNC) {
     struct func_obj_ctx *func = obj->ctx;
     struct stackframe *frame;
+
     if (func->frame == NULL) {
       frame = stackframe_new(func->code_obj->locals, obj);
     } else {
       frame = func->frame;
+    }
+
+    if (args->len != func->params->len) {
+      vm_raise(vm, obj_arg_mismatch_error_new(
+                       vm, obj, obj_num_new(false, func->params->len, 0),
+                       obj_num_new(false, args->len, 0)));
     }
 
     for (int i = 0; i < func->params->len; i++) {
@@ -363,8 +370,8 @@ void obj_set_attrib(struct obj *obj, char *name, struct obj *val) {
     obj->attribs = obj_hashmap_new();
   }
 
-  if (obj->type == OBJ_BUILTIN) {
-    struct builtin_obj_ctx *ctx = obj->ctx;
+  if (val->type == OBJ_BUILTIN) {
+    struct builtin_obj_ctx *ctx = val->ctx;
     if (ctx->name == NULL) {
       ctx->name = name;
     }
@@ -406,6 +413,14 @@ struct obj *obj_to_string(struct obj *obj, struct vm *vm) {
   struct obj *ret = obj_invoke(toString, vm, &args);
   return ret;
 }
+
+struct obj arg_mismatch_error_type_obj = {
+    .ctx = "ArgMismatchError",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &error_type_obj,
+    .obj_type = &type_type_obj,
+};
 
 struct obj array_type_obj = {
     .ref_immune = true,

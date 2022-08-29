@@ -42,3 +42,33 @@ struct obj *obj_type_error_new(struct obj *target, struct obj *expected,
 
   return type_error;
 }
+
+struct obj *obj_arg_mismatch_error_new(struct vm *vm, struct obj *target,
+                                       struct obj *expecting, struct obj *got) {
+  struct obj *error = obj_new(OBJ_ANON, NULL, &arg_mismatch_error_type_obj);
+  obj_set_attrib(error, "target", target);
+  obj_set_attrib(error, "expecting", expecting);
+  obj_set_attrib(error, "got", got);
+  obj_set_attrib(error, "toString", obj_builtin_new(Error_toString, error));
+
+  struct strbuf *strbuf = strbuf_new();
+  struct obj *target_toString = obj_to_string(target, vm);
+  struct obj *expecting_toString = obj_to_string(expecting, vm);
+  struct obj *got_toString = obj_to_string(got, vm);
+
+  strbuf_append_str(strbuf, target_toString->ctx);
+  strbuf_append_str(strbuf, " expected ");
+  strbuf_append_str(strbuf, expecting_toString->ctx);
+  strbuf_append_str(strbuf, " got ");
+  strbuf_append_str(strbuf, got_toString->ctx);
+
+  obj_dec_ref(target_toString);
+  obj_dec_ref(expecting_toString);
+  obj_dec_ref(got_toString);
+
+  char *msg_str = strbuf_done(strbuf);
+  obj_set_attrib(error, "message", obj_string_new(msg_str));
+  free(msg_str);
+
+  return error;
+}

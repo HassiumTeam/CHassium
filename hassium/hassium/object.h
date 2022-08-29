@@ -82,6 +82,7 @@ struct func_obj_ctx {
   struct stackframe *frame;
 };
 
+extern struct obj arg_mismatch_error_type_obj;
 extern struct obj array_type_obj;
 extern struct obj bool_type_obj;
 extern struct obj builtin_type_obj;

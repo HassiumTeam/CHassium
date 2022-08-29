@@ -18,6 +18,9 @@ struct obj *Error_toString(struct obj *, struct vm *, struct vec *);
 struct hashmap *get_defaults();
 void destruct_defaults();
 
+struct obj *obj_arg_mismatch_error_new(struct vm *, struct obj *, struct obj *,
+                                       struct obj *);
+
 struct obj *obj_array_new(struct vec *);
 int obj_array_len(struct obj *);
 
@@ -27,6 +30,7 @@ bool obj_is_true(struct obj *, struct vm *);
 #define bool_to_obj(b) ((b) ? &true_obj : &false_obj)
 
 struct obj *obj_builtin_new(builtin_func_t, struct obj *);
+struct obj *obj_builtin_new_named(builtin_func_t, struct obj *, char *);
 
 struct obj *obj_iter_new(struct obj *);
 struct obj *obj_iter_target(struct obj *);
