@@ -126,6 +126,7 @@ static inline struct obj *obj_down_ref(struct obj *obj) {
   return obj;
 }
 
+struct obj *obj_enforce_type(struct obj *, struct obj *, struct vm *);
 struct obj *obj_eq(struct obj *, struct obj *, struct vm *);
 struct obj *obj_bin_op(bin_op_type_t, struct obj *, struct obj *, struct vm *);
 struct obj *obj_index(struct obj *, struct obj *, struct vm *);

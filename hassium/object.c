@@ -210,6 +210,13 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
   }
 }
 
+struct obj *obj_enforce_type(struct obj *obj, struct obj *type, struct vm *vm) {
+  if (!obj_is(obj, type)) {
+    vm_raise(vm, obj_type_error_new(obj, type, obj->obj_type));
+  }
+  return obj;
+}
+
 struct obj *obj_eq(struct obj *left, struct obj *right, struct vm *vm) {
   if (left->ops != NULL) {
     struct vec *args = vec_new();
@@ -238,10 +245,7 @@ struct obj *obj_index(struct obj *target, struct obj *key, struct vm *vm) {
     key_args.len = 1;
     return obj_invoke(index, vm, &key_args);
   } else {
-    if (key->type != OBJ_STRING) {
-      printf("Object must be accessed by a string!");
-      exit(-1);
-    }
+    obj_enforce_type(key, &string_type_obj, vm);
     return obj_hashmap_get(target->attribs, obj_string_val(key));
   }
 }
@@ -390,12 +394,9 @@ void obj_store_index(struct obj *obj, struct obj *key, struct obj *val,
     vec_push(args, val);
     obj_invoke(storeindex, vm, args);
     vec_free(args);
-  } else if (key->type == OBJ_STRING) {
-    char *attrib = key->ctx;
-    obj_hashmap_set(obj->attribs, attrib, val);
   } else {
-    printf("Key must be of type string!\n");
-    exit(-1);
+    char *attrib = obj_enforce_type(key, &string_type_obj, vm)->ctx;
+    obj_hashmap_set(obj->attribs, attrib, val);
   }
 }
 

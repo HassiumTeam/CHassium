@@ -70,12 +70,7 @@ static struct obj *__eq__(struct obj *left, struct vm *vm, struct vec *args) {
 
 static struct obj *__index__(struct obj *string, struct vm *vm,
                              struct vec *args) {
-  struct obj *key = vec_get(args, 0);
-
-  if (key->type != OBJ_NUM) {
-    printf("Must index string by number!");
-    exit(-1);
-  }
+  struct obj *key = obj_enforce_type(vec_get(args, 0), &number_type_obj, vm);
 
   int idx = obj_num_val(key);
   char str[2];

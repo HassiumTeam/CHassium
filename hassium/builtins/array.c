@@ -57,11 +57,7 @@ int obj_array_len(struct obj *array) { return ((struct vec *)array->ctx)->len; }
 
 static struct obj *__add__(struct obj *array, struct vm *vm, struct vec *args) {
   struct vec *left = array->ctx;
-  struct obj *arg1 = vec_get(args, 0);
-  if (arg1->type != OBJ_ARRAY) {
-    printf("Cannot use %d with array.__add__\n", arg1->type);
-    exit(-1);
-  }
+  struct obj *arg1 = obj_enforce_type(vec_get(args, 0), &array_type_obj, vm);
   struct vec *right = arg1->ctx;
   // int new_len = left->len + right->len;
 
@@ -85,12 +81,7 @@ static struct obj *__add__(struct obj *array, struct vm *vm, struct vec *args) {
 }
 
 static struct obj *__index__(struct obj *arr, struct vm *vm, struct vec *args) {
-  struct obj *key = vec_get(args, 0);
-
-  if (key->type != OBJ_NUM) {
-    printf("Must index array by number!");
-    exit(-1);
-  }
+  struct obj *key = obj_enforce_type(vec_get(args, 0), &number_type_obj, vm);
 
   int idx = obj_num_val(key);
   return vec_get((struct vec *)arr->ctx, idx);
