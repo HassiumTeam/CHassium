@@ -89,6 +89,7 @@ extern struct obj builtin_type_obj;
 extern struct obj error_type_obj;
 extern struct obj func_type_obj;
 extern struct obj iter_type_obj;
+extern struct obj name_error_type_obj;
 extern struct obj none_type_obj;
 extern struct obj number_type_obj;
 extern struct obj object_type_obj;

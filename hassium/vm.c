@@ -275,8 +275,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         if (obj_hashmap_has_get(vm->globals, id, &val)) {
           STACK_PUSH(obj_inc_ref(val));
         } else {
-          printf("Could not load ID %s\n", id);
-          exit(-1);
+          vm_raise(vm, obj_name_error_new(obj_string_new(id)));
         }
       } break;
       case INST_LOAD_NONE:
@@ -438,7 +437,7 @@ void vm_raise(struct vm *vm, struct obj *obj) {
         strbuf_append_str(stacktrace, (char *)vec_get(curpos->sourcefile->lines,
                                                       curpos->row));
         strbuf_append(stacktrace, '\n');
-        for (int i = 0; i < curpos->row - 1; ++i) {
+        for (int i = 0; i < curpos->col; ++i) {
           strbuf_append(stacktrace, ' ');
         }
         strbuf_append_str(stacktrace, "^\n");

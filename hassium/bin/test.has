@@ -1,4 +1,9 @@
-func main (a, b) {
+func main () {
+    thing ()
 }
 
-main (2);
+func thing () {
+    raise "e";
+}
+
+main ();

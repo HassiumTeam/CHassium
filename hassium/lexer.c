@@ -208,6 +208,7 @@ void free_toks(struct vec *toks) {
 void debug_toks(struct vec *toks) {
   for (int i = 0; i < toks->len; i++) {
     struct tok *tok = vec_get(toks, i);
-    printf("Type: %d, Value: %s\n", tok->type, tok->val);
+    printf("Type: %d, Value: %s, Row: %d, Col: %d\n", tok->type, tok->val,
+           tok->sourcepos->row + 1, tok->sourcepos->col + 1);
   }
 }

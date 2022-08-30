@@ -38,6 +38,8 @@ struct obj *obj_iter_target(struct obj *);
 struct obj *obj_func_new(struct code_obj *, struct vec *, struct obj *,
                          struct stackframe *, bool);
 
+struct obj *obj_name_error_new(struct obj *);
+
 struct obj *obj_num_new(bool, int, float);
 #define obj_num_val(o) ((uintptr_t)((o)->ctx))
 
