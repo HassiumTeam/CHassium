@@ -367,7 +367,7 @@ void ast_node_free(struct ast_node *node) {
 }
 
 static void vec_ast_node_free(struct vec *vec) {
-  for (int i = 0; i < vec->len; i++) ast_node_free(vec_get(vec, i));
+  for (int i = 0; i < vec->len; ++i) ast_node_free(vec_get(vec, i));
   vec_free(vec);
 }
 

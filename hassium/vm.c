@@ -27,7 +27,7 @@ struct vm *vm_new() {
 }
 
 void vm_free(struct vm *vm) {
-  for (int i = 0; i < vm->frames->len; i++) {
+  for (int i = 0; i < vm->frames->len; ++i) {
     stackframe_dec_ref(vec_get(vm->frames, i));
   }
   vec_free(vm->handlers);
@@ -45,7 +45,7 @@ void vm_free(struct vm *vm) {
 // }
 
 void debug() {
-  // for (int i = 0; i < 34; i++) {
+  // for (int i = 0; i < 34; ++i) {
   //   if (counts[i] == 0) continue;
   //   printf("Opcode: %d ran %ld times, avg: %f, total: %ld\n", i, counts[i],
   //          (float)times[i] / (float)counts[i], times[i]);
@@ -122,7 +122,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
           class->parent = extends;
         }
 
-        for (int i = 0; i < class_frame->num_locals; i++) {
+        for (int i = 0; i < class_frame->num_locals; ++i) {
           struct obj *local = stackframe_get(class_frame, i);
           if (local == NULL) continue;
           if (local->type == OBJ_FUNC) {
@@ -180,7 +180,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         if (imports->len == 0) {
           hashmap_iterate(attribs, import_attrib_from_map, vm->globals);
         } else {
-          for (int i = 0; i < imports->len; i++) {
+          for (int i = 0; i < imports->len; ++i) {
             char *attrib = vec_get(imports, i);
             import_attrib_from_map(attrib, 0,
                                    (uintptr_t)obj_hashmap_get(attribs, attrib),
@@ -201,7 +201,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         STACK_PUSH(obj_inc_ref(obj_invoke(target, vm, &args)));
         // long inbetweenTimeEnd = getMicrotime();
 
-        for (int i = 0; i < op; i++) {
+        for (int i = 0; i < op; ++i) {
           obj_dec_ref(vec_get(&args, i));
         }
         obj_dec_ref(target);

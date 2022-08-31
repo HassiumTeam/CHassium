@@ -25,7 +25,7 @@ void strbuf_append(struct strbuf *strbuf, char c) {
 
 void strbuf_append_str(struct strbuf *strbuf, char *s) {
   int len = strlen(s);
-  for (int i = 0; i < len; i++) {
+  for (int i = 0; i < len; ++i) {
     strbuf_append(strbuf, s[i]);
   }
 }

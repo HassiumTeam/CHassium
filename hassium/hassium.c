@@ -22,7 +22,7 @@ struct code_obj *compile_module_for_import(struct vec *from) {
   free(prog_path);
   strcat(rel_path, "/");
   strcat(rel_path, vec_get(from, 0));
-  for (int i = 1; i < from->len; i++) {
+  for (int i = 1; i < from->len; ++i) {
     strcat(rel_path, "/");
     strcat(rel_path, vec_get(from, i));
   }

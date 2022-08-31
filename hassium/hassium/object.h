@@ -156,7 +156,7 @@ static inline struct stackframe *stackframe_new(int num_locals,
 }
 
 static inline struct obj *stackframe_free(struct stackframe *stackframe) {
-  for (int i = 0; i < stackframe->num_locals; i++) {
+  for (int i = 0; i < stackframe->num_locals; ++i) {
     if (stackframe->locals[i] != NULL) {
       obj_dec_ref(stackframe->locals[i]);
     }

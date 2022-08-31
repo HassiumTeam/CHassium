@@ -41,7 +41,7 @@ static inline void vec_free(struct vec *vec) {
 #define vec_pop(v) ((v)->data[--(v)->len])
 
 static inline void vec_free_deep(struct vec *vec) {
-  for (int i = 0; i < vec->len; i++) free(vec_get(vec, i));
+  for (int i = 0; i < vec->len; ++i) free(vec_get(vec, i));
   vec_free(vec);
 }
 

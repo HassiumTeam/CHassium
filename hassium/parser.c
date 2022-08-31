@@ -554,7 +554,7 @@ static struct ast_node *parse_term(struct parser *parser) {
     char *a = expecttok(parser, TOK_NUM)->val;
     int alen = strlen(a);
     bool is_float = false;
-    for (int i = 0; i < alen; i++) {
+    for (int i = 0; i < alen; ++i) {
       if (a[i] == '.') {
         is_float = true;
         break;

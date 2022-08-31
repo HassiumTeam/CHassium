@@ -32,7 +32,7 @@ struct obj *obj_new(obj_ctx_type_t type, void *ctx, struct obj *obj_type) {
 void obj_free(struct obj *obj) {
   if (obj->weak_refs != NULL) {
     struct obj **ref;
-    for (int i = 0; i < obj->weak_refs->len; i++) {
+    for (int i = 0; i < obj->weak_refs->len; ++i) {
       ref = vec_get(obj->weak_refs, i);
       *ref = &none_obj;
     }
@@ -42,7 +42,7 @@ void obj_free(struct obj *obj) {
   switch (obj->type) {
     case OBJ_ARRAY: {
       struct vec *items = obj->ctx;
-      for (int i = 0; i < items->len; i++) {
+      for (int i = 0; i < items->len; ++i) {
         obj_dec_ref(vec_get(items, i));
       }
       vec_free(items);
@@ -317,7 +317,7 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
                        obj_num_new(false, args->len, 0)));
     }
 
-    for (int i = 0; i < func->params->len; i++) {
+    for (int i = 0; i < func->params->len; ++i) {
       stackframe_set(frame, (uintptr_t)vec_get(func->params, i),
                      obj_inc_ref(vec_get(args, i)));
     }

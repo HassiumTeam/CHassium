@@ -150,7 +150,7 @@ static struct obj *split(struct obj *obj, struct vm *vm, struct vec *args) {
   struct vec *new_items = vec_new();
 
   if (args->len == 0) {
-    for (int i = 0; i < len; i++) {
+    for (int i = 0; i < len; ++i) {
       char part[2];
       part[0] = str[i];
       part[1] = 0;
@@ -161,7 +161,7 @@ static struct obj *split(struct obj *obj, struct vm *vm, struct vec *args) {
     char sep = ((char *)arg1->ctx)[0];
 
     struct strbuf *strbuf = strbuf_new();
-    for (int i = 0; i < len; i++) {
+    for (int i = 0; i < len; ++i) {
       if (str[i] == sep) {
         char *part = strbuf_done(strbuf);
         vec_push(new_items, obj_string_new(part));

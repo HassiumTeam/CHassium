@@ -147,7 +147,7 @@ static struct obj *ArgMismatchError(struct obj *_, struct vm *vm,
 
 static struct obj *Array(struct obj *_, struct vm *vm, struct vec *args) {
   struct vec *vec = vec_new();
-  for (int i = 0; i < args->len; i++) {
+  for (int i = 0; i < args->len; ++i) {
     vec_push(vec, vec_get(args, i));
   }
   return obj_array_new(vec);
@@ -169,7 +169,7 @@ static struct obj *NameError(struct obj *_, struct vm *vm, struct vec *args) {
 }
 
 static struct obj *println(struct obj *_, struct vm *vm, struct vec *args) {
-  for (int i = 0; i < args->len; i++) {
+  for (int i = 0; i < args->len; ++i) {
     struct obj *arg = vec_get(args, i);
     if (arg->type == OBJ_STRING)
       printf("%s", (char *)arg->ctx);
@@ -219,11 +219,11 @@ static struct obj *values(struct obj *_, struct vm *vm, struct vec *args) {
   struct vec *values = vec_new();
 
   hashmap_iterate(target->attribs, get_keys, keys);
-  for (int i = 0; i < keys->len; i++) {
+  for (int i = 0; i < keys->len; ++i) {
     vec_push(values, obj_hashmap_get(target->attribs, vec_get(keys, i)));
   }
 
-  for (int i = 0; i < keys->len; i++) {
+  for (int i = 0; i < keys->len; ++i) {
     obj_dec_ref(vec_get(keys, i));
   }
   vec_free(keys);

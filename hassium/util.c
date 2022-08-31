@@ -18,7 +18,7 @@ char *heap_str(int argc, ...) {
   va_list args;
   va_start(args, argc);
   struct strbuf *strbuf = strbuf_new();
-  for (int i = 0; i < argc; i++) strbuf_append(strbuf, va_arg(args, int));
+  for (int i = 0; i < argc; ++i) strbuf_append(strbuf, va_arg(args, int));
   va_end(args);
   return strbuf_done(strbuf);
 }

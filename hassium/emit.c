@@ -213,7 +213,7 @@ static void visit_ast_node(struct emit *emit, struct ast_node *node) {
 static void visit_array_decl_node(struct emit *emit,
                                   struct array_decl_node *node,
                                   struct sourcepos *sourcepos) {
-  for (int i = 0; i < node->values->len; i++) {
+  for (int i = 0; i < node->values->len; ++i) {
     visit_ast_node(emit, vec_get(node->values, i));
   }
   add_inst(emit, build_array_inst_new(node->values->len), sourcepos);
@@ -301,7 +301,7 @@ static void visit_code_block_node(struct emit *emit,
   if (new_scope) {
     enter_scope(emit);
   }
-  for (int i = 0; i < node->children->len; i++) {
+  for (int i = 0; i < node->children->len; ++i) {
     visit_ast_node(emit, vec_get(node->children, i));
   }
   if (new_scope) {
@@ -430,7 +430,7 @@ static void visit_func_decl_node(struct emit *emit, struct func_decl_node *node,
   enter_scope(emit);
 
   struct vec *func_params = vec_new();
-  for (int i = 0; i < node->params->len; i++) {
+  for (int i = 0; i < node->params->len; ++i) {
     struct ast_node *id_ast = vec_get(node->params, i);
     struct id_node *id_node = id_ast->inner;
     int sym = handle_symbol(emit, id_node->id);
@@ -517,7 +517,7 @@ static void visit_import_node(struct emit *emit, struct import_node *node,
 static void visit_invoke_node(struct emit *emit, struct invoke_node *node,
                               struct sourcepos *sourcepos) {
   visit_ast_node(emit, node->target);
-  for (int i = 0; i < node->args->len; i++)
+  for (int i = 0; i < node->args->len; ++i)
     visit_ast_node(emit, vec_get(node->args, i));
   add_inst(emit, invoke_inst_new(node->args->len), sourcepos);
 }
@@ -525,7 +525,7 @@ static void visit_invoke_node(struct emit *emit, struct invoke_node *node,
 static void visit_num_node(struct emit *emit, struct num_node *node,
                            struct sourcepos *sourcepos) {
   int idx = -1;
-  for (int i = 0; i < emit->code_obj->consts->len; i++) {
+  for (int i = 0; i < emit->code_obj->consts->len; ++i) {
     struct obj *const_ = vec_get(emit->code_obj->consts, i);
     if (const_->type == OBJ_NUM && obj_num_val(const_) == node->val_int &&
         obj_num_val(const_) == node->val_float) {
@@ -544,7 +544,7 @@ static void visit_num_node(struct emit *emit, struct num_node *node,
 
 static void visit_obj_decl_node(struct emit *emit, struct obj_decl_node *node,
                                 struct sourcepos *sourcepos) {
-  for (int i = 0; i < node->values->len; i++) {
+  for (int i = 0; i < node->values->len; ++i) {
     visit_ast_node(emit, vec_get(node->values, i));
   }
   add_inst(emit, build_obj_inst_new(emit, node->keys), sourcepos);
@@ -585,7 +585,7 @@ static void visit_slice_node(struct emit *emit, struct slice_node *node,
 static void visit_string_node(struct emit *emit, struct string_node *node,
                               struct sourcepos *sourcepos) {
   int idx = -1;
-  for (int i = 0; i < emit->code_obj->consts->len; i++) {
+  for (int i = 0; i < emit->code_obj->consts->len; ++i) {
     struct obj *const_ = vec_get(emit->code_obj->consts, i);
     if (const_->type == OBJ_STRING &&
         strcmp(obj_string_val(const_), node->value) == 0) {
@@ -609,7 +609,7 @@ static void visit_subscript_node(struct emit *emit, struct subscript_node *node,
 
 static void visit_super_node(struct emit *emit, struct super_node *node,
                              struct sourcepos *sourcepos) {
-  for (int i = 0; i < node->args->len; i++)
+  for (int i = 0; i < node->args->len; ++i)
     visit_ast_node(emit, vec_get(node->args, i));
   add_inst(emit, super_inst_new(node->args->len), sourcepos);
 }
@@ -680,11 +680,11 @@ static void visit_while_node(struct emit *emit, struct while_node *node,
 
 static void restore_labels(struct emit *emit, struct labels_ctx labels_ctx) {
   for (int i = emit->code_obj->break_labels->len; i < labels_ctx.break_count;
-       i++) {
+       ++i) {
     vec_pop(emit->code_obj->break_labels);
   }
   for (int i = emit->code_obj->cont_labels->len; i < labels_ctx.cont_count;
-       i++) {
+       ++i) {
     vec_pop(emit->code_obj->cont_labels);
   }
 }

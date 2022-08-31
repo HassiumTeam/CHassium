@@ -28,7 +28,7 @@ void code_obj_free(struct code_obj *code_obj) {
     vec_free(code_obj->params);
   }
 
-  for (int i = 0; i < code_obj->consts->len; i++) {
+  for (int i = 0; i < code_obj->consts->len; ++i) {
     obj_dec_ref(vec_get(code_obj->consts, i));
   }
 
@@ -37,7 +37,7 @@ void code_obj_free(struct code_obj *code_obj) {
   }
   vec_free(code_obj->code_objs);
 
-  for (int i = 0; i < code_obj->vecs->len; i++) {
+  for (int i = 0; i < code_obj->vecs->len; ++i) {
     vec_free_deep((struct vec *)vec_get(code_obj->vecs, i));
   }
   vec_free(code_obj->vecs);

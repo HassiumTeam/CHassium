@@ -28,7 +28,7 @@ static struct builtin_ops array_builtin_ops = {
 struct obj *obj_array_new(struct vec *items) {
   items->grow_with = &none_obj;
 
-  for (int i = 0; i < items->len; i++) {
+  for (int i = 0; i < items->len; ++i) {
     obj_inc_ref(vec_get(items, i));
   }
 
@@ -70,10 +70,10 @@ static struct obj *__add__(struct obj *array, struct vm *vm, struct vec *args) {
   // memcpy(new_items->data + left->len, right->data, right->len);
 
   struct vec *new_items = vec_new();
-  for (int i = 0; i < left->len; i++) {
+  for (int i = 0; i < left->len; ++i) {
     vec_push(new_items, vec_get(left, i));
   }
-  for (int i = 0; i < right->len; i++) {
+  for (int i = 0; i < right->len; ++i) {
     vec_push(new_items, vec_get(right, i));
   }
 
@@ -133,7 +133,7 @@ static struct obj *__slice__(struct obj *arr, struct vm *vm, struct vec *args) {
   }
 
   struct vec *new = vec_new();
-  for (int i = lower; i < upper; i++) {
+  for (int i = lower; i < upper; ++i) {
     vec_push(new, vec_get(vec, i));
   }
   return obj_array_new(new);
@@ -160,7 +160,7 @@ static struct obj *each(struct obj *arr, struct vm *vm, struct vec *args) {
   struct obj *func = vec_get(args, 0);
 
   struct vec *each_args = vec_new();
-  for (int i = 0; i < vec->len; i++) {
+  for (int i = 0; i < vec->len; ++i) {
     vec_push(each_args, vec_get(vec, i));
     obj_invoke(func, vm, each_args);
     vec_pop(each_args);
@@ -176,7 +176,7 @@ static struct obj *filter(struct obj *arr, struct vm *vm, struct vec *args) {
   struct obj *func = vec_get(args, 0);
 
   struct vec *filter_args = vec_new();
-  for (int i = 0; i < vec->len; i++) {
+  for (int i = 0; i < vec->len; ++i) {
     struct obj *item = vec_get(vec, i);
     vec_push(filter_args, item);
     if (obj_is_true(obj_invoke(func, vm, filter_args), vm)) {
@@ -263,7 +263,7 @@ static struct obj *pop(struct obj *arr, struct vm *vm, struct vec *args) {
 }
 
 static struct obj *push(struct obj *arr, struct vm *vm, struct vec *args) {
-  for (int i = 0; i < args->len; i++) {
+  for (int i = 0; i < args->len; ++i) {
     vec_push(arr->ctx, obj_inc_ref(vec_get(args, i)));
   }
   return &none_obj;

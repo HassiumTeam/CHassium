@@ -343,7 +343,7 @@ void hashmap_iterate(hashmap* m, hashmap_callback c, void* user_ptr) {
 
 /*void bucket_dump(hashmap* m)
 {
-        for (int i = 0; i < m->capacity; i++)
+        for (int i = 0; i < m->capacity; ++i)
         {
                 if (m->buckets[i].key == NULL)
                 {

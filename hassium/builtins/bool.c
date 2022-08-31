@@ -10,7 +10,7 @@ void obj_bool_init(struct obj *obj) {
 void obj_bool_free(struct obj *obj) {
   if (obj->weak_refs != NULL) {
     struct obj **ref;
-    for (int i = 0; i < obj->weak_refs->len; i++) {
+    for (int i = 0; i < obj->weak_refs->len; ++i) {
       ref = vec_get(obj->weak_refs, i);
       *ref = &none_obj;
     }
