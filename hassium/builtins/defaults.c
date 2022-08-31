@@ -4,6 +4,7 @@ static struct obj *type_toString(struct obj *, struct vm *, struct vec *);
 static struct obj *ArgMismatchError(struct obj *, struct vm *, struct vec *);
 static struct obj *Array(struct obj *, struct vm *, struct vec *);
 static struct obj *Bool(struct obj *, struct vm *, struct vec *);
+static struct obj *FileNotFoundError(struct obj *, struct vm *, struct vec *);
 static struct obj *NameError(struct obj *, struct vm *, struct vec *);
 static struct obj *Number(struct obj *, struct vm *, struct vec *);
 static struct obj *String(struct obj *, struct vm *, struct vec *);
@@ -30,6 +31,12 @@ struct hashmap *get_defaults() {
   obj_set_attrib(&builtin_type_obj, "toString",
                  obj_builtin_new(type_toString, &builtin_type_obj));
 
+  obj_set_attrib(&file_not_found_error_type_obj, "new",
+                 obj_builtin_new(FileNotFoundError, NULL));
+  obj_set_attrib(
+      &file_not_found_error_type_obj, "toString",
+      obj_builtin_new(type_toString, &file_not_found_error_type_obj));
+
   obj_set_attrib(&func_type_obj, "toString",
                  obj_builtin_new(type_toString, &func_type_obj));
 
@@ -37,7 +44,7 @@ struct hashmap *get_defaults() {
                  obj_builtin_new(type_toString, &iter_type_obj));
 
   obj_set_attrib(&name_error_type_obj, "new", obj_builtin_new(NameError, NULL));
-  obj_set_attrib(&type_error_type_obj, "toString",
+  obj_set_attrib(&name_error_type_obj, "toString",
                  obj_builtin_new(type_toString, &name_error_type_obj));
 
   obj_set_attrib(&number_type_obj, "toString",
@@ -59,6 +66,8 @@ struct hashmap *get_defaults() {
   obj_hashmap_set(defaults, "Array", &array_type_obj);
   obj_hashmap_set(defaults, "Bool", &bool_type_obj);
   obj_hashmap_set(defaults, "Builtin", &builtin_type_obj);
+  obj_hashmap_set(defaults, "FileNotFoundError",
+                  &file_not_found_error_type_obj);
   obj_hashmap_set(defaults, "Func", &func_type_obj);
   obj_hashmap_set(defaults, "Iter", &iter_type_obj);
   obj_hashmap_set(
@@ -91,6 +100,8 @@ void destruct_defaults() {
   vec_free(bool_type_obj.weak_refs);
   obj_hashmap_free(builtin_type_obj.attribs);
   vec_free(builtin_type_obj.weak_refs);
+  obj_hashmap_free(file_not_found_error_type_obj.attribs);
+  vec_free(file_not_found_error_type_obj.weak_refs);
   obj_hashmap_free(func_type_obj.attribs);
   vec_free(func_type_obj.weak_refs);
   obj_hashmap_free(iter_type_obj.attribs);
@@ -144,6 +155,12 @@ static struct obj *Array(struct obj *_, struct vm *vm, struct vec *args) {
 
 static struct obj *Bool(struct obj *_, struct vm *vm, struct vec *args) {
   return bool_to_obj(obj_is_true(vec_get(args, 0), vm));
+}
+
+static struct obj *FileNotFoundError(struct obj *_, struct vm *vm,
+                                     struct vec *args) {
+  struct obj *path = obj_enforce_type(vec_get(args, 0), &string_type_obj, vm);
+  return obj_file_not_found_error_new(path);
 }
 
 static struct obj *NameError(struct obj *_, struct vm *vm, struct vec *args) {

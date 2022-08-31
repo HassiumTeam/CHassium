@@ -30,10 +30,28 @@ struct obj *obj_arg_mismatch_error_new(struct vm *vm, struct obj *target,
   return error;
 }
 
+struct obj *obj_file_not_found_error_new(struct obj *path) {
+  struct obj *error = obj_new(OBJ_ANON, NULL, &file_not_found_error_type_obj);
+  obj_set_attrib(error, "path", path);
+  obj_set_attrib(error, "toString", obj_builtin_new(Error_toString, error));
+
+  struct strbuf *strbuf = strbuf_new();
+  strbuf_append_str(strbuf, "Could not locate file '");
+  strbuf_append_str(strbuf, (char *)path->ctx);
+  strbuf_append(strbuf, '\'');
+
+  char *msg_str = strbuf_done(strbuf);
+  obj_set_attrib(error, "message", obj_string_new(msg_str));
+  free(msg_str);
+
+  return error;
+}
+
 struct obj *obj_name_error_new(struct obj *name) {
   struct obj *error = obj_new(OBJ_ANON, NULL, &name_error_type_obj);
   obj_set_attrib(error, "name", name);
   obj_set_attrib(error, "toString", obj_builtin_new(Error_toString, error));
+
   struct strbuf *strbuf = strbuf_new();
   strbuf_append_str(strbuf, (char *)name->ctx);
   strbuf_append_str(strbuf, " is not defined");

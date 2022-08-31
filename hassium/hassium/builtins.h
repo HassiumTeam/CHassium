@@ -35,6 +35,8 @@ struct obj *obj_builtin_new_named(builtin_func_t, struct obj *, char *);
 struct obj *obj_iter_new(struct obj *);
 struct obj *obj_iter_target(struct obj *);
 
+struct obj *obj_file_not_found_error_new(struct obj *);
+
 struct obj *obj_func_new(struct code_obj *, struct vec *, struct obj *,
                          struct stackframe *, bool);
 

@@ -87,6 +87,7 @@ extern struct obj array_type_obj;
 extern struct obj bool_type_obj;
 extern struct obj builtin_type_obj;
 extern struct obj error_type_obj;
+extern struct obj file_not_found_error_type_obj;
 extern struct obj func_type_obj;
 extern struct obj iter_type_obj;
 extern struct obj name_error_type_obj;

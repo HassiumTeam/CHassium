@@ -1,9 +1,1 @@
-func main () {
-    thing ()
-}
-
-func thing () {
-    raise "e";
-}
-
-main ();
+println (FileNotFoundError("test"));

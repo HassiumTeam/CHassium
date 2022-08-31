@@ -458,6 +458,14 @@ struct obj error_type_obj = {
     .attribs = NULL,
 };
 
+struct obj file_not_found_error_type_obj = {
+    .ctx = "FileNotFoundError",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &error_type_obj,
+    .obj_type = &type_type_obj,
+};
+
 struct obj func_type_obj = {
     .ctx = "Func",
     .ref_immune = true,
