@@ -60,21 +60,28 @@ struct vec *lexer_tokenize(struct sourcefile *sourcefile) {
       switch (cur) {
         case '+':
         case '-':
+
+          break;
         case '*':
         case '/':
         case '%':
           if (next == '=') {
             addtok(&lexer, TOK_ASSIGN, heap_str(2, cur, '='));
             readc(&lexer);
-          } else
+          } else if (next == cur) {
+            addtok(&lexer, TOK_OP, heap_str(2, cur, next));
+            readc(&lexer);
+          } else {
             addtok(&lexer, TOK_OP, heap_str(1, cur));
+          }
           break;
         case '=':
           if (next == '=') {
             addtok(&lexer, TOK_OP, heap_str(2, cur, '='));
             readc(&lexer);
-          } else
+          } else {
             addtok(&lexer, TOK_ASSIGN, heap_str(1, cur));
+          }
           break;
         case '>':
         case '<':

@@ -434,7 +434,19 @@ static struct ast_node *parse_unary(struct parser *parser) {
 
   if (accepttokv(parser, TOK_OP, "!"))
     return unary_op_node_new(UNARY_OP_NOT, parse_unary(parser), sourcepos);
-  return parse_access(parser, NULL);
+  else if (accepttokv(parser, TOK_OP, "--"))
+    return unary_op_node_new(UNARY_OP_PRE_DEC, parse_unary(parser), sourcepos);
+  else if (accepttokv(parser, TOK_OP, "++"))
+    return unary_op_node_new(UNARY_OP_PRE_INC, parse_unary(parser), sourcepos);
+
+  struct obj *left = parse_access(parser, NULL);
+
+  if (accepttokv(parser, TOK_OP, "--"))
+    return unary_op_node_new(UNARY_OP_POST_DEC, left, sourcepos);
+  else if (accepttokv(parser, TOK_OP, "++"))
+    return unary_op_node_new(UNARY_OP_POST_INC, parse_unary(parser), sourcepos);
+
+  return left;
 }
 static struct ast_node *parse_access(struct parser *parser,
                                      struct ast_node *left) {
@@ -446,7 +458,6 @@ static struct ast_node *parse_access(struct parser *parser,
     return parse_access(
         parser, attrib_node_new(left, clone_str(expecttok(parser, TOK_ID)->val),
                                 sourcepos));
-
   else if (accepttok(parser, TOK_OPAREN))
     return parse_access(
         parser, invoke_node_new(left, parse_arg_list(parser), sourcepos));
