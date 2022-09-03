@@ -217,6 +217,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
           STACK_PUSH(obj_inc_ref(target->ops->__iter__(target, vm, NULL)));
         } else {
           printf("Could not use __iter__ on %d\n", target->type);
+          exit(-1);
         }
 
         obj_dec_ref(target);
@@ -244,6 +245,14 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       } break;
       case INST_LOAD_ATTRIB: {
         struct obj *target = STACK_POP();
+
+        if (target == &none_obj) {
+          vm_raise(vm,
+                   obj_no_such_attrib_error_new(
+                       target, obj_string_new(vec_get(code_obj->strs, op))));
+          STACK_PUSH(&none_obj);
+          break;
+        }
 
         if (target->lazy_load_fn) {
           target->lazy_load_fn(target);
@@ -307,7 +316,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         obj_dec_ref(vec_pop(vm->handlers));
         break;
       case INST_RAISE:
-        vm_raise(vm, obj_dec_ref(STACK_POP()));
+        vm_raise(vm, obj_down_ref(STACK_POP()));
         break;
       case INST_RETURN:
         return STACK_POP();
@@ -395,14 +404,18 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_UNARY_OP: {
         struct obj *target = STACK_POP();
         switch (opshort) {
-          case UNARY_OP_NOT: {
+          case UNARY_OP_NOT:
             STACK_PUSH(bool_to_obj(!obj_is_true(target, vm)));
             obj_dec_ref(target);
-          } break;
-          default: {
-            printf("Bad unary op, something has gone terribly wrong....");
+            break;
+          case UNARY_OP_POST_DEC:
+          case UNARY_OP_POST_INC:
+            obj_dec_ref(target);
+            break;
+          default:
+            printf("Bad unary op, something has gone terribly wrong....\n");
             exit(-1);
-          }
+            break;
         }
       } break;
       default:
@@ -423,13 +436,14 @@ void vm_raise(struct vm *vm, struct obj *obj) {
   struct strbuf *stacktrace = strbuf_new();
   bool has_some_trace = false;
   bool found_top = false;
+  struct sourcepos *curpos;
 
   for (int i = vm->frames->len - 1; i >= 0; --i) {
     struct stackframe *frame = vec_get(vm->frames, i);
     if (frame->invokee != NULL) {
       if (frame->invokee->type == OBJ_FUNC && !found_top) {
         struct func_obj_ctx *func_ctx = frame->invokee->ctx;
-        struct sourcepos *curpos =
+        curpos =
             vec_get(func_ctx->code_obj->sourceposes, *func_ctx->code_obj->pos);
         strbuf_append_str(stacktrace, "in: ");
         sourcepos_to_strbuf(curpos, stacktrace);
@@ -445,19 +459,22 @@ void vm_raise(struct vm *vm, struct obj *obj) {
       }
 
       strbuf_append_str(stacktrace, "  at ");
+
       struct obj *toString_res = obj_to_string(frame->invokee, vm);
       strbuf_append_str(stacktrace, (char *)toString_res->ctx);
+      obj_dec_ref(toString_res);
 
-      struct sourcepos *sourcepos = frame->invokee->sourcepos;
-      if (sourcepos != NULL) {
+      if (frame->invokee != NULL && frame->invokee->type == OBJ_FUNC) {
+        struct func_obj_ctx *func_ctx = frame->invokee->ctx;
         strbuf_append(stacktrace, '(');
-        sourcepos_to_strbuf(sourcepos, stacktrace);
+        sourcepos_to_strbuf(
+            vec_get(func_ctx->code_obj->sourceposes, *func_ctx->code_obj->pos),
+            stacktrace);
         strbuf_append(stacktrace, ')');
       }
 
       strbuf_append(stacktrace, '\n');
 
-      obj_dec_ref(toString_res);
       has_some_trace = true;
     }
   }
@@ -469,7 +486,7 @@ void vm_raise(struct vm *vm, struct obj *obj) {
   free(trace);
 
   if (vm->handlers->len == 0) {
-    printf("Unhandled exception:\n%s\n", (char *)obj_to_string(obj, vm)->ctx);
+    printf("Unhandled error:\n%s\n", (char *)obj_to_string(obj, vm)->ctx);
     if (has_some_trace) {
       printf("%s", (char *)obj_hashmap_get(obj->attribs, "trace")->ctx);
     }

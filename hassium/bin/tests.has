@@ -13,7 +13,7 @@ func main () {
   obj = {
     arr,
     num: 5,
-    "str": "s",
+    'str': 's',
   };
 
   foreach (i in arr) {
@@ -41,7 +41,7 @@ func main () {
   foreach (z in a) {
     println (z);
   }
-  for (i = 0; i < a.len (); i += 1) {
+  for (i = 0; i < a.len (); i++) {
     println (a [i]);
   }
 
@@ -117,7 +117,7 @@ func void () {
 
 class One {
   func new (x, y) {
-    println ("Base constructor");
+    println ('Base constructor');
     self.x = x;
     self.y = y;
   }
@@ -131,7 +131,7 @@ class Two extends One {
   func new (x, y, z) {
     super (x, y);
     self.z = z; 
-    self.foo = "thing"; 
+    self.foo = 'thing'; 
   }
 
   func another () {

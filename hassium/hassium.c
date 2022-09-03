@@ -41,12 +41,16 @@ struct code_obj *compile_module_for_import(struct vec *from) {
   return mod;
 }
 
-void run_module(struct code_obj *mod) {
+void run_module(struct code_obj *code_obj) {
   struct vm *vm = vm_new();
-  vec_push(vm->frames, stackframe_inc_ref(stackframe_new(mod->locals, NULL)));
-  obj_dec_ref(vm_run(vm, mod, NULL));
+  struct obj *mod_func = obj_func_new(code_obj, NULL, NULL, NULL, false);
+
+  vec_push(vm->frames,
+           stackframe_inc_ref(stackframe_new(code_obj->locals, mod_func)));
+  obj_dec_ref(vm_run(vm, code_obj, NULL));
   stackframe_dec_ref(vec_pop(vm->frames));
-  code_obj_free(mod);
+  obj_free(mod_func);
+  code_obj_dec_ref(code_obj);
   vm_free(vm);
 }
 

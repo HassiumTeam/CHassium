@@ -21,9 +21,22 @@ struct code_obj {
   int *pos;
   int locals;
   int caught_label;
+  int refs;
 };
 
 struct code_obj *code_obj_new(char *);
 void code_obj_free(struct code_obj *);
+
+static inline struct code_obj *code_obj_inc_ref(struct code_obj *code_obj) {
+  code_obj->refs++;
+  return code_obj;
+}
+
+static inline struct code_obj *code_obj_dec_ref(struct code_obj *code_obj) {
+  if (--code_obj->refs <= 0) {
+    code_obj_free(code_obj);
+  }
+  return code_obj;
+}
 
 #endif

@@ -6,6 +6,7 @@ static struct obj *Array(struct obj *, struct vm *, struct vec *);
 static struct obj *Bool(struct obj *, struct vm *, struct vec *);
 static struct obj *FileNotFoundError(struct obj *, struct vm *, struct vec *);
 static struct obj *NameError(struct obj *, struct vm *, struct vec *);
+static struct obj *NoSuchAttribError(struct obj *, struct vm *, struct vec *);
 static struct obj *Number(struct obj *, struct vm *, struct vec *);
 static struct obj *String(struct obj *, struct vm *, struct vec *);
 static struct obj *TypeError(struct obj *, struct vm *, struct vec *);
@@ -47,6 +48,12 @@ struct hashmap *get_defaults() {
   obj_set_attrib(&name_error_type_obj, "toString",
                  obj_builtin_new(type_toString, &name_error_type_obj));
 
+  obj_set_attrib(&no_such_attrib_error_type_obj, "new",
+                 obj_builtin_new(NoSuchAttribError, NULL));
+  obj_set_attrib(
+      &no_such_attrib_error_type_obj, "toString",
+      obj_builtin_new(type_toString, &no_such_attrib_error_type_obj));
+
   obj_set_attrib(&number_type_obj, "toString",
                  obj_builtin_new(type_toString, &number_type_obj));
 
@@ -74,6 +81,8 @@ struct hashmap *get_defaults() {
       defaults, "keys",
       obj_inc_ref(obj_builtin_new_named(object_keys, NULL, "keys")));
   obj_hashmap_set(defaults, "NameError", &name_error_type_obj);
+  obj_hashmap_set(defaults, "NoSuchAttribError",
+                  &no_such_attrib_error_type_obj);
   obj_hashmap_set(defaults, "none", &none_type_obj);
   obj_hashmap_set(defaults, "Number", &number_type_obj);
   obj_hashmap_set(defaults, "Object", &object_type_obj);
@@ -108,6 +117,8 @@ void destruct_defaults() {
   vec_free(iter_type_obj.weak_refs);
   obj_hashmap_free(name_error_type_obj.attribs);
   vec_free(name_error_type_obj.weak_refs);
+  obj_hashmap_free(no_such_attrib_error_type_obj.attribs);
+  vec_free(no_such_attrib_error_type_obj.weak_refs);
   obj_hashmap_free(number_type_obj.attribs);
   vec_free(number_type_obj.weak_refs);
   obj_hashmap_free(string_type_obj.attribs);
@@ -166,6 +177,13 @@ static struct obj *FileNotFoundError(struct obj *_, struct vm *vm,
 static struct obj *NameError(struct obj *_, struct vm *vm, struct vec *args) {
   struct obj *name = obj_enforce_type(vec_get(args, 0), &string_type_obj, vm);
   return obj_name_error_new(name);
+}
+
+static struct obj *NoSuchAttribError(struct obj *_, struct vm *vm,
+                                     struct vec *args) {
+  struct obj *target = vec_get(args, 0);
+  struct obj *attrib = obj_enforce_type(vec_get(args, 1), &string_type_obj, vm);
+  return obj_no_such_attrib_error_new(target, attrib);
 }
 
 static struct obj *println(struct obj *_, struct vm *vm, struct vec *args) {

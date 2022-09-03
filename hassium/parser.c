@@ -194,12 +194,13 @@ static struct ast_node *parse_func(struct parser *parser) {
   expecttok(parser, TOK_OPAREN);
   struct vec *args = vec_new();
   while (!accepttok(parser, TOK_CPAREN)) {
+    struct sourcepos *param_sourcepos = CURRENT_SOURCEPOS();
     char *id = clone_str(expecttok(parser, TOK_ID)->val);
     struct ast_node *type = NULL;
     if (accepttok(parser, TOK_COLON) && !accepttokv(parser, TOK_ID, "any")) {
       type = parse_expr(parser);
     }
-    vec_push(args, id_node_new(id, type, sourcepos));
+    vec_push(args, id_node_new(id, type, param_sourcepos));
     accepttok(parser, TOK_COMMA);
   }
 
@@ -432,9 +433,47 @@ static struct ast_node *parse_mult(struct parser *parser) {
 static struct ast_node *parse_unary(struct parser *parser) {
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
 
-  if (accepttokv(parser, TOK_OP, "!"))
+  if (accepttokv(parser, TOK_OP, "!")) {
     return unary_op_node_new(UNARY_OP_NOT, parse_unary(parser), sourcepos);
-  return parse_access(parser, NULL);
+  } else if (accepttokv(parser, TOK_OP, "--")) {
+    struct ast_node *target = parse_unary(parser);
+    return bin_op_node_new(
+        BIN_OP_ASSIGN_SHORT, target,
+        bin_op_node_new(BIN_OP_SUB, target,
+                        num_node_new(false, 1, 0, sourcepos), sourcepos),
+        sourcepos);
+  } else if (accepttokv(parser, TOK_OP, "++")) {
+    struct ast_node *target = parse_unary(parser);
+    return bin_op_node_new(
+        BIN_OP_ASSIGN_SHORT, target,
+        bin_op_node_new(BIN_OP_ADD, target,
+                        num_node_new(false, 1, 0, sourcepos), sourcepos),
+        sourcepos);
+  }
+
+  struct ast_node *target = parse_access(parser, NULL);
+
+  if (accepttokv(parser, TOK_OP, "--")) {
+    return unary_op_node_new(
+        UNARY_OP_POST_DEC,
+        bin_op_node_new(
+            BIN_OP_ASSIGN_SHORT, target,
+            bin_op_node_new(BIN_OP_SUB, target,
+                            num_node_new(false, 1, 0, sourcepos), sourcepos),
+            sourcepos),
+        sourcepos);
+  } else if (accepttokv(parser, TOK_OP, "++")) {
+    return unary_op_node_new(
+        UNARY_OP_POST_DEC,
+        bin_op_node_new(
+            BIN_OP_ASSIGN_SHORT, target,
+            bin_op_node_new(BIN_OP_ADD, target,
+                            num_node_new(false, 1, 0, sourcepos), sourcepos),
+            sourcepos),
+        sourcepos);
+  }
+
+  return target;
 }
 static struct ast_node *parse_access(struct parser *parser,
                                      struct ast_node *left) {
@@ -446,7 +485,6 @@ static struct ast_node *parse_access(struct parser *parser,
     return parse_access(
         parser, attrib_node_new(left, clone_str(expecttok(parser, TOK_ID)->val),
                                 sourcepos));
-
   else if (accepttok(parser, TOK_OPAREN))
     return parse_access(
         parser, invoke_node_new(left, parse_arg_list(parser), sourcepos));

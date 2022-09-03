@@ -56,6 +56,10 @@ typedef enum {
 
 typedef enum {
   UNARY_OP_NOT,
+  UNARY_OP_POST_DEC,
+  UNARY_OP_POST_INC,
+  UNARY_OP_PRE_DEC,
+  UNARY_OP_PRE_INC,
 } unary_op_type_t;
 
 struct ast_node {

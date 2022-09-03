@@ -18,6 +18,7 @@ struct obj *obj_arg_mismatch_error_new(struct vm *vm, struct obj *target,
   strbuf_append_str(strbuf, expecting_toString->ctx);
   strbuf_append_str(strbuf, " got ");
   strbuf_append_str(strbuf, got_toString->ctx);
+  strbuf_append(strbuf, '!');
 
   obj_dec_ref(target_toString);
   obj_dec_ref(expecting_toString);
@@ -38,7 +39,7 @@ struct obj *obj_file_not_found_error_new(struct obj *path) {
   struct strbuf *strbuf = strbuf_new();
   strbuf_append_str(strbuf, "Could not locate file '");
   strbuf_append_str(strbuf, (char *)path->ctx);
-  strbuf_append(strbuf, '\'');
+  strbuf_append_str(strbuf, "'!");
 
   char *msg_str = strbuf_done(strbuf);
   obj_set_attrib(error, "message", obj_string_new(msg_str));
@@ -54,7 +55,27 @@ struct obj *obj_name_error_new(struct obj *name) {
 
   struct strbuf *strbuf = strbuf_new();
   strbuf_append_str(strbuf, (char *)name->ctx);
-  strbuf_append_str(strbuf, " is not defined");
+  strbuf_append_str(strbuf, " is not defined!");
+
+  char *msg_str = strbuf_done(strbuf);
+  obj_set_attrib(error, "message", obj_string_new(msg_str));
+  free(msg_str);
+
+  return error;
+}
+
+struct obj *obj_no_such_attrib_error_new(struct obj *target,
+                                         struct obj *attrib) {
+  struct obj *error = obj_new(OBJ_ANON, NULL, &no_such_attrib_error_type_obj);
+  obj_set_attrib(error, "target", target);
+  obj_set_attrib(error, "attrib", attrib);
+  obj_set_attrib(error, "toString", obj_builtin_new(Error_toString, error));
+
+  struct strbuf *strbuf = strbuf_new();
+  strbuf_append_str(strbuf, (char *)target->obj_type->ctx);
+  strbuf_append_str(strbuf, " does not contain attribute '");
+  strbuf_append_str(strbuf, (char *)attrib->ctx);
+  strbuf_append_str(strbuf, "'!");
 
   char *msg_str = strbuf_done(strbuf);
   obj_set_attrib(error, "message", obj_string_new(msg_str));
@@ -73,10 +94,11 @@ struct obj *obj_type_error_new(struct obj *target, struct obj *expected,
                  obj_builtin_new(Error_toString, type_error));
 
   struct strbuf *strbuf = strbuf_new();
-  strbuf_append_str(strbuf, "Expected type: ");
+  strbuf_append_str(strbuf, "Expected ");
   strbuf_append_str(strbuf, (char *)expected->ctx);
-  strbuf_append_str(strbuf, ", got type: ");
+  strbuf_append_str(strbuf, ", got ");
   strbuf_append_str(strbuf, (char *)got->ctx);
+  strbuf_append(strbuf, '!');
 
   char *msg_str = strbuf_done(strbuf);
   obj_set_attrib(type_error, "message", obj_string_new(msg_str));
@@ -91,11 +113,9 @@ struct obj *Error_toString(struct obj *error, struct vm *vm, struct vec *args) {
       message != &none_obj && message->obj_type == &string_type_obj;
 
   struct strbuf *strbuf = strbuf_new();
-  strbuf_append_str(strbuf, "Type: ");
   strbuf_append_str(strbuf, (char *)error->obj_type->ctx);
-  strbuf_append(strbuf, '\n');
   if (has_message) {
-    strbuf_append_str(strbuf, "Message:\n");
+    strbuf_append_str(strbuf, ": ");
     strbuf_append_str(strbuf, (char *)message->ctx);
   }
 

@@ -91,6 +91,7 @@ extern struct obj file_not_found_error_type_obj;
 extern struct obj func_type_obj;
 extern struct obj iter_type_obj;
 extern struct obj name_error_type_obj;
+extern struct obj no_such_attrib_error_type_obj;
 extern struct obj none_type_obj;
 extern struct obj number_type_obj;
 extern struct obj object_type_obj;
@@ -152,6 +153,7 @@ static inline struct stackframe *stackframe_new(int num_locals,
   stackframe->num_locals = num_locals;
   stackframe->refs = 0;
   stackframe->invokee = invokee;
+
   return stackframe;
 }
 

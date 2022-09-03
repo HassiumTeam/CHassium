@@ -492,6 +492,14 @@ struct obj name_error_type_obj = {
     .obj_type = &type_type_obj,
 };
 
+struct obj no_such_attrib_error_type_obj = {
+    .ctx = "NoSuchAttribError",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &error_type_obj,
+    .obj_type = &type_type_obj,
+};
+
 struct obj none_type_obj = {
     .ctx = "none",
     .ref_immune = true,

@@ -438,7 +438,7 @@ static void visit_func_decl_node(struct emit *emit, struct func_decl_node *node,
     if (id_node->type != NULL) {
       visit_ast_node(emit, id_node->type);
       add_inst(emit, vm_inst_new(INST_TYPECHECK_FAST, 0, (uintptr_t)sym),
-               sourcepos);
+               id_ast->sourcepos);
     }
   }
 
@@ -652,7 +652,14 @@ static void visit_try_catch_node(struct emit *emit, struct try_catch_node *node,
 
 static void visit_unary_op_node(struct emit *emit, struct unary_op_node *node,
                                 struct sourcepos *sourcepos) {
-  visit_ast_node(emit, node->target);
+  if (node->type == UNARY_OP_POST_DEC || node->type == UNARY_OP_POST_INC) {
+    struct bin_op_node *bin_op = node->target->inner;
+    visit_ast_node(emit, bin_op->left);
+    visit_ast_node(emit, node->target);
+  } else {
+    visit_ast_node(emit, node->target);
+  }
+
   add_inst(emit, unary_op_inst_new(node->type), sourcepos);
 }
 
