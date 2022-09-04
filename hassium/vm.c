@@ -494,12 +494,13 @@ void vm_raise(struct vm *vm, struct obj *obj) {
   }
 
   struct obj *handler = vec_pop(vm->handlers);
+  struct func_obj_ctx *handler_ctx = handler->ctx;
 
   struct vec args;
   struct obj *argstack[1];
   args.data = (void **)argstack;
   args.data[0] = obj;
-  args.len = 1;
+  args.len = handler_ctx->params->len;
 
   obj_invoke(handler, vm, &args);
   vec_push(vm->handler_returns, handler);

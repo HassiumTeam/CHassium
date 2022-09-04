@@ -628,13 +628,18 @@ static void visit_try_catch_node(struct emit *emit, struct try_catch_node *node,
   enter_scope(emit);
 
   handler->params = vec_new();
-  int sym = handle_symbol(emit, node->id);
-  vec_push(handler->params, (void *)(uintptr_t)sym);
+
+  if (node->id != NULL) {
+    int sym = handle_symbol(emit, node->id);
+    vec_push(handler->params, (void *)(uintptr_t)sym);
+  }
+
   if (node->catch->type == CODE_BLOCK_NODE) {
     visit_code_block_node(emit, node->catch->inner, false);
   } else {
     visit_ast_node(emit, node->catch);
   }
+
   add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0), sourcepos);
   add_inst(emit, vm_inst_new(INST_RETURN, 0, 0), sourcepos);
 

@@ -297,10 +297,15 @@ static struct ast_node *parse_try(struct parser *parser) {
   expecttokv(parser, TOK_ID, "try");
   struct ast_node *try = parse_statement(parser);
   expecttokv(parser, TOK_ID, "catch");
-  bool using_parens = accepttok(parser, TOK_OPAREN);
-  char *id = clone_str(expecttok(parser, TOK_ID)->val);
-  if (using_parens) expecttok(parser, TOK_CPAREN);
+
+  char *id = NULL;
+  if (accepttok(parser, TOK_OPAREN)) {
+    id = clone_str(expecttok(parser, TOK_ID)->val);
+    expecttok(parser, TOK_CPAREN);
+  }
+
   struct ast_node *catch = parse_statement(parser);
+
   return try_catch_node_new(try, catch, id, sourcepos);
 }
 

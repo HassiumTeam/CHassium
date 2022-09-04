@@ -70,6 +70,12 @@ func main () {
       nestedException1 ();
       println ("This should not print");
     } catch (e) {
+      try {
+        raise "double nested";
+        println ("This should not print");
+      } catch {
+        println ("Caught double nested");
+      }
       println ("Caught nested: " + e);
     } 
     raise "some exception";
