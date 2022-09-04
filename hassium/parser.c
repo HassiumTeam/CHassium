@@ -585,7 +585,7 @@ static struct ast_node *parse_term(struct parser *parser) {
     struct ast_node *type = NULL;
     char *id = clone_str(expecttok(parser, TOK_ID)->val);
     if (accepttok(parser, TOK_COLON) && !accepttokv(parser, TOK_ID, "any")) {
-      type = parse_expr(parser);
+      type = parse_or(parser);
     }
     return id_node_new(id, type, sourcepos);
   } else if (matchtok(parser, TOK_NUM)) {

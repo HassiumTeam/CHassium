@@ -240,6 +240,11 @@ static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node,
       } break;
       case ID_NODE: {
         struct id_node *id_node = node->left->inner;
+        if (id_node->type != NULL) {
+          visit_ast_node(emit, id_node->type);
+          add_inst(emit, vm_inst_new(INST_TYPECHECK, 0, 0),
+                   id_node->type->sourcepos);
+        }
         add_inst(emit, store_fast_inst_new(handle_symbol(emit, id_node->id)),
                  sourcepos);
       } break;

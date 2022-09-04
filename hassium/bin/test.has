@@ -1,13 +1,2 @@
-func main () {
-  nested1 ();
-}
 
-func nested1 () {
-  nested2 ();
-}
-
-func nested2 () {
-  raise FileNotFoundError('foo.bar');
-}
-
-main ();
+a: Number = "Test";
