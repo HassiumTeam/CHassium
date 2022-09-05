@@ -55,6 +55,8 @@ static void visit_subscript_node(struct emit *, struct subscript_node *,
                                  struct sourcepos *);
 static void visit_super_node(struct emit *, struct super_node *,
                              struct sourcepos *);
+static void visit_switch_node(struct emit *, struct switch_node *,
+                              struct sourcepos *);
 static void visit_try_catch_node(struct emit *, struct try_catch_node *,
                                  struct sourcepos *);
 static void visit_unary_op_node(struct emit *, struct unary_op_node *,
@@ -197,6 +199,9 @@ static void visit_ast_node(struct emit *emit, struct ast_node *node) {
       break;
     case SUPER_NODE:
       visit_super_node(emit, node->inner, node->sourcepos);
+      break;
+    case SWITCH_NODE:
+      visit_switch_node(emit, node->inner, node->sourcepos);
       break;
     case TRY_CATCH_NODE:
       visit_try_catch_node(emit, node->inner, node->sourcepos);
@@ -411,7 +416,6 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node,
 
   place_label(emit, end);
   leave_scope(emit);
-  restore_labels(emit, labels);
 
   free(id);
 }
@@ -614,9 +618,101 @@ static void visit_subscript_node(struct emit *emit, struct subscript_node *node,
 
 static void visit_super_node(struct emit *emit, struct super_node *node,
                              struct sourcepos *sourcepos) {
-  for (int i = 0; i < node->args->len; ++i)
+  for (int i = 0; i < node->args->len; ++i) {
     visit_ast_node(emit, vec_get(node->args, i));
+  }
   add_inst(emit, super_inst_new(node->args->len), sourcepos);
+}
+
+static void visit_switch_node(struct emit *emit, struct switch_node *node,
+                              struct sourcepos *sourcepos) {
+  char *id = tmp_symbol();
+  int default_case = new_label();
+  int switch_end = new_label();
+
+  visit_ast_node(emit, node->target);
+  add_inst(emit, store_fast_inst_new(handle_symbol(emit, id)),
+           node->target->sourcepos);
+  add_inst(emit, vm_inst_new(INST_POP, 0, 0), node->target->sourcepos);
+
+  int case_labels[node->cases->len];
+  int case_body_labels[node->cases->len];
+  for (int i = 0; i < node->cases->len; ++i) {
+    case_labels[i] = new_label();
+    if (vec_get(node->case_bodies, i) != NULL) {
+      case_body_labels[i] = new_label();
+    } else {
+      case_body_labels[i] = -1;
+    }
+  }
+
+  for (int i = 0; i < node->cases->len; ++i) {
+    struct ast_node *case_ast = vec_get(node->cases, i);
+    struct ast_node *case_body = vec_get(node->case_bodies, i);
+
+    place_label(emit, case_labels[i]);
+    add_inst(emit, load_fast_inst_new(handle_symbol(emit, id)),
+             case_ast->sourcepos);
+
+    if (case_ast->type == UNARY_OP_NODE &&
+        ((struct unary_op_node *)case_ast->inner)->for_switch) {
+      add_inst(emit, unary_op_inst_new(UNARY_OP_NOT), case_ast->sourcepos);
+    } else if (case_ast->type == BIN_OP_NODE &&
+               ((struct bin_op_node *)case_ast->inner)->for_switch) {
+      struct bin_op_node *bin_op_ctx = case_ast->inner;
+      visit_ast_node(emit, bin_op_ctx->right);
+      add_inst(emit, bin_op_inst_new(bin_op_ctx->type), case_ast->sourcepos);
+    } else {
+      visit_ast_node(emit, case_ast);
+      add_inst(emit, bin_op_inst_new(BIN_OP_EQ), case_ast->sourcepos);
+    }
+
+    if (i == node->cases->len - 1 && node->default_case != NULL) {
+      add_inst(emit, jump_if_false_inst_new(default_case), case_ast->sourcepos);
+    } else if (i == node->cases->len - 1 && node->default_case == NULL) {
+      add_inst(emit, jump_if_false_inst_new(switch_end), case_ast->sourcepos);
+    } else {
+      add_inst(emit, jump_if_false_inst_new(case_labels[i + 1]),
+               case_ast->sourcepos);
+    }
+
+    int body_idx = i;
+    while (case_body_labels[body_idx] == -1 && body_idx < node->cases->len) {
+      body_idx++;
+    }
+    add_inst(emit, jump_inst_new(case_body_labels[body_idx]),
+             case_ast->sourcepos);
+
+    struct labels_ctx labels = {
+        .break_count = emit->code_obj->break_labels->len,
+        .cont_count = emit->code_obj->cont_labels->len,
+    };
+    vec_push(emit->code_obj->break_labels, (void *)(uintptr_t)switch_end);
+
+    if (case_body != NULL) {
+      place_label(emit, case_body_labels[i]);
+      visit_ast_node(emit, case_body);
+    }
+
+    restore_labels(emit, labels);
+  }
+
+  if (node->default_case != NULL) {
+    place_label(emit, default_case);
+
+    struct labels_ctx labels = {
+        .break_count = emit->code_obj->break_labels->len,
+        .cont_count = emit->code_obj->cont_labels->len,
+    };
+    vec_push(emit->code_obj->break_labels, (void *)(uintptr_t)switch_end);
+
+    visit_ast_node(emit, node->default_case);
+    restore_labels(emit, labels);
+  }
+
+  place_label(emit, switch_end);
+
+  free(id);
 }
 
 static void visit_try_catch_node(struct emit *emit, struct try_catch_node *node,

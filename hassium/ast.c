@@ -27,13 +27,14 @@ struct ast_node *attrib_node_new(struct ast_node *target, char *attrib,
 }
 
 struct ast_node *bin_op_node_new(bin_op_type_t type, struct ast_node *left,
-                                 struct ast_node *right,
+                                 struct ast_node *right, bool for_switch,
                                  struct sourcepos *sourcepos) {
   struct bin_op_node *inner =
       (struct bin_op_node *)calloc(1, sizeof(struct bin_op_node));
   inner->type = type;
   inner->left = left;
   inner->right = right;
+  inner->for_switch = for_switch;
   return ast_node_new(BIN_OP_NODE, inner, sourcepos);
 }
 
@@ -208,6 +209,19 @@ struct ast_node *string_node_new(char *value, struct sourcepos *sourcepos) {
   return ast_node_new(STRING_NODE, inner, sourcepos);
 }
 
+struct ast_node *switch_node_new(struct ast_node *target, struct vec *cases,
+                                 struct vec *case_bodies,
+                                 struct ast_node *default_case,
+                                 struct sourcepos *sourcepos) {
+  struct switch_node *inner = malloc(sizeof(struct switch_node));
+  inner->target = target;
+  inner->cases = cases;
+  inner->case_bodies = case_bodies;
+  inner->default_case = default_case;
+
+  return ast_node_new(SWITCH_NODE, inner, sourcepos);
+}
+
 struct ast_node *subscript_node_new(struct ast_node *target,
                                     struct ast_node *key,
                                     struct sourcepos *sourcepos) {
@@ -237,12 +251,13 @@ struct ast_node *try_catch_node_new(struct ast_node *try,
 }
 
 struct ast_node *unary_op_node_new(unary_op_type_t type,
-                                   struct ast_node *target,
+                                   struct ast_node *target, bool for_switch,
                                    struct sourcepos *sourcepos) {
   struct unary_op_node *inner =
       (struct unary_op_node *)calloc(1, sizeof(struct unary_op_node));
   inner->type = type;
   inner->target = target;
+  inner->for_switch = for_switch;
   return ast_node_new(UNARY_OP_NODE, inner, sourcepos);
 }
 
@@ -276,6 +291,7 @@ static void raise_node_free(struct raise_node *);
 static void return_node_free(struct return_node *);
 static void slice_node_free(struct slice_node *);
 static void string_node_free(struct string_node *);
+static void switch_node_free(struct switch_node *);
 static void subscript_node_free(struct subscript_node *);
 static void super_node_free(struct super_node *);
 static void try_catch_node_free(struct try_catch_node *);
@@ -341,6 +357,9 @@ void ast_node_free(struct ast_node *node) {
       break;
     case STRING_NODE:
       string_node_free(node->inner);
+      break;
+    case SWITCH_NODE:
+      switch_node_free(node->inner);
       break;
     case SUBSCRIPT_NODE:
       subscript_node_free(node->inner);
@@ -466,6 +485,13 @@ static void slice_node_free(struct slice_node *node) {
 }
 
 static void string_node_free(struct string_node *node) { free(node->value); }
+
+static void switch_node_free(struct switch_node *node) {
+  ast_node_free(node->target);
+  vec_ast_node_free(node->cases);
+  vec_ast_node_free(node->case_bodies);
+  ast_node_free(node->default_case);
+}
 
 static void subscript_node_free(struct subscript_node *node) {
   ast_node_free(node->key);

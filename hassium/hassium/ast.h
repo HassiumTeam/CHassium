@@ -32,6 +32,7 @@ typedef enum {
   STRING_NODE,
   SUBSCRIPT_NODE,
   SUPER_NODE,
+  SWITCH_NODE,
   TRY_CATCH_NODE,
   UNARY_OP_NODE,
   WHILE_NODE,
@@ -80,6 +81,7 @@ struct bin_op_node {
   bin_op_type_t type;
   struct ast_node *left;
   struct ast_node *right;
+  bool for_switch;
 };
 
 struct class_decl_node {
@@ -180,6 +182,13 @@ struct super_node {
   struct vec *args;
 };
 
+struct switch_node {
+  struct ast_node *target;
+  struct vec *cases;
+  struct vec *case_bodies;
+  struct ast_node *default_case;
+};
+
 struct try_catch_node {
   char *id;
   struct ast_node *try;
@@ -189,6 +198,7 @@ struct try_catch_node {
 struct unary_op_node {
   unary_op_type_t type;
   struct ast_node *target;
+  bool for_switch;
 };
 
 struct while_node {
@@ -200,7 +210,8 @@ struct ast_node *ast_node_new(ast_type_t, void *, struct sourcepos *);
 struct ast_node *array_decl_node_new(struct vec *, struct sourcepos *);
 struct ast_node *attrib_node_new(struct ast_node *, char *, struct sourcepos *);
 struct ast_node *bin_op_node_new(bin_op_type_t, struct ast_node *,
-                                 struct ast_node *, struct sourcepos *);
+                                 struct ast_node *, bool for_switch,
+                                 struct sourcepos *);
 struct ast_node *class_decl_node_new(char *, struct ast_node *,
                                      struct ast_node *, struct vec *,
                                      struct sourcepos *);
@@ -231,13 +242,15 @@ struct ast_node *return_node_new(struct ast_node *, struct sourcepos *);
 struct ast_node *slice_node_new(struct ast_node *, struct ast_node *,
                                 struct ast_node *, struct sourcepos *);
 struct ast_node *string_node_new(char *, struct sourcepos *);
+struct ast_node *switch_node_new(struct ast_node *, struct vec *, struct vec *,
+                                 struct ast_node *, struct sourcepos *);
 struct ast_node *subscript_node_new(struct ast_node *, struct ast_node *,
                                     struct sourcepos *);
 struct ast_node *super_node_new(struct vec *, struct sourcepos *);
 struct ast_node *try_catch_node_new(struct ast_node *, struct ast_node *,
                                     char *, struct sourcepos *);
 struct ast_node *unary_op_node_new(unary_op_type_t, struct ast_node *,
-                                   struct sourcepos *);
+                                   bool for_switch, struct sourcepos *);
 struct ast_node *while_node_new(struct ast_node *, struct ast_node *,
                                 struct sourcepos *);
 

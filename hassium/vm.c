@@ -333,6 +333,11 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         args.data = (void **)argstack;
         args.len = 2;
 
+        if (target->lazy_load_fn) {
+          target->lazy_load_fn(target);
+          target->lazy_load_fn = NULL;
+        }
+
         STACK_PUSH(
             obj_inc_ref(obj_invoke_attrib(target, "__slice__", vm, &args)));
 

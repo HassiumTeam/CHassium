@@ -1,2 +1,14 @@
-
-a: Number = "Test";
+switch (3) {
+  case 34:
+  case > 3:
+  case >= 4:
+    println("yay");
+    break;
+  case !:
+  case 3:
+    println("yay2");
+    break;
+  default:
+    println ("default");
+    break;
+}

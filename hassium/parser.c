@@ -19,7 +19,9 @@ static struct ast_node *parse_import(struct parser *);
 static struct ast_node *parse_raise(struct parser *);
 static struct ast_node *parse_return(struct parser *);
 static struct ast_node *parse_super(struct parser *);
+static struct ast_node *parse_switch(struct parser *);
 static struct ast_node *parse_try(struct parser *);
+static struct ast_node *parse_until(struct parser *);
 static struct ast_node *parse_while(struct parser *);
 static struct ast_node *parse_expr_stmt(struct parser *);
 
@@ -55,7 +57,9 @@ struct ast_node *parser_parse(struct vec *toks) {
 
   struct sourcepos *sourcepos = ((struct tok *)vec_get(toks, 0))->sourcepos;
   struct vec *children = vec_new();
-  while (parser.pos < parser.len) vec_push(children, parse_statement(&parser));
+  while (parser.pos < parser.len) {
+    vec_push(children, parse_statement(&parser));
+  }
   return code_block_node_new(children, sourcepos);
 }
 
@@ -92,8 +96,12 @@ static struct ast_node *parse_statement(struct parser *parser) {
     ret = parse_return(parser);
   else if (matchtokv(parser, TOK_ID, "super"))
     ret = parse_super(parser);
+  else if (matchtokv(parser, TOK_ID, "switch"))
+    ret = parse_switch(parser);
   else if (matchtokv(parser, TOK_ID, "try"))
     ret = parse_try(parser);
+  else if (matchtokv(parser, TOK_ID, "until"))
+    ret = parse_until(parser);
   else if (matchtokv(parser, TOK_ID, "while"))
     ret = parse_while(parser);
   else
@@ -291,6 +299,92 @@ static struct ast_node *parse_super(struct parser *parser) {
       sourcepos);
 }
 
+static struct ast_node *parse_switch(struct parser *parser) {
+  struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
+  struct vec *cases = vec_new();
+  struct vec *case_bodies = vec_new();
+  struct ast_node *default_case = NULL;
+
+  expecttokv(parser, TOK_ID, "switch");
+  struct ast_node *target = parse_expr(parser);
+
+  expecttok(parser, TOK_OBRACE);
+  while (!accepttok(parser, TOK_CBRACE)) {
+    if (accepttokv(parser, TOK_ID, "default")) {
+      if (default_case != NULL) {
+        printf("Cannot have two default cases!");
+        exit(-1);
+      }
+
+      expecttok(parser, TOK_COLON);
+      struct sourcepos *default_body_sourcepos = CURRENT_SOURCEPOS();
+      struct vec *default_body = vec_new();
+
+      while (!matchtokv(parser, TOK_ID, "break") &&
+             !matchtokv(parser, TOK_ID, "return")) {
+        vec_push(default_body, parse_statement(parser));
+      }
+      vec_push(default_body, parse_statement(parser));
+
+      default_case = code_block_node_new(default_body, default_body_sourcepos);
+
+    } else {
+      expecttokv(parser, TOK_ID, "case");
+      struct sourcepos *case_sourcepos = CURRENT_SOURCEPOS();
+      struct ast_node *case_ = NULL;
+
+      if (accepttokv(parser, TOK_OP, "!") && matchtok(parser, TOK_COLON)) {
+        case_ = unary_op_node_new(UNARY_OP_NOT, NULL, true, case_sourcepos);
+      } else if (matchtok(parser, TOK_OP)) {
+        bin_op_type_t bin_op_type;
+        if (accepttokv(parser, TOK_OP, "&&")) {
+          bin_op_type = BIN_OP_AND;
+        } else if (accepttokv(parser, TOK_OP, "==")) {
+          bin_op_type = BIN_OP_EQ;
+        } else if (accepttokv(parser, TOK_OP, ">")) {
+          bin_op_type = BIN_OP_GREATER;
+        } else if (accepttokv(parser, TOK_OP, ">=")) {
+          bin_op_type = BIN_OP_GREATER_OR_EQ;
+        } else if (accepttokv(parser, TOK_OP, "<")) {
+          bin_op_type = BIN_OP_LESSER;
+        } else if (accepttokv(parser, TOK_OP, "<=")) {
+          bin_op_type = BIN_OP_LESSER_OR_EQ;
+        } else if (accepttokv(parser, TOK_OP, "||")) {
+          bin_op_type = BIN_OP_OR;
+        } else {
+          printf("Invalid binary op in case: %s\n", curtok(parser)->val);
+          exit(-1);
+        }
+
+        case_ = bin_op_node_new(bin_op_type, NULL, parse_expr(parser), true,
+                                case_sourcepos);
+      } else {
+        case_ = parse_expr(parser);
+      }
+      vec_push(cases, case_);
+      expecttok(parser, TOK_COLON);
+
+      if (matchtokv(parser, TOK_ID, "case")) {
+        vec_push(case_bodies, NULL);
+      } else {
+        struct sourcepos *case_body_sourcepos = CURRENT_SOURCEPOS();
+        struct vec *case_body = vec_new();
+
+        while (!matchtokv(parser, TOK_ID, "break") &&
+               !matchtokv(parser, TOK_ID, "return")) {
+          vec_push(case_body, parse_statement(parser));
+        }
+        vec_push(case_body, parse_statement(parser));
+
+        vec_push(case_bodies,
+                 code_block_node_new(case_body, case_body_sourcepos));
+      }
+    }
+  }
+
+  return switch_node_new(target, cases, case_bodies, default_case, sourcepos);
+}
+
 static struct ast_node *parse_try(struct parser *parser) {
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
 
@@ -309,18 +403,30 @@ static struct ast_node *parse_try(struct parser *parser) {
   return try_catch_node_new(try, catch, id, sourcepos);
 }
 
+static struct ast_node *parse_until(struct parser *parser) {
+  struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
+
+  expecttokv(parser, TOK_ID, "until");
+  struct ast_node *condition = parse_expr(parser);
+  struct ast_node *body = parse_statement(parser);
+
+  return while_node_new(
+      unary_op_node_new(UNARY_OP_NOT, condition, false, condition->sourcepos),
+      body, sourcepos);
+}
+
 static struct ast_node *parse_while(struct parser *parser) {
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
 
   expecttokv(parser, TOK_ID, "while");
   struct ast_node *condition = parse_expr(parser);
   struct ast_node *body = parse_statement(parser);
+
   return while_node_new(condition, body, sourcepos);
 }
 
 static struct ast_node *parse_expr_stmt(struct parser *parser) {
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
-
   struct ast_node *expr = parse_expr(parser);
   return expr_stmt_node_new(expr, sourcepos);
 }
@@ -334,7 +440,7 @@ static struct ast_node *parse_assign(struct parser *parser) {
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
 
   if (accepttokv(parser, TOK_ASSIGN, "=")) {
-    return bin_op_node_new(BIN_OP_ASSIGN, left, parse_assign(parser),
+    return bin_op_node_new(BIN_OP_ASSIGN, left, parse_assign(parser), false,
                            sourcepos);
   } else if (matchtok(parser, TOK_ASSIGN)) {
     char *op = expecttok(parser, TOK_ASSIGN)->val;
@@ -356,8 +462,8 @@ static struct ast_node *parse_assign(struct parser *parser) {
 
     return bin_op_node_new(
         BIN_OP_ASSIGN_SHORT, left,
-        bin_op_node_new(op_type, left, parse_assign(parser), sourcepos),
-        sourcepos);
+        bin_op_node_new(op_type, left, parse_assign(parser), false, sourcepos),
+        false, sourcepos);
   }
   return left;
 }
@@ -367,7 +473,7 @@ static struct ast_node *parse_or(struct parser *parser) {
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
 
   if (accepttokv(parser, TOK_OP, "||"))
-    return bin_op_node_new(BIN_OP_OR, left, parse_or(parser), sourcepos);
+    return bin_op_node_new(BIN_OP_OR, left, parse_or(parser), false, sourcepos);
   return left;
 }
 
@@ -376,7 +482,8 @@ static struct ast_node *parse_and(struct parser *parser) {
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
 
   if (accepttokv(parser, TOK_OP, "&&"))
-    return bin_op_node_new(BIN_OP_AND, left, parse_or(parser), sourcepos);
+    return bin_op_node_new(BIN_OP_AND, left, parse_or(parser), false,
+                           sourcepos);
   return left;
 }
 
@@ -385,12 +492,14 @@ static struct ast_node *parse_equality(struct parser *parser) {
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
 
   if (accepttokv(parser, TOK_OP, "=="))
-    return bin_op_node_new(BIN_OP_EQ, left, parse_equality(parser), sourcepos);
+    return bin_op_node_new(BIN_OP_EQ, left, parse_equality(parser), false,
+                           sourcepos);
   else if (accepttokv(parser, TOK_OP, "!="))
     return unary_op_node_new(
         UNARY_OP_NOT,
-        bin_op_node_new(BIN_OP_EQ, left, parse_equality(parser), sourcepos),
-        sourcepos);
+        bin_op_node_new(BIN_OP_EQ, left, parse_equality(parser), false,
+                        sourcepos),
+        false, sourcepos);
   return left;
 }
 
@@ -399,14 +508,16 @@ static struct ast_node *parse_comp(struct parser *parser) {
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
 
   if (accepttokv(parser, TOK_OP, ">"))
-    return bin_op_node_new(BIN_OP_GREATER, left, parse_comp(parser), sourcepos);
+    return bin_op_node_new(BIN_OP_GREATER, left, parse_comp(parser), false,
+                           sourcepos);
   else if (accepttokv(parser, TOK_OP, ">="))
     return bin_op_node_new(BIN_OP_GREATER_OR_EQ, left, parse_comp(parser),
-                           sourcepos);
+                           false, sourcepos);
   else if (accepttokv(parser, TOK_OP, "<"))
-    return bin_op_node_new(BIN_OP_LESSER, left, parse_comp(parser), sourcepos);
+    return bin_op_node_new(BIN_OP_LESSER, left, parse_comp(parser), false,
+                           sourcepos);
   else if (accepttokv(parser, TOK_OP, "<="))
-    return bin_op_node_new(BIN_OP_LESSER_OR_EQ, left, parse_comp(parser),
+    return bin_op_node_new(BIN_OP_LESSER_OR_EQ, left, parse_comp(parser), false,
                            sourcepos);
   return left;
 }
@@ -416,9 +527,11 @@ static struct ast_node *parse_add(struct parser *parser) {
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
 
   if (accepttokv(parser, TOK_OP, "+"))
-    return bin_op_node_new(BIN_OP_ADD, left, parse_add(parser), sourcepos);
+    return bin_op_node_new(BIN_OP_ADD, left, parse_add(parser), false,
+                           sourcepos);
   else if (accepttokv(parser, TOK_OP, "-"))
-    return bin_op_node_new(BIN_OP_SUB, left, parse_add(parser), sourcepos);
+    return bin_op_node_new(BIN_OP_SUB, left, parse_add(parser), false,
+                           sourcepos);
   return left;
 }
 
@@ -427,11 +540,14 @@ static struct ast_node *parse_mult(struct parser *parser) {
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
 
   if (accepttokv(parser, TOK_OP, "*"))
-    return bin_op_node_new(BIN_OP_MUL, left, parse_mult(parser), sourcepos);
+    return bin_op_node_new(BIN_OP_MUL, left, parse_mult(parser), false,
+                           sourcepos);
   else if (accepttokv(parser, TOK_OP, "/"))
-    return bin_op_node_new(BIN_OP_DIV, left, parse_mult(parser), sourcepos);
+    return bin_op_node_new(BIN_OP_DIV, left, parse_mult(parser), false,
+                           sourcepos);
   else if (accepttokv(parser, TOK_OP, "%"))
-    return bin_op_node_new(BIN_OP_MOD, left, parse_mult(parser), sourcepos);
+    return bin_op_node_new(BIN_OP_MOD, left, parse_mult(parser), false,
+                           sourcepos);
   return left;
 }
 
@@ -439,21 +555,22 @@ static struct ast_node *parse_unary(struct parser *parser) {
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
 
   if (accepttokv(parser, TOK_OP, "!")) {
-    return unary_op_node_new(UNARY_OP_NOT, parse_unary(parser), sourcepos);
+    return unary_op_node_new(UNARY_OP_NOT, parse_unary(parser), false,
+                             sourcepos);
   } else if (accepttokv(parser, TOK_OP, "--")) {
     struct ast_node *target = parse_unary(parser);
     return bin_op_node_new(
         BIN_OP_ASSIGN_SHORT, target,
         bin_op_node_new(BIN_OP_SUB, target,
-                        num_node_new(false, 1, 0, sourcepos), sourcepos),
-        sourcepos);
+                        num_node_new(false, 1, 0, sourcepos), false, sourcepos),
+        false, sourcepos);
   } else if (accepttokv(parser, TOK_OP, "++")) {
     struct ast_node *target = parse_unary(parser);
     return bin_op_node_new(
         BIN_OP_ASSIGN_SHORT, target,
         bin_op_node_new(BIN_OP_ADD, target,
-                        num_node_new(false, 1, 0, sourcepos), sourcepos),
-        sourcepos);
+                        num_node_new(false, 1, 0, sourcepos), false, sourcepos),
+        false, sourcepos);
   }
 
   struct ast_node *target = parse_access(parser, NULL);
@@ -461,21 +578,21 @@ static struct ast_node *parse_unary(struct parser *parser) {
   if (accepttokv(parser, TOK_OP, "--")) {
     return unary_op_node_new(
         UNARY_OP_POST_DEC,
-        bin_op_node_new(
-            BIN_OP_ASSIGN_SHORT, target,
-            bin_op_node_new(BIN_OP_SUB, target,
-                            num_node_new(false, 1, 0, sourcepos), sourcepos),
-            sourcepos),
-        sourcepos);
+        bin_op_node_new(BIN_OP_ASSIGN_SHORT, target,
+                        bin_op_node_new(BIN_OP_SUB, target,
+                                        num_node_new(false, 1, 0, sourcepos),
+                                        false, sourcepos),
+                        false, sourcepos),
+        false, sourcepos);
   } else if (accepttokv(parser, TOK_OP, "++")) {
     return unary_op_node_new(
         UNARY_OP_POST_DEC,
-        bin_op_node_new(
-            BIN_OP_ASSIGN_SHORT, target,
-            bin_op_node_new(BIN_OP_ADD, target,
-                            num_node_new(false, 1, 0, sourcepos), sourcepos),
-            sourcepos),
-        sourcepos);
+        bin_op_node_new(BIN_OP_ASSIGN_SHORT, target,
+                        bin_op_node_new(BIN_OP_ADD, target,
+                                        num_node_new(false, 1, 0, sourcepos),
+                                        false, sourcepos),
+                        false, sourcepos),
+        false, sourcepos);
   }
 
   return target;

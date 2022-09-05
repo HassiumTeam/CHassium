@@ -135,7 +135,6 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
   args.data = (void **)argstack;
   args.len = 1;
   args.data[0] = right;
-
   switch (type) {
     case BIN_OP_ADD:
       if (left->ops && left->ops->__add__) {
@@ -143,6 +142,7 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
       } else {
         return obj_invoke_attrib(left, "__add__", vm, &args);
       }
+      break;
     case BIN_OP_AND:
       return bool_to_obj(obj_is_true(left, vm) && obj_is_true(right, vm));
     case BIN_OP_DIV:
@@ -151,6 +151,7 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
       } else {
         return obj_invoke_attrib(left, "__div__", vm, &args);
       }
+      break;
     case BIN_OP_EQ:
       if (left == right) {
         return &true_obj;
@@ -159,12 +160,14 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
       } else {
         return obj_invoke_attrib(left, "__eq__", vm, &args);
       }
+      break;
     case BIN_OP_GREATER:
       if (left->ops && left->ops->__greater__) {
         return left->ops->__greater__(left, vm, &args);
       } else {
         return obj_invoke_attrib(left, "__greater__", vm, &args);
       }
+      break;
     case BIN_OP_GREATER_OR_EQ:
       if (obj_bin_op(BIN_OP_EQ, left, right, vm) == &true_obj) {
         return &true_obj;
@@ -173,12 +176,14 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
       } else {
         return obj_invoke_attrib(left, "__add__", vm, &args);
       }
+      break;
     case BIN_OP_LESSER:
       if (left->ops && left->ops->__lesser__) {
         return left->ops->__lesser__(left, vm, &args);
       } else {
         return obj_invoke_attrib(left, "__lesser__", vm, &args);
       }
+      break;
     case BIN_OP_LESSER_OR_EQ:
       if (obj_bin_op(BIN_OP_EQ, left, right, vm) == &true_obj) {
         return &true_obj;
@@ -187,18 +192,21 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
       } else {
         return obj_invoke_attrib(left, "__lesser__", vm, &args);
       }
+      break;
     case BIN_OP_MOD:
       if (left->ops && left->ops->__mod__) {
         return left->ops->__mod__(left, vm, &args);
       } else {
         return obj_invoke_attrib(left, "__mod__", vm, &args);
       }
+      break;
     case BIN_OP_MUL:
       if (left->ops && left->ops->__mul__) {
         return left->ops->__mul__(left, vm, &args);
       } else {
         return obj_invoke_attrib(left, "__mul__", vm, &args);
       }
+      break;
     case BIN_OP_OR:
       return bool_to_obj(obj_is_true(left, vm) || obj_is_true(right, vm));
     case BIN_OP_SUB:
@@ -207,6 +215,7 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
       } else {
         return obj_invoke_attrib(left, "__sub__", vm, &args);
       }
+      break;
   }
 }
 
