@@ -356,7 +356,6 @@ static struct ast_node *parse_switch(struct parser *parser) {
         } else if (accepttokv(parser, TOK_OP, "||")) {
           bin_op_type = BIN_OP_OR;
         } else {
-          printf("Invalid binary op in case: %s\n", curtok(parser)->val);
           struct strbuf *strbuf = strbuf_new();
           strbuf_append_str(strbuf, "Invalid binary operator '");
           strbuf_append_str(strbuf, curtok(parser)->val);
