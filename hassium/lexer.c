@@ -210,6 +210,12 @@ static int readc(struct lexer *lexer) {
 static void addtok(struct lexer *lexer, toktype_t type, char *val) {
   int col_offset = val != NULL ? strlen(val) : 0;
 
+  if (type == TOK_STRING) {
+    col_offset += 2;
+  } else if (col_offset == 1) {
+    col_offset = 0;
+  }
+
   vec_push(lexer->toks,
            tok_new(type, val,
                    sourcepos_new(lexer->row, lexer->col - col_offset,
