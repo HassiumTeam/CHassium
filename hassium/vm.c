@@ -217,8 +217,8 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         } else if (target->ops && target->ops->__iter__) {
           STACK_PUSH(obj_inc_ref(target->ops->__iter__(target, vm, NULL)));
         } else {
-          printf("Could not use __iter__ on %d\n", target->type);
-          exit(-1);
+          vm_raise(vm, obj_no_such_attrib_error_new(
+                           target, obj_string_new("__iter__")));
         }
 
         obj_dec_ref(target);
@@ -430,10 +430,6 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
           case UNARY_OP_POST_DEC:
           case UNARY_OP_POST_INC:
             obj_dec_ref(target);
-            break;
-          default:
-            printf("Bad unary op, something has gone terribly wrong....\n");
-            exit(-1);
             break;
         }
       } break;

@@ -346,7 +346,7 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
     ret = new;
   } else {
     vm_raise(vm, obj_not_invokable_error_new(obj));
-    ret = NULL;
+    ret = &none_obj;
   }
 
   if (no_args) {
@@ -360,8 +360,8 @@ struct obj *obj_invoke_attrib(struct obj *obj, char *attrib, struct vm *vm,
                               struct vec *args) {
   struct obj *func = obj_hashmap_get(obj->attribs, attrib);
   if (func == &none_obj) {
-    printf("No such attrib %s\n", attrib);
-    exit(-1);
+    vm_raise(vm, obj_no_such_attrib_error_new(obj, obj_string_new(attrib)));
+    return &none_type_obj;
   }
   return obj_invoke(func, vm, args);
 }
