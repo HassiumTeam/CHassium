@@ -312,11 +312,13 @@ static struct ast_node *parse_switch(struct parser *parser) {
 
   expecttok(parser, TOK_OBRACE);
   while (!accepttok(parser, TOK_CBRACE)) {
-    if (accepttokv(parser, TOK_ID, "default")) {
+    if (matchtokv(parser, TOK_ID, "default")) {
       if (default_case != NULL) {
-        printf("Cannot have two default cases!");
-        exit(-1);
+        vm_raise(parser->vm,
+                 obj_compile_error_new("Cannot have two default cases!",
+                                       CURRENT_SOURCEPOS()));
       }
+      expecttokv(parser, TOK_ID, "default");
 
       expecttok(parser, TOK_COLON);
       struct sourcepos *default_body_sourcepos = CURRENT_SOURCEPOS();

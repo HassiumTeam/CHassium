@@ -16,6 +16,7 @@ struct vm {
 struct stackframe {
   struct obj *invokee;
   struct obj **locals;
+  struct obj **local_types;
   int num_locals;
   int refs;
 };
@@ -151,6 +152,8 @@ static inline struct stackframe *stackframe_new(int num_locals,
   struct stackframe *stackframe = malloc(sizeof(struct stackframe));
   stackframe->locals =
       num_locals > 0 ? calloc(num_locals, sizeof(struct obj *)) : NULL;
+  stackframe->local_types =
+      num_locals > 0 ? calloc(num_locals, sizeof(struct obj *)) : NULL;
   stackframe->num_locals = num_locals;
   stackframe->refs = 0;
   stackframe->invokee = invokee;
@@ -166,12 +169,16 @@ static inline struct obj *stackframe_free(struct stackframe *stackframe) {
   }
   if (stackframe->num_locals > 0) {
     free(stackframe->locals);
+    free(stackframe->local_types);
   }
   free(stackframe);
 }
 
 #define stackframe_get(s, i) ((s)->locals[(i)])
 #define stackframe_set(s, i, v) ((s)->locals[(i)] = (v))
+#define stackframe_set_enforced(s, i, v, t) \
+  ((s)->locals[(i)] = (v));                 \
+  ((s)->local_types[(i)] = (t));
 
 static inline struct stackframe *stackframe_inc_ref(
     struct stackframe *stackframe) {

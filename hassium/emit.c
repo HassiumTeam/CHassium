@@ -85,7 +85,7 @@ static vm_inst_t load_fast_inst_new(int);
 static vm_inst_t load_id_inst_new(struct emit *, char *);
 static vm_inst_t load_const_inst_new(int);
 static vm_inst_t store_attrib_inst_new(struct emit *, char *);
-static vm_inst_t store_fast_inst_new(int);
+static vm_inst_t store_fast_inst_new(int, bool);
 static vm_inst_t store_id_inst_new(struct emit *, char *);
 static vm_inst_t super_inst_new(int);
 static vm_inst_t unary_op_inst_new(unary_op_type_t);
@@ -249,10 +249,10 @@ static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node,
         struct id_node *id_node = node->left->inner;
         if (id_node->type != NULL) {
           visit_ast_node(emit, id_node->type);
-          add_inst(emit, vm_inst_new(INST_TYPECHECK, 0, 0),
-                   id_node->type->sourcepos);
         }
-        add_inst(emit, store_fast_inst_new(handle_symbol(emit, id_node->id)),
+        add_inst(emit,
+                 store_fast_inst_new(handle_symbol(emit, id_node->id),
+                                     id_node->type != NULL),
                  sourcepos);
       } break;
       case SUBSCRIPT_NODE: {
@@ -271,8 +271,8 @@ static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node,
 
 static void visit_break_node(struct emit *emit, struct sourcepos *sourcepos) {
   if (emit->code_obj->break_labels->len <= 0) {
-    printf("Invalid use of break\n");
-    exit(-1);
+    vm_raise(emit->vm,
+             obj_compile_error_new("Incorrect use of break.", sourcepos));
   }
   add_inst(emit,
            jump_inst_new((uintptr_t)vec_pop(emit->code_obj->break_labels)),
@@ -324,8 +324,8 @@ static void visit_code_block_node(struct emit *emit,
 static void visit_continue_node(struct emit *emit,
                                 struct sourcepos *sourcepos) {
   if (emit->code_obj->cont_labels->len <= 0) {
-    printf("Invalid use of continue\n");
-    exit(-1);
+    vm_raise(emit->vm,
+             obj_compile_error_new("Incorrect use of continue.", sourcepos));
   }
   add_inst(emit, jump_inst_new((uintptr_t)vec_pop(emit->code_obj->cont_labels)),
            sourcepos);
@@ -404,14 +404,16 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node,
   enter_scope(emit);
   visit_ast_node(emit, node->target);
   add_inst(emit, vm_inst_new(INST_ITER, 0, 0), sourcepos);
-  add_inst(emit, store_fast_inst_new(handle_symbol(emit, id)), sourcepos);
+  add_inst(emit, store_fast_inst_new(handle_symbol(emit, id), false),
+           sourcepos);
   add_inst(emit, vm_inst_new(INST_POP, 0, 0), sourcepos);
 
   place_label(emit, body);
   add_inst(emit, load_fast_inst_new(get_symbol(emit, id)), sourcepos);
   add_inst(emit, jump_if_full_inst_new(end),
            sourcepos);  // note to decrement iter if full
-  add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->id)), sourcepos);
+  add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->id), false),
+           sourcepos);
   add_inst(emit, vm_inst_new(INST_POP, 0, 0), sourcepos);
   visit_ast_node(emit, node->body);
   add_inst(emit, jump_inst_new(body), sourcepos);
@@ -478,7 +480,8 @@ static void visit_func_decl_node(struct emit *emit, struct func_decl_node *node,
 
   if (node->name != NULL) {
     if (emit->symtable->len > 1) {
-      add_inst(emit, store_fast_inst_new(handle_symbol(emit, node->name)),
+      add_inst(emit,
+               store_fast_inst_new(handle_symbol(emit, node->name), false),
                sourcepos);
     } else {
       add_inst(emit, store_id_inst_new(emit, clone_str(node->name)), sourcepos);
@@ -633,7 +636,7 @@ static void visit_switch_node(struct emit *emit, struct switch_node *node,
   int switch_end = new_label();
 
   visit_ast_node(emit, node->target);
-  add_inst(emit, store_fast_inst_new(handle_symbol(emit, id)),
+  add_inst(emit, store_fast_inst_new(handle_symbol(emit, id), false),
            node->target->sourcepos);
   add_inst(emit, vm_inst_new(INST_POP, 0, 0), node->target->sourcepos);
 
@@ -949,8 +952,8 @@ static vm_inst_t store_attrib_inst_new(struct emit *emit, char *attrib) {
   return vm_inst_new(INST_STORE_ATTRIB, 0, emit->code_obj->strs->len - 1);
 }
 
-static vm_inst_t store_fast_inst_new(int idx) {
-  return vm_inst_new(INST_STORE_FAST, 0, idx);
+static vm_inst_t store_fast_inst_new(int idx, bool enforced) {
+  return vm_inst_new(INST_STORE_FAST, enforced, idx);
 }
 
 static vm_inst_t store_id_inst_new(struct emit *emit, char *id) {

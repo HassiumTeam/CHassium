@@ -29,8 +29,7 @@ struct code_obj *compile_module_for_import(struct vec *from, struct vm *vm) {
   strcat(rel_path, ".has");
 
   if (!file_exists(rel_path)) {
-    printf("No such file %s\n", rel_path);
-    exit(-1);
+    vm_raise(vm, obj_file_not_found_error_new(obj_string_new(rel_path)));
   }
 
   struct sourcefile *mod_file = sourcefile_new(rel_path);

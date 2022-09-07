@@ -57,6 +57,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
   struct obj **stackptr = stack;
   struct stackframe *topframe = vec_peek(vm->frames);
   struct obj **locals = topframe->locals;
+  struct obj **local_types = topframe->local_types;
   int *handler_returns_len = &vm->handler_returns->len;
   struct vm_inst *inst;
 
@@ -360,8 +361,21 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_STORE_FAST: {
         struct obj *existing =
             stackframe_get((struct stackframe *)vec_peek(vm->frames), op);
+
+        if (opshort) {
+          local_types[op] = obj_down_ref(STACK_POP());
+        }
+
+        if (local_types[op] != NULL && !obj_is(STACK_PEEK(), local_types[op])) {
+          vm_raise(vm, obj_type_error_new(existing, local_types[op],
+                                          STACK_PEEK()->obj_type));
+          break;
+        }
+
         locals[op] = obj_inc_ref(STACK_PEEK());
-        obj_dec_ref(existing);
+        if (existing != NULL) {
+          obj_dec_ref(existing);
+        }
       } break;
       case INST_STORE_ID: {
         char *id = vec_get(code_obj->strs, op);
