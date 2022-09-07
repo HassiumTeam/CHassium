@@ -345,9 +345,8 @@ struct obj *obj_invoke(struct obj *obj, struct vm *vm, struct vec *args) {
     struct obj *new = obj_instantiate(obj, vm, args);
     ret = new;
   } else {
-    printf("object %d was not invokable!\n", obj->type);
-    struct obj *thing = obj_hashmap_get(obj->attribs, "new");
-    exit(-1);
+    vm_raise(vm, obj_not_invokable_error_new(obj));
+    ret = NULL;
   }
 
   if (no_args) {
@@ -542,6 +541,14 @@ struct obj object_type_obj = {
     .parent = NULL,
     .obj_type = &type_type_obj,
     .attribs = NULL,
+};
+
+struct obj object_not_invokable_error_type_obj = {
+    .ctx = "ObjectNotInvokableError",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &error_type_obj,
+    .obj_type = &type_type_obj,
 };
 
 struct obj string_type_obj = {

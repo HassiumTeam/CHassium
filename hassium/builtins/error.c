@@ -94,6 +94,22 @@ struct obj *obj_no_such_attrib_error_new(struct obj *target,
   return error;
 }
 
+struct obj *obj_not_invokable_error_new(struct obj *target) {
+  struct obj *error =
+      obj_new(OBJ_ANON, NULL, &object_not_invokable_error_type_obj);
+  obj_set_attrib(error, "target", target);
+
+  struct strbuf *strbuf = strbuf_new();
+  strbuf_append_str(strbuf, (char *)target->obj_type->ctx);
+  strbuf_append_str(strbuf, " is not invokable!");
+
+  char *msg_str = strbuf_done(strbuf);
+  obj_set_attrib(error, "message", obj_string_new(msg_str));
+  free(msg_str);
+
+  return error;
+}
+
 struct obj *obj_type_error_new(struct obj *target, struct obj *expected,
                                struct obj *got) {
   struct obj *type_error = obj_new(OBJ_ANON, NULL, &type_error_type_obj);

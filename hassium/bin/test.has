@@ -1,17 +1,1 @@
-func main () {
-    nested1 ();
-}
-
-func nested1 () {
-    nested2 ();
-}
-
-func nested2 () {
-    a: String = "Test";
-    a = "test2";
-    a = 2;
-}
-
-main ();
-
-
+"test"();

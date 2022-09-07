@@ -8,6 +8,8 @@ static struct obj *FileNotFoundError(struct obj *, struct vm *, struct vec *);
 static struct obj *NameError(struct obj *, struct vm *, struct vec *);
 static struct obj *NoSuchAttribError(struct obj *, struct vm *, struct vec *);
 static struct obj *Number(struct obj *, struct vm *, struct vec *);
+static struct obj *ObjectNotInvokableError(struct obj *, struct vm *,
+                                           struct vec *);
 static struct obj *String(struct obj *, struct vm *, struct vec *);
 static struct obj *TypeError(struct obj *, struct vm *, struct vec *);
 
@@ -60,6 +62,12 @@ struct hashmap *get_defaults() {
   obj_set_attrib(&number_type_obj, "toString",
                  obj_builtin_new(type_toString, &number_type_obj));
 
+  obj_set_attrib(&object_not_invokable_error_type_obj, "new",
+                 obj_builtin_new(ObjectNotInvokableError, NULL));
+  obj_set_attrib(
+      &object_not_invokable_error_type_obj, "toString",
+      obj_builtin_new(type_toString, &object_not_invokable_error_type_obj));
+
   obj_set_attrib(&string_type_obj, "new", obj_builtin_new(String, NULL));
   obj_set_attrib(&string_type_obj, "toString",
                  obj_builtin_new(type_toString, &string_type_obj));
@@ -90,6 +98,8 @@ struct hashmap *get_defaults() {
   obj_hashmap_set(defaults, "none", &none_type_obj);
   obj_hashmap_set(defaults, "Number", &number_type_obj);
   obj_hashmap_set(defaults, "Object", &object_type_obj);
+  obj_hashmap_set(defaults, "ObjectNotInvokableError",
+                  &object_not_invokable_error_type_obj);
   obj_hashmap_set(defaults, "println",
                   obj_inc_ref(obj_builtin_new_named(println, NULL, "println")));
   obj_hashmap_set(defaults, "String", &string_type_obj);
@@ -127,6 +137,8 @@ void destruct_defaults() {
   vec_free(no_such_attrib_error_type_obj.weak_refs);
   obj_hashmap_free(number_type_obj.attribs);
   vec_free(number_type_obj.weak_refs);
+  obj_hashmap_free(object_not_invokable_error_type_obj.attribs);
+  vec_free(object_not_invokable_error_type_obj.weak_refs);
   obj_hashmap_free(string_type_obj.attribs);
   vec_free(string_type_obj.weak_refs);
   obj_hashmap_free(type_error_type_obj.attribs);
@@ -190,6 +202,11 @@ static struct obj *NoSuchAttribError(struct obj *_, struct vm *vm,
   struct obj *target = vec_get(args, 0);
   struct obj *attrib = obj_enforce_type(vec_get(args, 1), &string_type_obj, vm);
   return obj_no_such_attrib_error_new(target, attrib);
+}
+
+static struct obj *ObjectNotInvokableError(struct obj *_, struct vm *vm,
+                                           struct vec *args) {
+  return obj_not_invokable_error_new(vec_get(args, 0));
 }
 
 static struct obj *println(struct obj *_, struct vm *vm, struct vec *args) {

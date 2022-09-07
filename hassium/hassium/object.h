@@ -97,6 +97,7 @@ extern struct obj no_such_attrib_error_type_obj;
 extern struct obj none_type_obj;
 extern struct obj number_type_obj;
 extern struct obj object_type_obj;
+extern struct obj object_not_invokable_error_type_obj;
 extern struct obj string_type_obj;
 extern struct obj type_type_obj;
 extern struct obj weakref_type_obj;

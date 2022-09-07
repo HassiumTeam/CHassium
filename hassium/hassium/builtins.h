@@ -46,6 +46,8 @@ struct obj *obj_name_error_new(struct obj *);
 
 struct obj *obj_no_such_attrib_error_new(struct obj *, struct obj *);
 
+struct obj *obj_not_invokable_error_new(struct obj *);
+
 struct obj *obj_num_new(bool, int, float);
 #define obj_num_val(o) ((uintptr_t)((o)->ctx))
 
