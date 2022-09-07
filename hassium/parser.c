@@ -736,11 +736,20 @@ static struct ast_node *parse_term(struct parser *parser) {
     } else {
       return num_node_new(is_float, atoi(a), 0, sourcepos);
     }
-  } else if (matchtok(parser, TOK_STRING))
+  } else if (matchtok(parser, TOK_STRING)) {
     return string_node_new(clone_str(expecttok(parser, TOK_STRING)->val),
                            sourcepos);
-  struct tok *tok = curtok(parser);
-  printf("Unexpected %d '%s'\n", tok->type, tok->val);
+  } else {
+    struct tok *tok = curtok(parser);
+    struct strbuf *strbuf = strbuf_new();
+    strbuf_append_str(strbuf, "Unexpected ");
+    strbuf_append_str(strbuf, toktype_t_names[tok->type]);
+    char *message = strbuf_done(strbuf);
+
+    vm_raise(parser->vm,
+             obj_compile_error_new(message, curtok(parser)->sourcepos));
+    free(message);
+  }
 }
 
 static struct vec *parse_arg_list(struct parser *parser) {
@@ -793,17 +802,11 @@ static struct tok *expecttok(struct parser *parser, toktype_t type) {
   }
 
   struct strbuf *strbuf = strbuf_new();
-  char expected_str[3];
-  char found_str[3];
-  sprintf(expected_str, "%d", type);
-  sprintf(found_str, "%d", curtok(parser)->type);
 
-  strbuf_append_str(strbuf, "Expected token ");
-  strbuf_append_str(strbuf, expected_str);
-  strbuf_append_str(strbuf, ", found a ");
-  strbuf_append_str(strbuf, found_str);
-  strbuf_append_str(strbuf, " with value \"");
-  strbuf_append_str(strbuf, curtok(parser)->val);
+  strbuf_append_str(strbuf, "Expected ");
+  strbuf_append_str(strbuf, toktype_t_names[type]);
+  strbuf_append_str(strbuf, " found ");
+  strbuf_append_str(strbuf, toktype_t_names[curtok(parser)->type]);
   strbuf_append(strbuf, '"');
 
   char *message = strbuf_done(strbuf);
@@ -821,14 +824,14 @@ static struct tok *expecttokv(struct parser *parser, toktype_t type,
   }
 
   struct strbuf *strbuf = strbuf_new();
-  char found_str[3];
-  sprintf(found_str, "%d", curtok(parser)->type);
 
-  strbuf_append_str(strbuf, "Expected \"");
+  strbuf_append_str(strbuf, "Expected ");
+  strbuf_append_str(strbuf, toktype_t_names[type]);
+  strbuf_append_str(strbuf, ": \"");
   strbuf_append_str(strbuf, val);
-  strbuf_append_str(strbuf, "\", found a ");
-  strbuf_append_str(strbuf, found_str);
-  strbuf_append_str(strbuf, " with value \"");
+  strbuf_append_str(strbuf, "\" found ");
+  strbuf_append_str(strbuf, toktype_t_names[curtok(parser)->type]);
+  strbuf_append_str(strbuf, " \"");
   strbuf_append_str(strbuf, curtok(parser)->val);
   strbuf_append(strbuf, '"');
 

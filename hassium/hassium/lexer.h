@@ -29,6 +29,11 @@ typedef enum {
   TOK_STRING,
 } toktype_t;
 
+static char *toktype_t_names[] = {
+    "=", "}",        "]", ")", ":",      ",", ".",      "identifier",
+    "{", "operator", "(", "[", "number", ";", "string",
+};
+
 struct tok {
   toktype_t type;
   char *val;

@@ -221,7 +221,7 @@ static void addtok(struct lexer *lexer, toktype_t type, char *val) {
   if (type == TOK_STRING) {
     col_offset += 2;
   } else if (col_offset == 1) {
-    col_offset = 0;
+    col_offset = 1;
   }
 
   vec_push(lexer->toks,
