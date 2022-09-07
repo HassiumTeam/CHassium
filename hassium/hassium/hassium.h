@@ -7,6 +7,7 @@
 #include <emit.h>
 #include <lexer.h>
 #include <libgen.h>
+#include <object.h>
 #include <parser.h>
 #include <sourcefile.h>
 #include <stdio.h>
@@ -19,9 +20,9 @@ struct hassium_ctx {
 
 extern struct hassium_ctx hassium_ctx;
 
-struct code_obj *compile_module(struct sourcefile *);
-struct code_obj *compile_module_for_import(struct vec *);
-void run_module(struct code_obj *);
+struct code_obj *compile_module(struct sourcefile *, struct vm *);
+struct code_obj *compile_module_for_import(struct vec *, struct vm *);
+void run_module(struct code_obj *, struct vm *);
 void run_file(char *);
 
 #endif

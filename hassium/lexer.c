@@ -152,7 +152,12 @@ static void readid(struct lexer *lexer) {
   while (peekc(lexer) != -1 &&
          (isalnum((char)peekc(lexer)) || (char)peekc(lexer) == '_'))
     strbuf_append(strbuf, (char)readc(lexer));
-  addtok(lexer, TOK_ID, strbuf_done(strbuf));
+  char *str = strbuf_done(strbuf);
+  if (strcmp(str, "is") == 0) {
+    addtok(lexer, TOK_OP, str);
+  } else {
+    addtok(lexer, TOK_ID, str);
+  }
 }
 
 static void readnum(struct lexer *lexer) {

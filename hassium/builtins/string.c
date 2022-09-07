@@ -64,7 +64,7 @@ static struct obj *__add__(struct obj *left, struct vm *vm, struct vec *args) {
 }
 
 static struct obj *__eq__(struct obj *left, struct vm *vm, struct vec *args) {
-  struct obj *right = vec_get(args, 0);
+  struct obj *right = obj_enforce_type(vec_get(args, 0), &string_type_obj, vm);
   return bool_to_obj(strcmp((char *)left->ctx, (char *)right->ctx) == 0);
 }
 
@@ -108,19 +108,19 @@ static struct obj *__iter____iternext__(struct obj *iter_, struct vm *vm,
 
 static struct obj *__greater__(struct obj *left, struct vm *vm,
                                struct vec *args) {
-  struct obj *right = vec_get(args, 0);
+  struct obj *right = obj_enforce_type(vec_get(args, 0), &string_type_obj, vm);
   return bool_to_obj(strcmp((char *)left->ctx, (char *)right->ctx) > 0);
 }
 
 static struct obj *__lesser__(struct obj *left, struct vm *vm,
                               struct vec *args) {
-  struct obj *right = vec_get(args, 0);
+  struct obj *right = obj_enforce_type(vec_get(args, 0), &string_type_obj, vm);
   return bool_to_obj(strcmp((char *)left->ctx, (char *)right->ctx) < 0);
 }
 
 static struct obj *__slice__(struct obj *obj, struct vm *vm, struct vec *args) {
-  struct obj *arg1 = vec_get(args, 0);
-  struct obj *arg2 = vec_get(args, 1);
+  struct obj *arg1 = obj_enforce_type(vec_get(args, 0), &number_type_obj, vm);
+  struct obj *arg2 = obj_enforce_type(vec_get(args, 1), &number_type_obj, vm);
 
   char *string = obj->ctx;
   int len = strlen(string);

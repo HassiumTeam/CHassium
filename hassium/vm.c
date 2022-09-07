@@ -443,6 +443,21 @@ void vm_raise(struct vm *vm, struct obj *obj) {
   bool found_top = false;
   struct sourcepos *curpos;
 
+  if (obj->obj_type == &compile_error_type_obj) {
+    strbuf_append_str(stacktrace, "at: ");
+    sourcepos_to_strbuf(obj->sourcepos, stacktrace);
+    strbuf_append_str(stacktrace, ":\n");
+    strbuf_append_str(stacktrace,
+                      (char *)vec_get(obj->sourcepos->sourcefile->lines,
+                                      obj->sourcepos->row));
+    strbuf_append(stacktrace, '\n');
+    for (int i = 0; i < obj->sourcepos->col; ++i) {
+      strbuf_append(stacktrace, ' ');
+    }
+    strbuf_append_str(stacktrace, "^\n");
+    has_some_trace = true;
+  }
+
   for (int i = vm->frames->len - 1; i >= 0; --i) {
     struct stackframe *frame = vec_get(vm->frames, i);
     if (frame->invokee != NULL) {
@@ -477,7 +492,6 @@ void vm_raise(struct vm *vm, struct obj *obj) {
             stacktrace);
         strbuf_append(stacktrace, ')');
       }
-
       strbuf_append(stacktrace, '\n');
 
       has_some_trace = true;

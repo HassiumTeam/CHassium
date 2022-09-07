@@ -13,6 +13,6 @@
 #include <util.h>
 #include <vm.h>
 
-struct code_obj *compile_ast(struct ast_node *);
+struct code_obj *compile_ast(struct ast_node *, struct vm *);
 
 #endif

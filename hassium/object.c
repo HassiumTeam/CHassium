@@ -458,6 +458,14 @@ struct obj builtin_type_obj = {
     .attribs = NULL,
 };
 
+struct obj compile_error_type_obj = {
+    .ctx = "CompileError",
+    .ref_immune = true,
+    .type = OBJ_TYPE,
+    .parent = &error_type_obj,
+    .obj_type = &type_type_obj,
+};
+
 struct obj error_type_obj = {
     .ctx = "Error",
     .ref_immune = true,

@@ -32,6 +32,9 @@ struct hashmap *get_defaults() {
   obj_set_attrib(&builtin_type_obj, "toString",
                  obj_builtin_new(type_toString, &builtin_type_obj));
 
+  obj_set_attrib(&compile_error_type_obj, "toString",
+                 obj_builtin_new(type_toString, &compile_error_type_obj));
+
   obj_set_attrib(&file_not_found_error_type_obj, "new",
                  obj_builtin_new(FileNotFoundError, NULL));
   obj_set_attrib(
@@ -73,6 +76,7 @@ struct hashmap *get_defaults() {
   obj_hashmap_set(defaults, "Array", &array_type_obj);
   obj_hashmap_set(defaults, "Bool", &bool_type_obj);
   obj_hashmap_set(defaults, "Builtin", &builtin_type_obj);
+  obj_hashmap_set(defaults, "CompileError", &compile_error_type_obj);
   obj_hashmap_set(defaults, "FileNotFoundError",
                   &file_not_found_error_type_obj);
   obj_hashmap_set(defaults, "Func", &func_type_obj);
@@ -109,6 +113,8 @@ void destruct_defaults() {
   vec_free(bool_type_obj.weak_refs);
   obj_hashmap_free(builtin_type_obj.attribs);
   vec_free(builtin_type_obj.weak_refs);
+  obj_hashmap_free(compile_error_type_obj.attribs);
+  vec_free(compile_error_type_obj.weak_refs);
   obj_hashmap_free(file_not_found_error_type_obj.attribs);
   vec_free(file_not_found_error_type_obj.weak_refs);
   obj_hashmap_free(func_type_obj.attribs);

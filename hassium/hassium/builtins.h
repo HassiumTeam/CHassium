@@ -32,6 +32,8 @@ bool obj_is_true(struct obj *, struct vm *);
 struct obj *obj_builtin_new(builtin_func_t, struct obj *);
 struct obj *obj_builtin_new_named(builtin_func_t, struct obj *, char *);
 
+struct obj *obj_compile_error_new(char *, struct sourcepos *sourcepos);
+
 struct obj *obj_iter_new(struct obj *);
 struct obj *obj_iter_target(struct obj *);
 

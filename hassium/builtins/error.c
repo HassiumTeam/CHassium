@@ -31,6 +31,16 @@ struct obj *obj_arg_mismatch_error_new(struct vm *vm, struct obj *target,
   return error;
 }
 
+struct obj *obj_compile_error_new(char *msg, struct sourcepos *sourcepos) {
+  struct obj *error = obj_new(OBJ_ANON, NULL, &compile_error_type_obj);
+  error->sourcepos = sourcepos;
+
+  obj_set_attrib(error, "toString", obj_builtin_new(Error_toString, error));
+  obj_set_attrib(error, "message", obj_string_new(msg));
+
+  return error;
+}
+
 struct obj *obj_file_not_found_error_new(struct obj *path) {
   struct obj *error = obj_new(OBJ_ANON, NULL, &file_not_found_error_type_obj);
   obj_set_attrib(error, "path", path);

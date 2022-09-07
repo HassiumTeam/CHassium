@@ -4,6 +4,7 @@ struct parser {
   struct vec *toks;
   int pos;
   int len;
+  struct vm *vm;
 };
 
 static struct ast_node *parse_statement(struct parser *);
@@ -49,11 +50,12 @@ static int accepttokv(struct parser *, toktype_t, char *);
 static struct tok *expecttok(struct parser *, toktype_t);
 static struct tok *expecttokv(struct parser *, toktype_t, char *);
 
-struct ast_node *parser_parse(struct vec *toks) {
+struct ast_node *parser_parse(struct vec *toks, struct vm *vm) {
   struct parser parser;
   parser.toks = toks;
   parser.pos = 0;
   parser.len = parser.toks->len;
+  parser.vm = vm;
 
   struct sourcepos *sourcepos = ((struct tok *)vec_get(toks, 0))->sourcepos;
   struct vec *children = vec_new();
@@ -353,7 +355,14 @@ static struct ast_node *parse_switch(struct parser *parser) {
           bin_op_type = BIN_OP_OR;
         } else {
           printf("Invalid binary op in case: %s\n", curtok(parser)->val);
-          exit(-1);
+          struct strbuf *strbuf = strbuf_new();
+          strbuf_append_str(strbuf, "Invalid binary operator '");
+          strbuf_append_str(strbuf, curtok(parser)->val);
+          strbuf_append_str(strbuf, "'");
+          char *message = strbuf_done(strbuf);
+          vm_raise(parser->vm,
+                   obj_compile_error_new(message, curtok(parser)->sourcepos));
+          free(message);
         }
 
         case_ = bin_op_node_new(bin_op_type, NULL, parse_expr(parser), true,
@@ -780,8 +789,25 @@ static struct tok *expecttok(struct parser *parser, toktype_t type) {
     parser->pos++;
     return ret;
   }
-  printf("Expected token %d\n", type);
-  exit(-1);
+
+  struct strbuf *strbuf = strbuf_new();
+  char expected_str[3];
+  char found_str[3];
+  sprintf(expected_str, "%d", type);
+  sprintf(found_str, "%d", curtok(parser)->type);
+
+  strbuf_append_str(strbuf, "Expected token ");
+  strbuf_append_str(strbuf, expected_str);
+  strbuf_append_str(strbuf, ", found a ");
+  strbuf_append_str(strbuf, found_str);
+  strbuf_append_str(strbuf, " with value \"");
+  strbuf_append_str(strbuf, curtok(parser)->val);
+  strbuf_append(strbuf, '"');
+
+  char *message = strbuf_done(strbuf);
+  vm_raise(parser->vm,
+           obj_compile_error_new(message, curtok(parser)->sourcepos));
+  free(message);
 }
 
 static struct tok *expecttokv(struct parser *parser, toktype_t type,
@@ -791,6 +817,21 @@ static struct tok *expecttokv(struct parser *parser, toktype_t type,
     parser->pos++;
     return ret;
   }
-  printf("Expected token %d %s\n", type, val);
-  exit(-1);
+
+  struct strbuf *strbuf = strbuf_new();
+  char found_str[3];
+  sprintf(found_str, "%d", curtok(parser)->type);
+
+  strbuf_append_str(strbuf, "Expected \"");
+  strbuf_append_str(strbuf, val);
+  strbuf_append_str(strbuf, "\", found a ");
+  strbuf_append_str(strbuf, found_str);
+  strbuf_append_str(strbuf, " with value \"");
+  strbuf_append_str(strbuf, curtok(parser)->val);
+  strbuf_append(strbuf, '"');
+
+  char *message = strbuf_done(strbuf);
+  vm_raise(parser->vm,
+           obj_compile_error_new(message, curtok(parser)->sourcepos));
+  free(message);
 }

@@ -6,6 +6,7 @@ struct emit {
   struct ast_node *ret_type;
   struct code_obj *func;
   struct code_obj *class;
+  struct vm *vm;
 };
 
 static void visit_ast_node(struct emit *, struct ast_node *);
@@ -107,13 +108,14 @@ static int get_symbol(struct emit *, char *);
 static bool has_symbol(struct emit *, char *);
 static int handle_symbol(struct emit *, char *);
 
-struct code_obj *compile_ast(struct ast_node *ast) {
+struct code_obj *compile_ast(struct ast_node *ast, struct vm *vm) {
   struct emit emit;
   emit.code_obj = code_obj_new(clone_str("__module__"));
   emit.ret_type = NULL;
   emit.symtable = vec_new();
   emit.func = NULL;
   emit.class = NULL;
+  emit.vm = vm;
 
   visit_code_block_node(&emit, ast->inner, true);
   add_inst(&emit, vm_inst_new(INST_LOAD_NONE, 0, 0), ast->sourcepos);
@@ -519,7 +521,7 @@ static void visit_if_node(struct emit *emit, struct if_node *node,
 
 static void visit_import_node(struct emit *emit, struct import_node *node,
                               struct sourcepos *sourcepos) {
-  struct code_obj *mod = compile_module_for_import(node->from);
+  struct code_obj *mod = compile_module_for_import(node->from, emit->vm);
   add_inst(emit, import_inst_new(emit, node->imports, mod), sourcepos);
 }
 
