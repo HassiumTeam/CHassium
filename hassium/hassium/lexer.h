@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <ds/strbuf.h>
 #include <ds/vec.h>
+#include <object.h>
 #include <sourcefile.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,7 +38,7 @@ struct tok {
 struct tok *tok_new(toktype_t, char *, struct sourcepos *);
 void tok_free(struct tok *);
 
-struct vec *lexer_tokenize(struct sourcefile *);
+struct vec *lexer_tokenize(struct sourcefile *, struct vm *);
 void free_toks(struct vec *);
 void debug_toks(struct vec *);
 

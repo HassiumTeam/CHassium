@@ -5,7 +5,7 @@ struct hassium_ctx hassium_ctx = {
 };
 
 struct code_obj *compile_module(struct sourcefile *sourcefile, struct vm *vm) {
-  struct vec *toks = lexer_tokenize(sourcefile);
+  struct vec *toks = lexer_tokenize(sourcefile, vm);
   // debug_toks(toks);
   struct ast_node *ast = parser_parse(toks, vm);
   struct code_obj *module = compile_ast(ast, vm);

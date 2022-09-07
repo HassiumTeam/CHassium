@@ -34,7 +34,7 @@ void tok_free(struct tok *tok) {
   free(tok);
 }
 
-struct vec *lexer_tokenize(struct sourcefile *sourcefile) {
+struct vec *lexer_tokenize(struct sourcefile *sourcefile, struct vm *vm) {
   struct lexer lexer;
   lexer.sourcefile = sourcefile;
   lexer.code = sourcefile->contents;
@@ -135,9 +135,17 @@ struct vec *lexer_tokenize(struct sourcefile *sourcefile) {
         case ')':
           addtok(&lexer, TOK_CPAREN, heap_str(1, cur));
           break;
-        default:
-          printf("Unknown char '%c'!\n", cur);
-          break;
+        default: {
+          struct strbuf *strbuf = strbuf_new();
+          strbuf_append_str(strbuf, "Invalid or unexpected character \"");
+          strbuf_append(strbuf, readc(&lexer));
+          strbuf_append(strbuf, '"');
+          char *message = strbuf_done(strbuf);
+          vm_raise(vm, obj_compile_error_new(message,
+                                             sourcepos_new(lexer.row, lexer.col,
+                                                           lexer.sourcefile)));
+          free(message);
+        } break;
       }
       readc(&lexer);
     }
