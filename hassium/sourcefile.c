@@ -11,7 +11,11 @@ struct sourcefile *sourcefile_new(char *filePath) {
   int len = strlen(sourcefile->contents);
   for (int i = 0; i < len; ++i) {
     char c = sourcefile->contents[i];
-    if (c == '\n' || i + 1 == len) {
+    if (c == '\n') {
+      vec_push(sourcefile->lines, strbuf_done(line));
+      line = strbuf_new();
+    } else if (i + 1 == len) {
+      strbuf_append(line, c);
       vec_push(sourcefile->lines, strbuf_done(line));
       line = strbuf_new();
     } else {

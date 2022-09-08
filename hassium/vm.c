@@ -164,6 +164,16 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_DELETE: {
         STACK_POP()->refs = 1;
       } break;
+      case INST_DESTRUCTURE_ARRAY: {
+        struct obj *arr = STACK_PEEK();
+        struct obj *idx = vec_get(code_obj->consts, op);
+        STACK_PUSH(obj_inc_ref(obj_index(arr, idx, vm)));
+      } break;
+      case INST_DESTRUCTURE_OBJECT: {
+        struct obj *obj = STACK_PEEK();
+        struct obj *key = vec_get(code_obj->consts, op);
+        STACK_PUSH(obj_inc_ref(obj_index(obj, key, vm)));
+      } break;
       case INST_IMPORT: {
         struct code_obj *mod = vec_get(code_obj->code_objs, op);
         struct vec *imports = vec_get(code_obj->vecs, opshort);
@@ -367,7 +377,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         }
 
         if (local_types[op] != NULL && !obj_is(STACK_PEEK(), local_types[op])) {
-          vm_raise(vm, obj_type_error_new(existing, local_types[op],
+          vm_raise(vm, obj_type_error_new(&none_obj, local_types[op],
                                           STACK_PEEK()->obj_type));
           break;
         }

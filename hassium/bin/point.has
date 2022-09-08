@@ -44,9 +44,7 @@ class Point {
   }
 
   func __iternext__ () {
-    ret = self.items [self.pos];
-    self.pos += 1;
-    return ret;
+    return self.items [self.pos++];
   }
 }
 

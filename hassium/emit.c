@@ -73,6 +73,8 @@ static vm_inst_t build_func_inst_new(struct emit *, struct code_obj *,
                                      struct vec *, bool);
 static vm_inst_t build_handler_inst_new(struct emit *, struct code_obj *);
 static vm_inst_t build_obj_inst_new(struct emit *, struct vec *);
+static vm_inst_t destructure_array_inst_new(struct emit *, int);
+static vm_inst_t destructure_object_inst_new(struct emit *, char *);
 static vm_inst_t import_inst_new(struct emit *, struct vec *,
                                  struct code_obj *);
 static vm_inst_t invoke_inst_new(int);
@@ -238,6 +240,34 @@ static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node,
   if (node->type == BIN_OP_ASSIGN || node->type == BIN_OP_ASSIGN_SHORT) {
     visit_ast_node(emit, node->right);
     switch (node->left->type) {
+      case ARRAY_DECL_NODE: {
+        struct array_decl_node *array_node = node->left->inner;
+        for (int i = 0; i < array_node->values->len; ++i) {
+          struct ast_node *item = vec_get(array_node->values, i);
+
+          if (item->type != ID_NODE) {
+            struct strbuf *strbuf = strbuf_new();
+            strbuf_append_str(strbuf, "Invalid use of ");
+            strbuf_append_str(strbuf, ast_type_t_names[item->type]);
+            strbuf_append_str(strbuf, " in array destructure!");
+            char *message = strbuf_done(strbuf);
+            vm_raise(emit->vm, obj_compile_error_new(message, item->sourcepos));
+            free(message);
+            return;
+          }
+
+          struct id_node *id_node = item->inner;
+          add_inst(emit, destructure_array_inst_new(emit, i), item->sourcepos);
+          if (id_node->type != NULL) {
+            visit_ast_node(emit, id_node->type);
+          }
+          add_inst(emit,
+                   store_fast_inst_new(handle_symbol(emit, id_node->id),
+                                       id_node->type != NULL),
+                   sourcepos);
+          add_inst(emit, vm_inst_new(INST_POP, 0, 0), item->sourcepos);
+        }
+      } break;
       case ATTRIB_NODE: {
         struct attrib_node *attrib_node = node->left->inner;
         visit_ast_node(emit, attrib_node->target);
@@ -255,11 +285,62 @@ static void visit_bin_op_node(struct emit *emit, struct bin_op_node *node,
                                      id_node->type != NULL),
                  sourcepos);
       } break;
+      case OBJ_DECL_NODE: {
+        struct obj_decl_node *obj_node = node->left->inner;
+        for (int i = 0; i < obj_node->keys->len; ++i) {
+          struct ast_node *key_node = vec_get(obj_node->keys, i);
+          struct ast_node *val_node = vec_get(obj_node->values, i);
+
+          if (key_node->type != ID_NODE) {
+            struct strbuf *strbuf = strbuf_new();
+            strbuf_append_str(strbuf, "Invalid use of ");
+            strbuf_append_str(strbuf, ast_type_t_names[key_node->type]);
+            strbuf_append_str(strbuf, " in array destructure!");
+            char *message = strbuf_done(strbuf);
+            vm_raise(emit->vm,
+                     obj_compile_error_new(message, key_node->sourcepos));
+            free(message);
+            return;
+          }
+
+          if (val_node->type != ID_NODE) {
+            struct strbuf *strbuf = strbuf_new();
+            strbuf_append_str(strbuf, "Invalid use of ");
+            strbuf_append_str(strbuf, ast_type_t_names[val_node->type]);
+            strbuf_append_str(strbuf, " in array destructure!");
+            char *message = strbuf_done(strbuf);
+            vm_raise(emit->vm,
+                     obj_compile_error_new(message, val_node->sourcepos));
+            free(message);
+            return;
+          }
+
+          struct id_node *key_id = key_node->inner;
+          struct id_node *val_id = val_node->inner;
+          add_inst(emit, destructure_object_inst_new(emit, key_id->id),
+                   key_node->sourcepos);
+          add_inst(emit,
+                   store_fast_inst_new(handle_symbol(emit, val_id->id),
+                                       val_id->type != NULL),
+                   sourcepos);
+        }
+      } break;
       case SUBSCRIPT_NODE: {
         struct subscript_node *subscript_node = node->left->inner;
         visit_ast_node(emit, subscript_node->key);
         visit_ast_node(emit, subscript_node->target);
         add_inst(emit, vm_inst_new(INST_STORE_SUBSCRIPT, 0, 0), sourcepos);
+      } break;
+      default: {
+        struct strbuf *strbuf = strbuf_new();
+        strbuf_append_str(strbuf, "Cannot assign to ");
+        strbuf_append_str(strbuf, ast_type_t_names[node->left->type]);
+        strbuf_append(strbuf, '!');
+        char *message = strbuf_done(strbuf);
+        vm_raise(emit->vm,
+                 obj_compile_error_new(message, node->left->sourcepos));
+        free(message);
+        return;
       }
     }
   } else {
@@ -898,6 +979,18 @@ static vm_inst_t build_handler_inst_new(struct emit *emit,
 static vm_inst_t build_obj_inst_new(struct emit *emit, struct vec *keys) {
   vec_push(emit->code_obj->vecs, keys);
   return vm_inst_new(INST_BUILD_OBJ, 0, emit->code_obj->vecs->len - 1);
+}
+
+static vm_inst_t destructure_array_inst_new(struct emit *emit, int idx) {
+  vec_push(emit->code_obj->consts, obj_num_new(false, idx, 0));
+  return vm_inst_new(INST_DESTRUCTURE_ARRAY, 0,
+                     emit->code_obj->consts->len - 1);
+}
+
+static vm_inst_t destructure_object_inst_new(struct emit *emit, char *key) {
+  vec_push(emit->code_obj->consts, obj_string_new(key));
+  return vm_inst_new(INST_DESTRUCTURE_OBJECT, 0,
+                     emit->code_obj->consts->len - 1);
 }
 
 static vm_inst_t import_inst_new(struct emit *emit, struct vec *imports,

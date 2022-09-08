@@ -41,7 +41,9 @@ static struct ast_node *parse_obj_decl(struct parser *);
 static struct ast_node *parse_term(struct parser *);
 static struct vec *parse_arg_list(struct parser *);
 
-#define CURRENT_SOURCEPOS() curtok(parser)->sourcepos
+#define CURRENT_SOURCEPOS() (curtok(parser)->sourcepos)
+#define eof(p) (p->pos >= p->toks->len)
+#define lasttok(p) ((struct tok *)vec_get(p->toks, p->toks->len - 1))
 static struct tok *curtok(struct parser *);
 static int matchtok(struct parser *, toktype_t);
 static int matchtokv(struct parser *, toktype_t, char *);
@@ -66,6 +68,12 @@ struct ast_node *parser_parse(struct vec *toks, struct vm *vm) {
 }
 
 static struct ast_node *parse_statement(struct parser *parser) {
+  if (eof(parser)) {
+    vm_raise(parser->vm, obj_compile_error_new("Unexpected end-of-file",
+                                               (lasttok(parser))->sourcepos));
+    return NULL;
+  }
+
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
   struct ast_node *ret;
   if (matchtok(parser, TOK_OBRACE))
@@ -442,6 +450,12 @@ static struct ast_node *parse_expr_stmt(struct parser *parser) {
 }
 
 static struct ast_node *parse_expr(struct parser *parser) {
+  if (eof(parser)) {
+    vm_raise(parser->vm, obj_compile_error_new("Unexpected end-of-file",
+                                               (lasttok(parser))->sourcepos));
+    return NULL;
+  }
+
   return parse_assign(parser);
 }
 
@@ -582,9 +596,7 @@ static struct ast_node *parse_unary(struct parser *parser) {
                         num_node_new(false, 1, 0, sourcepos), false, sourcepos),
         false, sourcepos);
   }
-
   struct ast_node *target = parse_access(parser, NULL);
-
   if (accepttokv(parser, TOK_OP, "--")) {
     return unary_op_node_new(
         UNARY_OP_POST_DEC,
@@ -610,17 +622,16 @@ static struct ast_node *parse_unary(struct parser *parser) {
 static struct ast_node *parse_access(struct parser *parser,
                                      struct ast_node *left) {
   if (left == NULL) left = parse_array_decl(parser);
-
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
 
   if (accepttok(parser, TOK_DOT))
     return parse_access(
         parser, attrib_node_new(left, clone_str(expecttok(parser, TOK_ID)->val),
                                 sourcepos));
-  else if (accepttok(parser, TOK_OPAREN))
+  else if (accepttok(parser, TOK_OPAREN)) {
     return parse_access(
         parser, invoke_node_new(left, parse_arg_list(parser), sourcepos));
-  else if (accepttok(parser, TOK_OSQUARE)) {
+  } else if (accepttok(parser, TOK_OSQUARE)) {
     if (accepttok(parser, TOK_COLON)) {
       if (accepttok(parser, TOK_CSQUARE)) {
         return parse_access(parser,
@@ -705,7 +716,6 @@ static struct ast_node *parse_obj_decl(struct parser *parser) {
 
 static struct ast_node *parse_term(struct parser *parser) {
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
-
   if (accepttok(parser, TOK_OPAREN)) {
     struct ast_node *expr = parse_expr(parser);
     expecttok(parser, TOK_CPAREN);
@@ -739,15 +749,21 @@ static struct ast_node *parse_term(struct parser *parser) {
     return string_node_new(clone_str(expecttok(parser, TOK_STRING)->val),
                            sourcepos);
   } else {
-    struct tok *tok = curtok(parser);
-    struct strbuf *strbuf = strbuf_new();
-    strbuf_append_str(strbuf, "Unexpected ");
-    strbuf_append_str(strbuf, toktype_t_names[tok->type]);
-    char *message = strbuf_done(strbuf);
+    if (eof(parser)) {
+      vm_raise(parser->vm, obj_compile_error_new("Unexpected end-of-file",
+                                                 (lasttok(parser))->sourcepos));
+      return NULL;
+    } else {
+      struct tok *tok = curtok(parser);
+      struct strbuf *strbuf = strbuf_new();
+      strbuf_append_str(strbuf, "Unexpected ");
+      strbuf_append_str(strbuf, toktype_t_names[tok->type]);
+      char *message = strbuf_done(strbuf);
 
-    vm_raise(parser->vm,
-             obj_compile_error_new(message, curtok(parser)->sourcepos));
-    free(message);
+      vm_raise(parser->vm,
+               obj_compile_error_new(message, curtok(parser)->sourcepos));
+      free(message);
+    }
   }
 }
 
@@ -804,8 +820,10 @@ static struct tok *expecttok(struct parser *parser, toktype_t type) {
 
   strbuf_append_str(strbuf, "Expected ");
   strbuf_append_str(strbuf, toktype_t_names[type]);
-  strbuf_append_str(strbuf, " found ");
+  strbuf_append_str(strbuf, ", found ");
   strbuf_append_str(strbuf, toktype_t_names[curtok(parser)->type]);
+  strbuf_append_str(strbuf, " \"");
+  strbuf_append_str(strbuf, curtok(parser)->val);
   strbuf_append(strbuf, '"');
 
   char *message = strbuf_done(strbuf);
@@ -828,7 +846,7 @@ static struct tok *expecttokv(struct parser *parser, toktype_t type,
   strbuf_append_str(strbuf, toktype_t_names[type]);
   strbuf_append_str(strbuf, ": \"");
   strbuf_append_str(strbuf, val);
-  strbuf_append_str(strbuf, "\" found ");
+  strbuf_append_str(strbuf, "\", found ");
   strbuf_append_str(strbuf, toktype_t_names[curtok(parser)->type]);
   strbuf_append_str(strbuf, " \"");
   strbuf_append_str(strbuf, curtok(parser)->val);
