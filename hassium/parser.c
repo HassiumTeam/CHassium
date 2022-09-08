@@ -41,7 +41,8 @@ static struct ast_node *parse_obj_decl(struct parser *);
 static struct ast_node *parse_term(struct parser *);
 static struct vec *parse_arg_list(struct parser *);
 
-#define CURRENT_SOURCEPOS() (curtok(parser)->sourcepos)
+#define CURRENT_SOURCEPOS() \
+  (curtok(parser) == NULL ? NULL : curtok(parser)->sourcepos)
 #define eof(p) (p->pos >= p->toks->len)
 #define lasttok(p) ((struct tok *)vec_get(p->toks, p->toks->len - 1))
 static struct tok *curtok(struct parser *);
