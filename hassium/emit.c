@@ -858,6 +858,8 @@ static void visit_unary_op_node(struct emit *emit, struct unary_op_node *node,
 static void visit_while_node(struct emit *emit, struct while_node *node,
                              struct sourcepos *sourcepos) {
   int body = new_label();
+  int inner_body = new_label();
+  int else_ = new_label();
   int end = new_label();
 
   struct labels_ctx labels = {
@@ -867,11 +869,22 @@ static void visit_while_node(struct emit *emit, struct while_node *node,
   vec_push(emit->code_obj->break_labels, (void *)(uintptr_t)end);
   vec_push(emit->code_obj->cont_labels, (void *)(uintptr_t)body);
 
+  visit_ast_node(emit, node->condition);
+  add_inst(emit, jump_if_false_inst_new(node->else_body == NULL ? end : else_),
+           sourcepos);
+  add_inst(emit, jump_inst_new(inner_body), sourcepos);
+
   place_label(emit, body);
   visit_ast_node(emit, node->condition);
   add_inst(emit, jump_if_false_inst_new(end), sourcepos);
+  place_label(emit, inner_body);
   visit_ast_node(emit, node->body);
   add_inst(emit, jump_inst_new(body), sourcepos);
+
+  if (node->else_body != NULL) {
+    place_label(emit, else_);
+    visit_ast_node(emit, node->else_body);
+  }
 
   place_label(emit, end);
   restore_labels(emit, labels);

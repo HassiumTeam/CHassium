@@ -428,10 +428,15 @@ static struct ast_node *parse_until(struct parser *parser) {
   expecttokv(parser, TOK_ID, "until");
   struct ast_node *condition = parse_expr(parser);
   struct ast_node *body = parse_statement(parser);
+  struct ast_node *else_body = NULL;
+
+  if (accepttokv(parser, TOK_ID, "else")) {
+    else_body = parse_statement(parser);
+  }
 
   return while_node_new(
       unary_op_node_new(UNARY_OP_NOT, condition, false, condition->sourcepos),
-      body, sourcepos);
+      body, else_body, sourcepos);
 }
 
 static struct ast_node *parse_while(struct parser *parser) {
@@ -440,8 +445,13 @@ static struct ast_node *parse_while(struct parser *parser) {
   expecttokv(parser, TOK_ID, "while");
   struct ast_node *condition = parse_expr(parser);
   struct ast_node *body = parse_statement(parser);
+  struct ast_node *else_body = NULL;
 
-  return while_node_new(condition, body, sourcepos);
+  if (accepttokv(parser, TOK_ID, "else")) {
+    else_body = parse_statement(parser);
+  }
+
+  return while_node_new(condition, body, else_body, sourcepos);
 }
 
 static struct ast_node *parse_expr_stmt(struct parser *parser) {

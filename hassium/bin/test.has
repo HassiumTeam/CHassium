@@ -1,1 +1,7 @@
-printl
+a = 11;
+
+while (a++ < 10) {
+  println (a);
+} else {
+  println ("No need to loop");
+}

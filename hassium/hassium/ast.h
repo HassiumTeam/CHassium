@@ -237,6 +237,7 @@ struct unary_op_node {
 struct while_node {
   struct ast_node *condition;
   struct ast_node *body;
+  struct ast_node *else_body;
 };
 
 struct ast_node *ast_node_new(ast_type_t, void *, struct sourcepos *);
@@ -285,7 +286,7 @@ struct ast_node *try_catch_node_new(struct ast_node *, struct ast_node *,
 struct ast_node *unary_op_node_new(unary_op_type_t, struct ast_node *,
                                    bool for_switch, struct sourcepos *);
 struct ast_node *while_node_new(struct ast_node *, struct ast_node *,
-                                struct sourcepos *);
+                                struct ast_node *, struct sourcepos *);
 
 void ast_node_free(struct ast_node *);
 void debug_ast(struct ast_node *);
