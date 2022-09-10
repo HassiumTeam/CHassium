@@ -45,6 +45,10 @@ static struct vec *parse_arg_list(struct parser *);
   (curtok(parser) == NULL ? NULL : curtok(parser)->sourcepos)
 #define eof(p) (p->pos >= p->toks->len)
 #define lasttok(p) ((struct tok *)vec_get(p->toks, p->toks->len - 1))
+#define peektok(p, o)                                                       \
+  (p->pos + o < p->toks->len ? ((struct tok *)vec_get(p->toks, p->pos + o)) \
+                             : NULL)
+
 static struct tok *curtok(struct parser *);
 static int matchtok(struct parser *, toktype_t);
 static int matchtokv(struct parser *, toktype_t, char *);
@@ -77,7 +81,15 @@ static struct ast_node *parse_statement(struct parser *parser) {
 
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
   struct ast_node *ret;
-  if (matchtok(parser, TOK_OBRACE))
+
+  // This big chain is to support { a, b } = o; syntax
+  if (peektok(parser, 1) && peektok(parser, 2) &&
+      matchtok(parser, TOK_OBRACE) && peektok(parser, 1)->type == TOK_ID &&
+      (peektok(parser, 2)->type == TOK_COMMA ||
+       peektok(parser, 2)->type == TOK_COLON ||
+       peektok(parser, 2)->type == TOK_CBRACE)) {
+    ret = parse_expr_stmt(parser);
+  } else if (matchtok(parser, TOK_OBRACE))
     ret = parse_block(parser);
   else if (accepttokv(parser, TOK_ID, "break"))
     ret = ast_node_new(BREAK_NODE, NULL, sourcepos);
@@ -117,7 +129,9 @@ static struct ast_node *parse_statement(struct parser *parser) {
     ret = parse_while(parser);
   else
     ret = parse_expr_stmt(parser);
+
   accepttok(parser, TOK_SEMICOLON);
+
   return ret;
 }
 
@@ -457,6 +471,7 @@ static struct ast_node *parse_while(struct parser *parser) {
 static struct ast_node *parse_expr_stmt(struct parser *parser) {
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
   struct ast_node *expr = parse_expr(parser);
+
   return expr_stmt_node_new(expr, sourcepos);
 }
 
@@ -718,7 +733,6 @@ static struct ast_node *parse_obj_decl(struct parser *parser) {
       }
       accepttok(parser, TOK_COMMA);
     }
-
     return obj_decl_node_new(keys, values, sourcepos);
   } else {
     return parse_term(parser);
