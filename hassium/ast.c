@@ -486,6 +486,7 @@ static void invoke_node_free(struct invoke_node *node) {
 }
 
 static void obj_decl_node_free(struct obj_decl_node *node) {
+  vec_free_deep(node->keys);
   vec_ast_node_free(node->values);
 }
 
