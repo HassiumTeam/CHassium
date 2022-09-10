@@ -97,7 +97,7 @@ func main () {
 
   a = {
     "bar": "biz",
-    "foo": 45,
+    foo: 45,
   };
 
   foreach (kv in a) {
@@ -109,11 +109,11 @@ func main () {
     case 34:
     case > 3:
     case >= 4:
-      println("yay");
+      println ("bad");
       break;
     case !:
     case 3:
-      println("yay2");
+      println ("yay2");
       break;
     default:
       println ("default");

@@ -222,6 +222,7 @@ struct obj *obj_bin_op(bin_op_type_t type, struct obj *left, struct obj *right,
 struct obj *obj_enforce_type(struct obj *obj, struct obj *type, struct vm *vm) {
   if (!obj_is(obj, type)) {
     vm_raise(vm, obj_type_error_new(obj, type, obj->obj_type));
+    return NULL;
   }
   return obj;
 }
@@ -252,9 +253,11 @@ struct obj *obj_index(struct obj *target, struct obj *key, struct vm *vm) {
     struct vec key_args;
     key_args.data = (void **)key_argsstack;
     key_args.len = 1;
+
     return obj_invoke(index, vm, &key_args);
   } else {
     obj_enforce_type(key, &string_type_obj, vm);
+
     return obj_hashmap_get(target->attribs, obj_string_val(key));
   }
 }

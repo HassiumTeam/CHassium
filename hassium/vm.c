@@ -144,6 +144,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
             func_code_obj, func_code_obj->params, NULL, frame, true);
         func_obj->sourcepos = sourcepos_inc_ref(
             (struct sourcepos *)vec_get(code_obj->sourceposes, pos));
+
         STACK_PUSH(obj_inc_ref(func_obj));
       } break;
       case INST_BUILD_HANDLER: {
@@ -167,11 +168,13 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       case INST_DESTRUCTURE_ARRAY: {
         struct obj *arr = STACK_PEEK();
         struct obj *idx = vec_get(code_obj->consts, op);
+
         STACK_PUSH(obj_inc_ref(obj_index(arr, idx, vm)));
       } break;
       case INST_DESTRUCTURE_OBJECT: {
         struct obj *obj = STACK_PEEK();
         struct obj *key = vec_get(code_obj->consts, op);
+
         STACK_PUSH(obj_inc_ref(obj_index(obj, key, vm)));
       } break;
       case INST_IMPORT: {
