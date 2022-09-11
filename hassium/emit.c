@@ -344,6 +344,7 @@ static void visit_break_node(struct emit *emit, struct sourcepos *sourcepos) {
     vm_raise(emit->vm,
              obj_compile_error_new("Incorrect use of break.", sourcepos));
   }
+
   add_inst(emit,
            jump_inst_new((uintptr_t)vec_pop(emit->code_obj->break_labels)),
            sourcepos);
@@ -352,7 +353,10 @@ static void visit_break_node(struct emit *emit, struct sourcepos *sourcepos) {
 static void visit_class_decl_node(struct emit *emit,
                                   struct class_decl_node *node,
                                   struct sourcepos *sourcepos) {
-  if (node->extends != NULL) visit_ast_node(emit, node->extends);
+  if (node->extends != NULL) {
+    visit_ast_node(emit, node->extends);
+  }
+
   struct code_obj *class = code_obj_new(clone_str(node->name), false);
 
   int symbol_idx_swp = next_sym_idx;

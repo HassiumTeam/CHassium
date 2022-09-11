@@ -171,7 +171,9 @@ static struct obj *split(struct obj *obj, struct vm *vm, struct vec *args) {
         strbuf_append(strbuf, str[i]);
       }
     }
-    vec_push(new_items, obj_string_new(strbuf_done(strbuf)));
+    char *last = strbuf_done(strbuf);
+    vec_push(new_items, obj_string_new(last));
+    free(last);
   }
 
   struct obj *array = obj_array_new(new_items);
