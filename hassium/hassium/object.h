@@ -11,6 +11,7 @@ struct vm {
   struct hashmap *globals;
   struct vec *handlers;
   struct vec *handler_returns;
+  struct hashmap *module_cache;
 };
 
 struct stackframe {

@@ -1,3 +1,4 @@
+
 class Point {
   func new (x, y) {
     self.x = x;

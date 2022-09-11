@@ -6,8 +6,8 @@
 #include <util.h>
 
 struct sourcefile {
-  char *fileName;
-  char *filePath;
+  char *file_name;
+  char *file_path;
   char *contents;
   struct vec *lines;
 };

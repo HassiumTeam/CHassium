@@ -1,10 +1,10 @@
 #include <sourcefile.h>
 
-struct sourcefile *sourcefile_new(char *filePath) {
+struct sourcefile *sourcefile_new(char *file_path) {
   struct sourcefile *sourcefile = malloc(sizeof(struct sourcefile));
-  sourcefile->filePath = filePath;
-  sourcefile->fileName = clone_str(filePath);
-  sourcefile->contents = file_to_str(filePath);
+  sourcefile->file_path = file_path;
+  sourcefile->file_name = file_path;
+  sourcefile->contents = file_to_str(file_path);
   sourcefile->lines = vec_new();
 
   struct strbuf *line = strbuf_new();
@@ -28,7 +28,7 @@ struct sourcefile *sourcefile_new(char *filePath) {
 }
 
 void sourcefile_free(struct sourcefile *sourcefile) {
-  free(sourcefile->fileName);
+  free(sourcefile->file_name);
   free(sourcefile->contents);
   vec_free_deep(sourcefile->lines);
   free(sourcefile);
@@ -46,7 +46,7 @@ struct sourcepos *sourcepos_new(int row, int col,
 }
 
 void sourcepos_to_strbuf(struct sourcepos *sourcepos, struct strbuf *strbuf) {
-  strbuf_append_str(strbuf, sourcepos->sourcefile->fileName);
+  strbuf_append_str(strbuf, sourcepos->sourcefile->file_name);
   strbuf_append(strbuf, ':');
   char row[0xF];
   char col[0xF];

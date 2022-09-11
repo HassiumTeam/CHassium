@@ -34,6 +34,15 @@ static inline struct vec *vec_new() {
   return vec_init(vec);
 }
 
+static inline bool vec_includes(struct vec *vec, void *ptr) {
+  for (int i = 0; i < vec->len; ++i) {
+    if (vec_get(vec, i) == ptr) {
+      return true;
+    }
+  }
+  return false;
+}
+
 static inline struct vec *string_vec_clone(struct vec *vec) {
   struct vec *new = malloc(sizeof(struct vec));
   new->data = malloc(vec->size * sizeof(void *));

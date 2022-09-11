@@ -21,6 +21,7 @@ struct vm *vm_new() {
   vm->globals = get_defaults();
   vm->handlers = vec_new();
   vm->handler_returns = vec_new();
+  vm->module_cache = obj_hashmap_new();
   // memset(&times, 0, sizeof(times));
   // memset(&times, 0, sizeof(counts));
   return vm;
@@ -34,6 +35,7 @@ void vm_free(struct vm *vm) {
   vec_free(vm->handler_returns);
   vec_free(vm->frames);
   obj_hashmap_free(vm->globals);
+  hashmap_free(vm->module_cache);
   destruct_defaults();
   free(vm);
 }
@@ -125,6 +127,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
 
         for (int i = 0; i < class_frame->num_locals; ++i) {
           struct obj *local = stackframe_get(class_frame, i);
+
           if (local == NULL) continue;
           if (local->type == OBJ_FUNC) {
             struct func_obj_ctx *func_ctx = (struct func_obj_ctx *)local->ctx;
@@ -179,21 +182,17 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       } break;
       case INST_IMPORT: {
         struct code_obj *mod = vec_get(code_obj->code_objs, op);
-        struct vec *imports = vec_get(code_obj->vecs, opshort);
-        struct stackframe *import_frame = stackframe_new(mod->locals, NULL);
-
-        vec_push(vm->frames, stackframe_inc_ref(import_frame));
-        struct obj *mod_ret = vm_run(vm, mod, NULL);
-        vec_pop(vm->frames);
-
-        struct hashmap *attribs = NULL;
-        if (mod_ret != &none_obj) {
-          attribs = mod_ret->attribs;
+        struct obj *mod_val = obj_hashmap_get(hassium_ctx.module_values,
+                                              mod->sourcefile->file_path);
+        if (mod_val == NULL) {
+          break;
         }
+        struct hashmap *attribs = mod_val->attribs;
+        struct vec *imports = vec_get(code_obj->vecs, opshort);
 
-        if (imports->len == 0) {
+        if (imports->len == 0 && attribs) {
           hashmap_iterate(attribs, import_attrib_from_map, vm->globals);
-        } else {
+        } else if (attribs) {
           for (int i = 0; i < imports->len; ++i) {
             char *attrib = vec_get(imports, i);
             import_attrib_from_map(attrib, 0,
@@ -201,9 +200,6 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
                                    vm->globals);
           }
         }
-
-        stackframe_dec_ref(import_frame);
-        obj_dec_ref(mod_ret);
       } break;
       case INST_INVOKE: {
         struct vec args;

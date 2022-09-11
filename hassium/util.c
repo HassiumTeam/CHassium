@@ -23,9 +23,9 @@ char *heap_str(int argc, ...) {
   return strbuf_done(strbuf);
 }
 
-bool file_exists(char *filename) {
+bool file_exists(char *file_name) {
   struct stat buffer;
-  return (stat(filename, &buffer) == 0);
+  return (stat(file_name, &buffer) == 0);
 }
 
 char *file_to_str(char *fpath) {

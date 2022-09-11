@@ -110,9 +110,11 @@ static int get_symbol(struct emit *, char *);
 static bool has_symbol(struct emit *, char *);
 static int handle_symbol(struct emit *, char *);
 
-struct code_obj *compile_ast(struct ast_node *ast, struct vm *vm) {
+struct code_obj *compile_ast(struct ast_node *ast,
+                             struct sourcefile *sourcefile, struct vm *vm) {
   struct emit emit;
-  emit.code_obj = code_obj_new(clone_str("__module__"));
+  emit.code_obj = code_obj_new(clone_str("__module__"), true);
+  emit.code_obj->sourcefile = sourcefile;
   emit.ret_type = NULL;
   emit.symtable = vec_new();
   emit.func = NULL;
@@ -351,7 +353,7 @@ static void visit_class_decl_node(struct emit *emit,
                                   struct class_decl_node *node,
                                   struct sourcepos *sourcepos) {
   if (node->extends != NULL) visit_ast_node(emit, node->extends);
-  struct code_obj *class = code_obj_new(clone_str(node->name));
+  struct code_obj *class = code_obj_new(clone_str(node->name), false);
 
   int symbol_idx_swp = next_sym_idx;
   if (emit->class == NULL) {
@@ -494,7 +496,7 @@ static void visit_foreach_node(struct emit *emit, struct foreach_node *node,
 
 static void visit_func_decl_node(struct emit *emit, struct func_decl_node *node,
                                  struct sourcepos *sourcepos) {
-  struct code_obj *func = code_obj_new(clone_str(node->name));
+  struct code_obj *func = code_obj_new(clone_str(node->name), false);
   struct code_obj *swp = emit->code_obj;
   bool closure = node->name == NULL;
   emit->code_obj = func;
@@ -592,7 +594,9 @@ static void visit_if_node(struct emit *emit, struct if_node *node,
 
 static void visit_import_node(struct emit *emit, struct import_node *node,
                               struct sourcepos *sourcepos) {
-  struct code_obj *mod = compile_module_for_import(node->from, emit->vm);
+  struct code_obj *mod =
+      compile_module_for_import(emit->code_obj, node->from, emit->vm);
+
   add_inst(emit, import_inst_new(emit, node->imports, mod), sourcepos);
 }
 
@@ -791,7 +795,7 @@ static void visit_switch_node(struct emit *emit, struct switch_node *node,
 
 static void visit_try_catch_node(struct emit *emit, struct try_catch_node *node,
                                  struct sourcepos *sourcepos) {
-  struct code_obj *handler = code_obj_new(NULL);
+  struct code_obj *handler = code_obj_new(NULL, false);
   struct code_obj *swp = emit->code_obj;
   emit->code_obj = handler;
 
@@ -998,6 +1002,7 @@ static vm_inst_t import_inst_new(struct emit *emit, struct vec *imports,
                                  struct code_obj *mod) {
   vec_push(emit->code_obj->vecs, imports);
   vec_push(emit->code_obj->code_objs, mod);
+
   return vm_inst_new(INST_IMPORT, (uint16_t)emit->code_obj->vecs->len - 1,
                      emit->code_obj->code_objs->len - 1);
 }
