@@ -482,7 +482,18 @@ static struct ast_node *parse_expr(struct parser *parser) {
     return NULL;
   }
 
-  return parse_assign(parser);
+  struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
+  struct ast_node *expr = parse_assign(parser);
+
+  if (accepttok(parser, TOK_QUESTION)) {
+    struct ast_node *true_value = parse_expr(parser);
+    expecttok(parser, TOK_COLON);
+    struct ast_node *false_value = parse_expr(parser);
+
+    return ternary_node_new(expr, true_value, false_value, sourcepos);
+  }
+
+  return expr;
 }
 
 static struct ast_node *parse_assign(struct parser *parser) {

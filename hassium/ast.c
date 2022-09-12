@@ -268,6 +268,18 @@ struct ast_node *super_node_new(struct vec *args, struct sourcepos *sourcepos) {
   return ast_node_new(SUPER_NODE, inner, sourcepos);
 }
 
+struct ast_node *ternary_node_new(struct ast_node *condition,
+                                  struct ast_node *true_value,
+                                  struct ast_node *false_value,
+                                  struct sourcepos *sourcepos) {
+  struct ternary_node *inner = malloc(sizeof(struct ternary_node));
+  inner->condition = condition;
+  inner->true_value = true_value;
+  inner->false_value = false_value;
+
+  return ast_node_new(TERNARY_NODE, inner, sourcepos);
+}
+
 struct ast_node *try_catch_node_new(struct ast_node *try,
                                     struct ast_node *catch, char *id,
                                     struct sourcepos *sourcepos) {
@@ -328,6 +340,7 @@ static void string_node_free(struct string_node *);
 static void switch_node_free(struct switch_node *);
 static void subscript_node_free(struct subscript_node *);
 static void super_node_free(struct super_node *);
+static void ternary_node_free(struct ternary_node *);
 static void try_catch_node_free(struct try_catch_node *);
 static void unary_op_node_free(struct unary_op_node *);
 static void while_node_free(struct while_node *);
@@ -400,6 +413,9 @@ void ast_node_free(struct ast_node *node) {
       break;
     case SUPER_NODE:
       super_node_free(node->inner);
+      break;
+    case TERNARY_NODE:
+      ternary_node_free(node->inner);
       break;
     case TRY_CATCH_NODE:
       try_catch_node_free(node->inner);
@@ -535,6 +551,12 @@ static void subscript_node_free(struct subscript_node *node) {
 
 static void super_node_free(struct super_node *node) {
   vec_ast_node_free(node->args);
+}
+
+static void ternary_node_free(struct ternary_node *node) {
+  ast_node_free(node->condition);
+  ast_node_free(node->true_value);
+  ast_node_free(node->false_value);
 }
 
 static void try_catch_node_free(struct try_catch_node *node) {

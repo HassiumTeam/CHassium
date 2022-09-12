@@ -28,13 +28,14 @@ typedef enum {
   TOK_OSQUARE,
   TOK_OSQUARE_NULL_COALESCING,
   TOK_NUM,
+  TOK_QUESTION,
   TOK_SEMICOLON,
   TOK_STRING,
 } toktype_t;
 
 static char *toktype_t_names[] = {
-    "=", "}",        "]", ")",  ":", ",",  ".",      "?.", "identifier",
-    "{", "operator", "(", "?(", "[", "?[", "number", ";",  "string",
+    "=",        "}", "]",  ")", ":",  ",",      ".", "?.", "identifier", "{",
+    "operator", "(", "?(", "[", "?[", "number", "?", ";",  "string",
 };
 
 struct tok {

@@ -58,6 +58,8 @@ static void visit_super_node(struct emit *, struct super_node *,
                              struct sourcepos *);
 static void visit_switch_node(struct emit *, struct switch_node *,
                               struct sourcepos *);
+static void visit_ternary_node(struct emit *, struct ternary_node *,
+                               struct sourcepos *);
 static void visit_try_catch_node(struct emit *, struct try_catch_node *,
                                  struct sourcepos *);
 static void visit_unary_op_node(struct emit *, struct unary_op_node *,
@@ -208,6 +210,9 @@ static void visit_ast_node(struct emit *emit, struct ast_node *node) {
       break;
     case SWITCH_NODE:
       visit_switch_node(emit, node->inner, node->sourcepos);
+      break;
+    case TERNARY_NODE:
+      visit_ternary_node(emit, node->inner, node->sourcepos);
       break;
     case TRY_CATCH_NODE:
       visit_try_catch_node(emit, node->inner, node->sourcepos);
@@ -799,6 +804,22 @@ static void visit_switch_node(struct emit *emit, struct switch_node *node,
   place_label(emit, switch_end);
 
   free(id);
+}
+
+static void visit_ternary_node(struct emit *emit, struct ternary_node *node,
+                               struct sourcepos *sourcepos) {
+  int false_label = new_label();
+  int end_label = new_label();
+
+  visit_ast_node(emit, node->condition);
+  add_inst(emit, jump_if_false_inst_new(false_label), sourcepos);
+  visit_ast_node(emit, node->true_value);
+  add_inst(emit, jump_inst_new(end_label), sourcepos);
+
+  place_label(emit, false_label);
+  visit_ast_node(emit, node->false_value);
+
+  place_label(emit, end_label);
 }
 
 static void visit_try_catch_node(struct emit *emit, struct try_catch_node *node,

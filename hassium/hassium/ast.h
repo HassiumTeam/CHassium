@@ -33,6 +33,7 @@ typedef enum {
   SUBSCRIPT_NODE,
   SUPER_NODE,
   SWITCH_NODE,
+  TERNARY_NODE,
   TRY_CATCH_NODE,
   UNARY_OP_NODE,
   WHILE_NODE,
@@ -66,6 +67,7 @@ static char *ast_type_t_names[] = {
     "array indexer",
     "super",
     "switch",
+    "ternary operator",
     "try catch",
     "unary operation",
     "while",
@@ -226,6 +228,12 @@ struct switch_node {
   struct ast_node *default_case;
 };
 
+struct ternary_node {
+  struct ast_node *condition;
+  struct ast_node *true_value;
+  struct ast_node *false_value;
+};
+
 struct try_catch_node {
   char *id;
   struct ast_node *try;
@@ -286,6 +294,8 @@ struct ast_node *switch_node_new(struct ast_node *, struct vec *, struct vec *,
 struct ast_node *subscript_node_new(struct ast_node *, struct ast_node *,
                                     struct sourcepos *, bool);
 struct ast_node *super_node_new(struct vec *, struct sourcepos *);
+struct ast_node *ternary_node_new(struct ast_node *, struct ast_node *,
+                                  struct ast_node *, struct sourcepos *);
 struct ast_node *try_catch_node_new(struct ast_node *, struct ast_node *,
                                     char *, struct sourcepos *);
 struct ast_node *unary_op_node_new(unary_op_type_t, struct ast_node *,

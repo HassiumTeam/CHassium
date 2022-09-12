@@ -151,6 +151,9 @@ struct vec *lexer_tokenize(struct sourcefile *sourcefile, struct vm *vm) {
                      heap_str(2, cur, next));
               readc(&lexer);
               break;
+            default:
+              addtok(&lexer, TOK_QUESTION, heap_str(1, cur));
+              break;
           }
           break;
         default: {
