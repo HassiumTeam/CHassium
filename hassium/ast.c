@@ -6,6 +6,7 @@ struct ast_node *ast_node_new(ast_type_t type, void *inner,
   node->type = type;
   node->inner = inner;
   node->sourcepos = sourcepos_inc_ref(sourcepos);
+
   return node;
 }
 
@@ -14,15 +15,19 @@ struct ast_node *array_decl_node_new(struct vec *values,
   struct array_decl_node *inner =
       (struct array_decl_node *)malloc(sizeof(struct array_decl_node));
   inner->values = values;
+
   return ast_node_new(ARRAY_DECL_NODE, inner, sourcepos);
 }
 
 struct ast_node *attrib_node_new(struct ast_node *target, char *attrib,
-                                 struct sourcepos *sourcepos) {
+                                 struct sourcepos *sourcepos,
+                                 bool null_coalescing) {
   struct attrib_node *inner =
       (struct attrib_node *)malloc(sizeof(struct attrib_node));
   inner->target = target;
   inner->attrib = attrib;
+  inner->null_coalescing = null_coalescing;
+
   return ast_node_new(ATTRIB_NODE, inner, sourcepos);
 }
 
@@ -159,11 +164,13 @@ struct ast_node *import_node_new(struct vec *imports, struct vec *from,
 }
 
 struct ast_node *invoke_node_new(struct ast_node *target, struct vec *args,
-                                 struct sourcepos *sourcepos) {
+                                 struct sourcepos *sourcepos,
+                                 bool null_coalescing) {
   struct invoke_node *inner =
       (struct invoke_node *)malloc(sizeof(struct invoke_node));
   inner->target = target;
   inner->args = args;
+  inner->null_coalescing = null_coalescing;
 
   return ast_node_new(INVOKE_NODE, inner, sourcepos);
 }
@@ -208,11 +215,13 @@ struct ast_node *return_node_new(struct ast_node *value,
 
 struct ast_node *slice_node_new(struct ast_node *target, struct ast_node *start,
                                 struct ast_node *end,
-                                struct sourcepos *sourcepos) {
+                                struct sourcepos *sourcepos,
+                                bool null_coalescing) {
   struct slice_node *inner = malloc(sizeof(struct slice_node));
   inner->target = target;
   inner->start = start;
   inner->end = end;
+  inner->null_coalescing = null_coalescing;
 
   return ast_node_new(SLICE_NODE, inner, sourcepos);
 }
@@ -240,11 +249,14 @@ struct ast_node *switch_node_new(struct ast_node *target, struct vec *cases,
 
 struct ast_node *subscript_node_new(struct ast_node *target,
                                     struct ast_node *key,
-                                    struct sourcepos *sourcepos) {
+                                    struct sourcepos *sourcepos,
+                                    bool null_coalescing) {
   struct subscript_node *inner =
       (struct subscript_node *)malloc(sizeof(struct subscript_node));
   inner->target = target;
   inner->key = key;
+  inner->null_coalescing = null_coalescing;
+
   return ast_node_new(SUBSCRIPT_NODE, inner, sourcepos);
 }
 
@@ -252,6 +264,7 @@ struct ast_node *super_node_new(struct vec *args, struct sourcepos *sourcepos) {
   struct super_node *inner =
       (struct super_node *)malloc(sizeof(struct super_node));
   inner->args = args;
+
   return ast_node_new(SUPER_NODE, inner, sourcepos);
 }
 
@@ -263,6 +276,7 @@ struct ast_node *try_catch_node_new(struct ast_node *try,
   inner->try = try;
   inner->catch = catch;
   inner->id = id;
+
   return ast_node_new(TRY_CATCH_NODE, inner, sourcepos);
 }
 
@@ -274,6 +288,7 @@ struct ast_node *unary_op_node_new(unary_op_type_t type,
   inner->type = type;
   inner->target = target;
   inner->for_switch = for_switch;
+
   return ast_node_new(UNARY_OP_NODE, inner, sourcepos);
 }
 

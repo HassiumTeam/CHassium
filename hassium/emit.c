@@ -77,12 +77,12 @@ static vm_inst_t destructure_array_inst_new(struct emit *, int);
 static vm_inst_t destructure_object_inst_new(struct emit *, char *);
 static vm_inst_t import_inst_new(struct emit *, struct vec *,
                                  struct code_obj *);
-static vm_inst_t invoke_inst_new(int);
+static vm_inst_t invoke_inst_new(int, bool);
 static vm_inst_t iter_next_inst_new(struct emit *, char *);
 static vm_inst_t jump_inst_new(int);
 static vm_inst_t jump_if_false_inst_new(int);
 static vm_inst_t jump_if_full_inst_new(int);
-static vm_inst_t load_attrib_inst_new(struct emit *, char *);
+static vm_inst_t load_attrib_inst_new(struct emit *, char *, bool);
 static vm_inst_t load_fast_inst_new(int);
 static vm_inst_t load_id_inst_new(struct emit *, char *);
 static vm_inst_t load_const_inst_new(int);
@@ -233,7 +233,9 @@ static void visit_array_decl_node(struct emit *emit,
 static void visit_attrib_node(struct emit *emit, struct attrib_node *node,
                               struct sourcepos *sourcepos) {
   visit_ast_node(emit, node->target);
-  add_inst(emit, load_attrib_inst_new(emit, clone_str(node->attrib)),
+  add_inst(emit,
+           load_attrib_inst_new(emit, clone_str(node->attrib),
+                                node->null_coalescing),
            sourcepos);
 }
 
@@ -609,7 +611,8 @@ static void visit_invoke_node(struct emit *emit, struct invoke_node *node,
   visit_ast_node(emit, node->target);
   for (int i = 0; i < node->args->len; ++i)
     visit_ast_node(emit, vec_get(node->args, i));
-  add_inst(emit, invoke_inst_new(node->args->len), sourcepos);
+  add_inst(emit, invoke_inst_new(node->args->len, node->null_coalescing),
+           sourcepos);
 }
 
 static void visit_num_node(struct emit *emit, struct num_node *node,
@@ -670,7 +673,7 @@ static void visit_slice_node(struct emit *emit, struct slice_node *node,
   } else {
     add_inst(emit, vm_inst_new(INST_LOAD_NONE, 0, 0), sourcepos);
   }
-  add_inst(emit, vm_inst_new(INST_SLICE, 0, 0), sourcepos);
+  add_inst(emit, vm_inst_new(INST_SLICE, node->null_coalescing, 0), sourcepos);
 }
 
 static void visit_string_node(struct emit *emit, struct string_node *node,
@@ -695,7 +698,8 @@ static void visit_subscript_node(struct emit *emit, struct subscript_node *node,
                                  struct sourcepos *sourcepos) {
   visit_ast_node(emit, node->key);
   visit_ast_node(emit, node->target);
-  add_inst(emit, vm_inst_new(INST_LOAD_SUBSCRIPT, 0, 0), sourcepos);
+  add_inst(emit, vm_inst_new(INST_LOAD_SUBSCRIPT, node->null_coalescing, 0),
+           sourcepos);
 }
 
 static void visit_super_node(struct emit *emit, struct super_node *node,
@@ -1011,8 +1015,8 @@ static vm_inst_t import_inst_new(struct emit *emit, struct vec *imports,
                      emit->code_obj->code_objs->len - 1);
 }
 
-static vm_inst_t invoke_inst_new(int arg_count) {
-  return vm_inst_new(INST_INVOKE, 0, arg_count);
+static vm_inst_t invoke_inst_new(int arg_count, bool null_coalescing) {
+  return vm_inst_new(INST_INVOKE, null_coalescing, arg_count);
 }
 
 static vm_inst_t iter_next_inst_new(struct emit *emit, char *id) {
@@ -1032,9 +1036,11 @@ static vm_inst_t jump_if_full_inst_new(int label) {
   return vm_inst_new(INST_JUMP_IF_FULL, 0, label);
 }
 
-static vm_inst_t load_attrib_inst_new(struct emit *emit, char *attrib) {
+static vm_inst_t load_attrib_inst_new(struct emit *emit, char *attrib,
+                                      bool null_coalescing) {
   vec_push(emit->code_obj->strs, attrib);
-  return vm_inst_new(INST_LOAD_ATTRIB, 0, emit->code_obj->strs->len - 1);
+  return vm_inst_new(INST_LOAD_ATTRIB, null_coalescing,
+                     emit->code_obj->strs->len - 1);
 }
 
 static vm_inst_t load_fast_inst_new(int idx) {

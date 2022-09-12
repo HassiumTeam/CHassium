@@ -135,6 +135,24 @@ struct vec *lexer_tokenize(struct sourcefile *sourcefile, struct vm *vm) {
         case ')':
           addtok(&lexer, TOK_CPAREN, heap_str(1, cur));
           break;
+        case '?':
+          switch (next) {
+            case '.':
+              addtok(&lexer, TOK_DOT_NULL_COALESCING, heap_str(2, cur, next));
+              readc(&lexer);
+              break;
+            case '(':
+              addtok(&lexer, TOK_OPAREN_NULL_COALESCING,
+                     heap_str(2, cur, next));
+              readc(&lexer);
+              break;
+            case '[':
+              addtok(&lexer, TOK_OSQUARE_NULL_COALESCING,
+                     heap_str(2, cur, next));
+              readc(&lexer);
+              break;
+          }
+          break;
         default: {
           struct strbuf *strbuf = strbuf_new();
           strbuf_append_str(strbuf, "Invalid or unexpected character \"");

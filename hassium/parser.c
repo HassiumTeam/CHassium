@@ -319,8 +319,8 @@ static struct ast_node *parse_super(struct parser *parser) {
   return expr_stmt_node_new(
       invoke_node_new(
           attrib_node_new(id_node_new(clone_str("self"), NULL, sourcepos),
-                          clone_str("__super__"), sourcepos),
-          parse_arg_list(parser), sourcepos),
+                          clone_str("__super__"), sourcepos, false),
+          parse_arg_list(parser), sourcepos, false),
       sourcepos);
 }
 
@@ -650,38 +650,65 @@ static struct ast_node *parse_access(struct parser *parser,
   if (left == NULL) left = parse_array_decl(parser);
   struct sourcepos *sourcepos = CURRENT_SOURCEPOS();
 
-  if (accepttok(parser, TOK_DOT))
+  if (matchtok(parser, TOK_DOT) || matchtok(parser, TOK_DOT_NULL_COALESCING)) {
+    bool null_coalescing = false;
+    if (accepttok(parser, TOK_DOT_NULL_COALESCING)) {
+      null_coalescing = true;
+    } else {
+      expecttok(parser, TOK_DOT);
+    }
+
     return parse_access(
         parser, attrib_node_new(left, clone_str(expecttok(parser, TOK_ID)->val),
-                                sourcepos));
-  else if (accepttok(parser, TOK_OPAREN)) {
-    return parse_access(
-        parser, invoke_node_new(left, parse_arg_list(parser), sourcepos));
-  } else if (accepttok(parser, TOK_OSQUARE)) {
+                                sourcepos, null_coalescing));
+  } else if (matchtok(parser, TOK_OPAREN) ||
+             matchtok(parser, TOK_OPAREN_NULL_COALESCING)) {
+    bool null_coalescing = false;
+    if (accepttok(parser, TOK_OPAREN_NULL_COALESCING)) {
+      null_coalescing = true;
+    } else {
+      expecttok(parser, TOK_OPAREN);
+    }
+
+    return parse_access(parser, invoke_node_new(left, parse_arg_list(parser),
+                                                sourcepos, null_coalescing));
+  } else if (matchtok(parser, TOK_OSQUARE) ||
+             matchtok(parser, TOK_OSQUARE_NULL_COALESCING)) {
+    bool null_coalescing = false;
+    if (accepttok(parser, TOK_OSQUARE_NULL_COALESCING)) {
+      null_coalescing = true;
+    } else {
+      expecttok(parser, TOK_OSQUARE);
+    }
+
     if (accepttok(parser, TOK_COLON)) {
       if (accepttok(parser, TOK_CSQUARE)) {
-        return parse_access(parser,
-                            slice_node_new(left, NULL, NULL, sourcepos));
+        return parse_access(parser, slice_node_new(left, NULL, NULL, sourcepos,
+                                                   null_coalescing));
       }
       struct ast_node *end = parse_expr(parser);
       expecttok(parser, TOK_CSQUARE);
-      return parse_access(parser, slice_node_new(left, NULL, end, sourcepos));
+      return parse_access(
+          parser, slice_node_new(left, NULL, end, sourcepos, null_coalescing));
     } else {
       struct ast_node *key_or_start = parse_expr(parser);
       if (accepttok(parser, TOK_COLON)) {
         if (accepttok(parser, TOK_CSQUARE)) {
           return parse_access(
-              parser, slice_node_new(left, key_or_start, NULL, sourcepos));
+              parser, slice_node_new(left, key_or_start, NULL, sourcepos,
+                                     null_coalescing));
         } else {
           struct ast_node *end = parse_expr(parser);
           expecttok(parser, TOK_CSQUARE);
-          return parse_access(
-              parser, slice_node_new(left, key_or_start, end, sourcepos));
+          return parse_access(parser,
+                              slice_node_new(left, key_or_start, end, sourcepos,
+                                             null_coalescing));
         }
       } else {
         expecttok(parser, TOK_CSQUARE);
-        return parse_access(parser,
-                            subscript_node_new(left, key_or_start, sourcepos));
+        return parse_access(
+            parser,
+            subscript_node_new(left, key_or_start, sourcepos, null_coalescing));
       }
     }
   }

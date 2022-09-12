@@ -100,7 +100,7 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
       } break;
       case INST_BUILD_ARRAY: {
         struct vec *items = vec_new();
-        for (int i = op - 1; i >= 0; i--) {
+        for (int i = op - 1; i >= 0; --i) {
           vec_set(items, i, obj_down_ref(STACK_POP()));
         }
 
@@ -207,9 +207,20 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         args.len = op;
 
         struct obj *target = STACK_POP();
-        // long inbetweenTimeStart = getMicrotime();
-        STACK_PUSH(obj_inc_ref(obj_invoke(target, vm, &args)));
-        // long inbetweenTimeEnd = getMicrotime();
+
+        if (target == &none_obj) {
+          if (opshort) {
+            STACK_PUSH(&none_obj);
+          } else {
+            vm_raise(vm, obj_no_such_attrib_error_new(
+                             target, obj_string_new("__invoke__")));
+            STACK_PUSH(&none_obj);
+          }
+        } else {
+          // long inbetweenTimeStart = getMicrotime();
+          STACK_PUSH(obj_inc_ref(obj_invoke(target, vm, &args)));
+          // long inbetweenTimeEnd = getMicrotime();
+        }
 
         for (int i = 0; i < op; ++i) {
           obj_dec_ref(vec_get(&args, i));
@@ -257,11 +268,16 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         struct obj *target = STACK_POP();
 
         if (target == &none_obj) {
-          vm_raise(vm,
-                   obj_no_such_attrib_error_new(
-                       target, obj_string_new(vec_get(code_obj->strs, op))));
-          STACK_PUSH(&none_obj);
-          break;
+          if (opshort) {
+            STACK_PUSH(&none_obj);
+            break;
+          } else {
+            vm_raise(vm,
+                     obj_no_such_attrib_error_new(
+                         target, obj_string_new(vec_get(code_obj->strs, op))));
+            STACK_PUSH(&none_obj);
+            break;
+          }
         }
 
         if (target->lazy_load_fn) {
@@ -307,12 +323,23 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         struct obj *target = STACK_POP();
         struct obj *key = STACK_POP();
 
-        if (target->lazy_load_fn) {
-          target->lazy_load_fn(target);
-          target->lazy_load_fn = NULL;
+        if (target == &none_obj) {
+          if (opshort) {
+            STACK_PUSH(&none_obj);
+          } else {
+            vm_raise(vm, obj_no_such_attrib_error_new(target,
+                                                      obj_to_string(key, vm)));
+            STACK_PUSH(&none_obj);
+          }
+        } else {
+          if (target->lazy_load_fn) {
+            target->lazy_load_fn(target);
+            target->lazy_load_fn = NULL;
+          }
+
+          STACK_PUSH(obj_inc_ref(obj_index(target, key, vm)));
         }
 
-        STACK_PUSH(obj_inc_ref(obj_index(target, key, vm)));
         obj_dec_ref(key);
         obj_dec_ref(target);
       } break;
@@ -335,6 +362,13 @@ struct obj *vm_run(struct vm *vm, struct code_obj *code_obj, struct obj *self) {
         struct obj *end = STACK_POP();
         struct obj *start = STACK_POP();
         struct obj *target = STACK_POP();
+
+        if (target == &none_obj && opshort) {
+          obj_dec_ref(start);
+          obj_dec_ref(end);
+          STACK_PUSH(&none_obj);
+          break;
+        }
 
         struct obj *argstack[2];
         argstack[0] = start;

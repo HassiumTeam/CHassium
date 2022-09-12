@@ -108,6 +108,7 @@ struct array_decl_node {
 struct attrib_node {
   struct ast_node *target;
   char *attrib;
+  bool null_coalescing;
 };
 
 struct bin_op_node {
@@ -175,6 +176,7 @@ struct import_node {
 struct invoke_node {
   struct ast_node *target;
   struct vec *args;
+  bool null_coalescing;
 };
 
 struct num_node {
@@ -200,6 +202,7 @@ struct slice_node {
   struct ast_node *target;
   struct ast_node *start;
   struct ast_node *end;
+  bool null_coalescing;
 };
 
 struct string_node {
@@ -209,6 +212,7 @@ struct string_node {
 struct subscript_node {
   struct ast_node *target;
   struct ast_node *key;
+  bool null_coalescing;
 };
 
 struct super_node {
@@ -242,7 +246,8 @@ struct while_node {
 
 struct ast_node *ast_node_new(ast_type_t, void *, struct sourcepos *);
 struct ast_node *array_decl_node_new(struct vec *, struct sourcepos *);
-struct ast_node *attrib_node_new(struct ast_node *, char *, struct sourcepos *);
+struct ast_node *attrib_node_new(struct ast_node *, char *, struct sourcepos *,
+                                 bool);
 struct ast_node *bin_op_node_new(bin_op_type_t, struct ast_node *,
                                  struct ast_node *, bool for_switch,
                                  struct sourcepos *);
@@ -267,19 +272,19 @@ struct ast_node *if_node_new(struct ast_node *, struct ast_node *,
 struct ast_node *import_node_new(struct vec *, struct vec *,
                                  struct sourcepos *);
 struct ast_node *invoke_node_new(struct ast_node *, struct vec *,
-                                 struct sourcepos *);
+                                 struct sourcepos *, bool);
 struct ast_node *num_node_new(bool, int, float, struct sourcepos *);
 struct ast_node *obj_decl_node_new(struct vec *, struct vec *,
                                    struct sourcepos *);
 struct ast_node *raise_node_new(struct ast_node *, struct sourcepos *);
 struct ast_node *return_node_new(struct ast_node *, struct sourcepos *);
 struct ast_node *slice_node_new(struct ast_node *, struct ast_node *,
-                                struct ast_node *, struct sourcepos *);
+                                struct ast_node *, struct sourcepos *, bool);
 struct ast_node *string_node_new(char *, struct sourcepos *);
 struct ast_node *switch_node_new(struct ast_node *, struct vec *, struct vec *,
                                  struct ast_node *, struct sourcepos *);
 struct ast_node *subscript_node_new(struct ast_node *, struct ast_node *,
-                                    struct sourcepos *);
+                                    struct sourcepos *, bool);
 struct ast_node *super_node_new(struct vec *, struct sourcepos *);
 struct ast_node *try_catch_node_new(struct ast_node *, struct ast_node *,
                                     char *, struct sourcepos *);

@@ -19,19 +19,22 @@ typedef enum {
   TOK_COLON,
   TOK_COMMA,
   TOK_DOT,
+  TOK_DOT_NULL_COALESCING,
   TOK_ID,
   TOK_OBRACE,
   TOK_OP,
   TOK_OPAREN,
+  TOK_OPAREN_NULL_COALESCING,
   TOK_OSQUARE,
+  TOK_OSQUARE_NULL_COALESCING,
   TOK_NUM,
   TOK_SEMICOLON,
   TOK_STRING,
 } toktype_t;
 
 static char *toktype_t_names[] = {
-    "=", "}",        "]", ")", ":",      ",", ".",      "identifier",
-    "{", "operator", "(", "[", "number", ";", "string",
+    "=", "}",        "]", ")",  ":", ",",  ".",      "?.", "identifier",
+    "{", "operator", "(", "?(", "[", "?[", "number", ";",  "string",
 };
 
 struct tok {
